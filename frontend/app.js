@@ -190,7 +190,7 @@ function setLoggedOutState() {
   setAuthMode("login");
   subjectBadge.textContent = "Aguardando";
   resultTitle.textContent = "A resposta aparece aqui";
-  resultAnswer.textContent = "Entre com sua conta para começar.";
+  resultAnswer.textContent = "Entre com sua conta para comecar.";
   stepsList.innerHTML = "";
   historyList.innerHTML = '<p class="empty-state">Seu historico salvo vai aparecer aqui.</p>';
   drawEmptyChart("Faca login para usar o grafico.");
