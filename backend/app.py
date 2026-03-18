@@ -108,8 +108,17 @@ def create_app():
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "troque-esta-chave-em-producao")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
 
-    allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
-    CORS(app, resources={r"/api/*": {"origins": [origin.strip() for origin in allowed_origins if origin.strip()]}})
+    cors_origins = build_cors_origins()
+    CORS(
+        app,
+        resources={
+            r"/api/*": {
+                "origins": cors_origins,
+                "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+            }
+        },
+    )
 
     db.init_app(app)
     bcrypt.init_app(app)
@@ -120,6 +129,15 @@ def create_app():
 
     register_routes(app)
     return app
+
+
+def build_cors_origins():
+    raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").strip()
+    if not raw_origins or raw_origins == "*":
+        return "*"
+
+    origins = [origin.strip().rstrip("/") for origin in raw_origins.split(",") if origin.strip()]
+    return origins or "*"
 
 
 def register_routes(app):
