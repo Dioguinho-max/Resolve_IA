@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResolveAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">ResolveAI</p>
+      <h1>Seu resolvedor de exercicios com IA, login seguro e historico salvo.</h1>
+      <p class="subtitle">
+        Front separado para Vercel, backend separado para Render e banco PostgreSQL no Supabase.
+      </p>
+    </section>
+
+    <section class="grid">
+      <aside class="panel auth-panel">
+        <div class="tabs">
+          <button class="tab active" data-tab="login">Entrar</button>
+          <button class="tab" data-tab="register">Criar conta</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" placeholder="voce@email.com" required>
+          <label for="loginPassword">Senha</label>
+          <input id="loginPassword" type="password" placeholder="Sua senha" required>
+          <button type="submit">Entrar</button>
+        </form>
+
+        <form id="registerForm" class="auth-form hidden">
+          <label for="registerEmail">Email</label>
+          <input id="registerEmail" type="email" placeholder="voce@email.com" required>
+          <label for="registerPassword">Senha</label>
+          <input id="registerPassword" type="password" placeholder="Minimo 6 caracteres" required>
+          <button type="submit">Criar conta</button>
+        </form>
+
+        <div id="userBox" class="user-box hidden">
+          <p id="userEmail"></p>
+          <button id="logoutBtn" class="secondary">Sair</button>
+        </div>
+
+        <p id="authMessage" class="message"></p>
+      </aside>
+
+      <section class="panel workspace-panel">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">Agente de IA</p>
+            <h2>Pergunte qualquer exercicio</h2>
+          </div>
+          <span id="subjectBadge" class="badge">Aguardando</span>
+        </div>
+
+        <label for="questionInput">Questao</label>
+        <textarea id="questionInput" placeholder="Exemplo: 2*x + 3 = 11"></textarea>
+        <button id="solveBtn">Resolver com IA</button>
+
+        <div class="result-box">
+          <h3 id="resultTitle">A resposta aparece aqui</h3>
+          <p id="resultAnswer" class="answer">Entre com sua conta para começar.</p>
+          <ol id="stepsList" class="steps"></ol>
+        </div>
+      </section>
+    </section>
+
+    <section class="grid lower-grid">
+      <section class="panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">Visual</p>
+            <h2>Grafico da funcao</h2>
+          </div>
+          <p id="chartTitle" class="tiny">Sem funcao detectada ainda.</p>
+        </div>
+        <canvas id="chartCanvas" width="900" height="420"></canvas>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="panel-header">
+          <div>
+            <p class="section-tag">Historico</p>
+            <h2>Ultimas consultas</h2>
+          </div>
+        </div>
+        <div id="historyList" class="history-list">
+          <p class="empty-state">Seu historico salvo vai aparecer aqui.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
