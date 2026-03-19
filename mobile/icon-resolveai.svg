@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff4e6"/>
+      <stop offset="100%" stop-color="#f2e4cf"/>
+    </linearGradient>
+    <linearGradient id="book1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#de7044"/>
+      <stop offset="100%" stop-color="#c54c26"/>
+    </linearGradient>
+    <linearGradient id="book2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3d7d63"/>
+      <stop offset="100%" stop-color="#285543"/>
+    </linearGradient>
+    <linearGradient id="book3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#efb75d"/>
+      <stop offset="100%" stop-color="#da9640"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="240" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="360" fill="#fffaf3" opacity="0.72"/>
+
+  <g transform="translate(170 190)">
+    <rect x="160" y="390" width="520" height="120" rx="30" fill="url(#book1)"/>
+    <rect x="135" y="305" width="520" height="120" rx="30" fill="url(#book2)"/>
+    <rect x="110" y="220" width="520" height="120" rx="30" fill="url(#book3)"/>
+
+    <rect x="225" y="220" width="20" height="120" rx="10" fill="#fff2da" opacity="0.9"/>
+    <rect x="250" y="220" width="10" height="120" rx="5" fill="#fff2da" opacity="0.55"/>
+
+    <rect x="250" y="305" width="20" height="120" rx="10" fill="#e9fff3" opacity="0.9"/>
+    <rect x="278" y="305" width="10" height="120" rx="5" fill="#e9fff3" opacity="0.55"/>
+
+    <rect x="275" y="390" width="20" height="120" rx="10" fill="#fff2ec" opacity="0.9"/>
+    <rect x="302" y="390" width="10" height="120" rx="5" fill="#fff2ec" opacity="0.55"/>
+
+    <rect x="132" y="515" width="540" height="20" rx="10" fill="#d1c0a9" opacity="0.5"/>
+  </g>
+</svg>

@@ -8,6 +8,7 @@ O projeto foi separado em duas partes para deploy moderno:
 
 - `frontend/`: interface web hospedada na Vercel
 - `backend/`: API Flask hospedada no Render
+- `mobile/`: app Expo com React Native WebView
 - Banco de dados: PostgreSQL no Supabase
 - IA: Hugging Face Inference API com `mistralai/Mistral-7B-Instruct-v0.2`
 
@@ -21,6 +22,7 @@ O projeto foi separado em duas partes para deploy moderno:
 - Grafico de funcoes quando aplicavel
 - Paginas de Termos de Servico e Politica de Privacidade
 - Favicon personalizado e identidade visual propria
+- App mobile simples reaproveitando a versao web
 
 ## Stack
 
@@ -66,6 +68,11 @@ ResolveAI/
     termos.html
     privacidade.html
     vercel.json
+  mobile/
+    App.js
+    app.json
+    package.json
+    README.md
   README.md
 ```
 
@@ -105,6 +112,20 @@ Abra no navegador:
 
 ```text
 http://127.0.0.1:3000
+```
+
+### 3. Mobile
+
+```bash
+cd mobile
+npm install
+npx expo start
+```
+
+Para abrir no Android Studio:
+
+```bash
+npx expo run:android
 ```
 
 ## Variaveis de Ambiente do Backend
@@ -153,6 +174,14 @@ window.APP_CONFIG = {
   API_BASE_URL: "https://seu-backend.onrender.com",
 };
 ```
+
+### Mobile
+
+O app mobile abre a versao publicada do frontend dentro de um WebView.
+
+Se a URL da Vercel mudar, atualize:
+
+- `mobile/App.js`
 
 ## Banco de Dados
 

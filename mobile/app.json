@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "ResolveAI",
+    "slug": "resolveai-mobile",
+    "version": "1.0.7",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.dioguinhomax.resolveai",
+      "edgeToEdgeEnabled": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0002c7f1-b5b1-4fea-a99d-46ba31dc8442"
+      }
+    }
+  }
+}
