@@ -434,6 +434,8 @@ def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | No
             timeout=40,
         )
         current_app.logger.warning("Hugging Face: status=%s model=%s", response.status_code, model_name)
+        if response.status_code >= 400:
+            current_app.logger.warning("Hugging Face: corpo_erro=%s", response.text)
         response.raise_for_status()
         data = response.json()
         current_app.logger.warning("Hugging Face: tipo_resposta=%s", type(data).__name__)
