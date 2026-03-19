@@ -65,6 +65,10 @@ TEXT_KEYWORDS = {
     "porque",
     "por que",
     "como funciona",
+    "que dia e hoje",
+    "qual a data de hoje",
+    "que horas sao",
+    "qual horario",
 }
 
 MATH_KEYWORDS = {
@@ -467,13 +471,53 @@ def request_huggingface_explanation(question: str, subject: str, local_answer: s
 
 def request_huggingface_general_answer(question: str) -> str | None:
     prompt = (
-        "Voce e um assistente util e objetivo.\n"
-        "Responda em portugues do Brasil.\n"
-        "Se a pergunta for conceitual, explique de forma clara.\n"
-        "Se a pergunta for direta, responda com objetividade.\n"
-        f"Pergunta: {question}"
+        "Voce e um assistente util, direto e amigavel.\n"
+        "Responda sempre em portugues do Brasil.\n"
+        "Nao invente recusas desnecessarias.\n"
+        "Se a pergunta for simples, responda de forma simples.\n"
+        "Se a pergunta for conceitual, explique de forma clara e curta.\n"
+        "Nao mencione politicas, seguranca ou restricoes, a menos que a pergunta realmente exija isso.\n"
+        f"Pergunta do usuario: {question}\n"
+        "Resposta:"
     )
     return request_huggingface_response(prompt, max_tokens=140)
+
+
+def get_local_general_answer(question: str) -> str | None:
+    lowered = question.lower().strip()
+    now = datetime.now()
+
+    if any(term in lowered for term in ["que dia e hoje", "qual a data de hoje", "data de hoje", "hoje e que dia"]):
+        months = [
+            "janeiro",
+            "fevereiro",
+            "marco",
+            "abril",
+            "maio",
+            "junho",
+            "julho",
+            "agosto",
+            "setembro",
+            "outubro",
+            "novembro",
+            "dezembro",
+        ]
+        return f"Hoje e {now.day} de {months[now.month - 1]} de {now.year}."
+
+    if any(term in lowered for term in ["que horas sao", "qual horario", "hora agora", "horas agora"]):
+        return f"Agora sao {now.strftime('%H:%M')}."
+
+    if lowered in {"oi", "ola", "olá", "bom dia", "boa tarde", "boa noite"}:
+        return "Ola! Posso te ajudar com matematica, fisica ou perguntas gerais."
+
+    if "o que e ia" in lowered or "o que e inteligencia artificial" in lowered:
+        return (
+            "Inteligencia artificial e a area da computacao que cria sistemas capazes de "
+            "reconhecer padroes, aprender com dados e executar tarefas que normalmente "
+            "exigiriam inteligencia humana, como responder perguntas, analisar textos e imagens."
+        )
+
+    return None
 
 
 def solve_math(question: str, forced: bool = False) -> dict:
@@ -615,6 +659,21 @@ def solve_physics(question: str, forced: bool = False) -> dict:
 
 
 def solve_general(question: str, forced: bool = False) -> dict:
+    local_answer = get_local_general_answer(question)
+    if local_answer:
+        return {
+            "title": "Resposta geral",
+            "steps": [
+                "Detectei que sua pergunta pode ser respondida localmente com mais confiabilidade.",
+                "Usei uma resposta direta para evitar erro de contexto temporal ou interpretacao.",
+                "Se quiser, voce pode pedir mais detalhes ou exemplos na proxima pergunta.",
+            ],
+            "answer": local_answer,
+            "graph": None,
+            "subject": "geral",
+            "mode": "general",
+        }
+
     ai_answer = request_huggingface_general_answer(question)
     if ai_answer:
         return {
