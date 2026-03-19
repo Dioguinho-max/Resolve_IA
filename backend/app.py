@@ -406,6 +406,7 @@ def build_graph_data(expression: str) -> dict | None:
 def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | None:
     api_key = os.getenv("HUGGINGFACE_API_KEY")
     if not api_key:
+        print("Hugging Face: HUGGINGFACE_API_KEY ausente.")
         return None
 
     model_name = os.getenv("HUGGINGFACE_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
@@ -425,13 +426,19 @@ def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | No
             },
             timeout=40,
         )
+        print(f"Hugging Face: status={response.status_code} model={model_name}")
         response.raise_for_status()
         data = response.json()
+        print(f"Hugging Face: tipo_resposta={type(data).__name__}")
         if isinstance(data, list) and data and isinstance(data[0], dict):
             generated = data[0].get("generated_text")
             if generated:
                 return generated.strip()
+            print(f"Hugging Face: resposta sem generated_text -> {data[0]}")
+        else:
+            print(f"Hugging Face: formato inesperado -> {data}")
     except Exception:
+        print(f"Hugging Face: falha na requisicao para {model_name}")
         return None
     return None
 
