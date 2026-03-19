@@ -409,7 +409,8 @@ def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | No
         current_app.logger.warning("Hugging Face: HUGGINGFACE_API_KEY ausente.")
         return None
 
-    model_name = os.getenv("HUGGINGFACE_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
+    model_name = os.getenv("HUGGINGFACE_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
+    max_tokens = min(max_tokens, int(os.getenv("HUGGINGFACE_MAX_TOKENS", "140")))
     api_url = f"https://api-inference.huggingface.co/models/{model_name}"
 
     try:
@@ -463,7 +464,7 @@ def request_huggingface_general_answer(question: str) -> str | None:
         "Se a pergunta for direta, responda com objetividade.\n"
         f"Pergunta: {question}"
     )
-    return request_huggingface_response(prompt, max_tokens=280)
+    return request_huggingface_response(prompt, max_tokens=140)
 
 
 def solve_math(question: str, forced: bool = False) -> dict:
