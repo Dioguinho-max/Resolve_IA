@@ -31,9 +31,8 @@ jwt = JWTManager()
 PHYSICS_KEYWORDS = {
     "velocidade",
     "aceleracao",
-    "aceleração",
+    "aceleracao",
     "forca",
-    "força",
     "massa",
     "energia",
     "trabalho",
@@ -42,28 +41,61 @@ PHYSICS_KEYWORDS = {
     "mru",
     "mruv",
     "pressao",
-    "pressão",
     "densidade",
     "corrente",
     "tensao",
-    "tensão",
     "resistencia",
-    "resistência",
     "frequencia",
-    "frequência",
 }
 
 TEXT_KEYWORDS = {
     "interprete",
-    "interpretação",
+    "interpretacao",
     "resuma",
     "resumo",
     "texto",
-    "redação",
+    "redacao",
     "argumente",
     "explique",
     "comente",
     "leitura",
+    "oque",
+    "o que",
+    "quem",
+    "quando",
+    "porque",
+    "por que",
+}
+
+MATH_KEYWORDS = {
+    "calcule",
+    "resolve",
+    "resolva",
+    "equacao",
+    "funcao",
+    "derivada",
+    "integral",
+    "raiz",
+    "potencia",
+    "log",
+}
+
+SUPERSCRIPT_MAP = {
+    "⁰": "0",
+    "¹": "1",
+    "²": "2",
+    "³": "3",
+    "⁴": "4",
+    "⁵": "5",
+    "⁶": "6",
+    "⁷": "7",
+    "⁸": "8",
+    "⁹": "9",
+    "⁺": "+",
+    "⁻": "-",
+    "⁽": "(",
+    "⁾": ")",
+    "ⁿ": "n",
 }
 
 
@@ -235,9 +267,39 @@ def get_current_user():
     return user
 
 
+def replace_unicode_superscripts(text: str) -> str:
+    result = []
+    index = 0
+
+    while index < len(text):
+        char = text[index]
+        if char not in SUPERSCRIPT_MAP:
+            result.append(char)
+            index += 1
+            continue
+
+        superscript_chars = []
+        while index < len(text) and text[index] in SUPERSCRIPT_MAP:
+            superscript_chars.append(SUPERSCRIPT_MAP[text[index]])
+            index += 1
+
+        superscript_value = "".join(superscript_chars)
+        if result and not result[-1].isspace():
+            result.append(f"**({superscript_value})")
+        else:
+            result.append(superscript_value)
+
+    return "".join(result)
+
+
 def normalize_expression(raw_text: str) -> str:
-    expression = raw_text.strip()
-    replacements = {"^": "**", "sen(": "sin(", "tg(": "tan(", "raiz(": "sqrt("}
+    expression = replace_unicode_superscripts(raw_text.strip())
+    replacements = {
+        "^": "**",
+        "sen(": "sin(",
+        "tg(": "tan(",
+        "raiz(": "sqrt(",
+    }
     for old, new in replacements.items():
         expression = expression.replace(old, new)
     return expression
@@ -245,23 +307,31 @@ def normalize_expression(raw_text: str) -> str:
 
 def detect_subject(question: str) -> str:
     lowered = question.lower()
+    normalized = normalize_expression(lowered)
 
-    if any(keyword in lowered for keyword in PHYSICS_KEYWORDS):
+    if any(keyword in normalized for keyword in PHYSICS_KEYWORDS):
         return "fisica"
 
-    if any(keyword in lowered for keyword in TEXT_KEYWORDS):
+    if any(keyword in normalized for keyword in MATH_KEYWORDS):
+        return "matematica"
+
+    if any(symbol in normalized for symbol in ["x", "y", "=", "^", "+", "-", "*", "/", "f(", "**"]):
+        return "matematica"
+
+    if any(char in lowered for char in SUPERSCRIPT_MAP):
+        return "matematica"
+
+    if re.search(r"\d+\s*[%+\-/*=]", normalized):
+        return "matematica"
+
+    if any(keyword in normalized for keyword in TEXT_KEYWORDS):
         return "texto"
-
-    if any(symbol in lowered for symbol in ["x", "y", "=", "^", "+", "-", "*", "/", "f("]):
-        return "matematica"
-
-    if re.search(r"\d", lowered):
-        return "matematica"
 
     return "texto"
 
 
 def extract_expression(question: str) -> str | None:
+    normalized_question = normalize_expression(question)
     candidates = [
         r"f\(x\)\s*=\s*([^\n]+)",
         r"y\s*=\s*([^\n]+)",
@@ -272,11 +342,11 @@ def extract_expression(question: str) -> str | None:
     ]
 
     for pattern in candidates:
-        match = re.search(pattern, question, flags=re.IGNORECASE)
+        match = re.search(pattern, normalized_question, flags=re.IGNORECASE)
         if match:
             return normalize_expression(match.group(1))
 
-    cleaned = normalize_expression(question)
+    cleaned = normalized_question
     if any(token in cleaned for token in ["=", "x", "+", "-", "*", "/", "**"]):
         return cleaned
 
@@ -308,21 +378,13 @@ def build_graph_data(expression: str) -> dict | None:
     return {"title": f"Grafico de y = {expression}", "points": points}
 
 
-def request_huggingface_explanation(question: str, subject: str, local_answer: str, local_steps: list[str]) -> str | None:
+def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | None:
     api_key = os.getenv("HUGGINGFACE_API_KEY")
     if not api_key:
         return None
 
     model_name = os.getenv("HUGGINGFACE_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
     api_url = f"https://api-inference.huggingface.co/models/{model_name}"
-    prompt = (
-        "Voce e um professor particular objetivo.\n"
-        f"Materia detectada: {subject}\n"
-        f"Questao do aluno: {question}\n"
-        f"Resposta base: {local_answer}\n"
-        f"Passos base: {' | '.join(local_steps)}\n"
-        "Escreva uma explicacao curta em portugues do Brasil, clara e passo a passo."
-    )
 
     try:
         response = requests.post(
@@ -330,7 +392,11 @@ def request_huggingface_explanation(question: str, subject: str, local_answer: s
             headers={"Authorization": f"Bearer {api_key}"},
             json={
                 "inputs": prompt,
-                "parameters": {"max_new_tokens": 220, "temperature": 0.5, "return_full_text": False},
+                "parameters": {
+                    "max_new_tokens": max_tokens,
+                    "temperature": 0.5,
+                    "return_full_text": False,
+                },
             },
             timeout=40,
         )
@@ -346,6 +412,29 @@ def request_huggingface_explanation(question: str, subject: str, local_answer: s
     return None
 
 
+def request_huggingface_explanation(question: str, subject: str, local_answer: str, local_steps: list[str]) -> str | None:
+    prompt = (
+        "Voce e um professor particular objetivo.\n"
+        f"Materia detectada: {subject}\n"
+        f"Questao do aluno: {question}\n"
+        f"Resposta base: {local_answer}\n"
+        f"Passos base: {' | '.join(local_steps)}\n"
+        "Escreva uma explicacao curta em portugues do Brasil, clara e passo a passo."
+    )
+    return request_huggingface_response(prompt)
+
+
+def request_huggingface_general_answer(question: str) -> str | None:
+    prompt = (
+        "Voce e um assistente util e objetivo.\n"
+        "Responda em portugues do Brasil.\n"
+        "Se a pergunta for conceitual, explique de forma clara.\n"
+        "Se a pergunta for direta, responda com objetividade.\n"
+        f"Pergunta: {question}"
+    )
+    return request_huggingface_response(prompt, max_tokens=280)
+
+
 def solve_math(question: str) -> dict:
     expression = extract_expression(question)
     if not expression:
@@ -353,7 +442,7 @@ def solve_math(question: str) -> dict:
             "title": "Nao consegui identificar a expressao",
             "steps": [
                 "Verifique se a questao contem uma expressao matematica clara.",
-                "Exemplos validos: 2*x + 3 = 7, f(x)=x^2-4x+3, derivada de x^3.",
+                "Exemplos validos: 2*x + 3 = 7, f(x)=x^2-4x+3, x² + 4x + 4, derivada de x^3.",
             ],
             "answer": "Tente reescrever a questao com a conta ou a funcao explicitamente.",
             "graph": None,
@@ -377,7 +466,7 @@ def solve_math(question: str) -> dict:
                 steps.append(ai_explanation)
             return {"title": "Resolucao de equacao", "steps": steps, "answer": answer, "graph": None}
 
-        lowered = question.lower()
+        lowered = normalize_expression(question.lower())
         expr = sympify(normalized)
 
         if "deriv" in lowered:
@@ -443,37 +532,55 @@ def solve_math(question: str) -> dict:
 
 
 def solve_physics(question: str) -> dict:
-    steps = [
-        "Detectei termos comuns de fisica na sua pergunta.",
-        "Organizei a resolucao em dados do problema, formula e conclusao.",
-        "A resposta abaixo pode ser refinada pelo modelo de IA da Hugging Face quando a chave estiver configurada.",
-    ]
-    answer = (
+    base_answer = (
         "Estrutura sugerida: liste os dados conhecidos, escolha a formula principal, "
         "substitua os valores com unidade e finalize interpretando o resultado."
     )
-    ai_explanation = request_huggingface_explanation(question, "fisica", answer, steps)
-    if ai_explanation:
-        steps.append(ai_explanation)
+    steps = [
+        "Detectei termos comuns de fisica na sua pergunta.",
+        "Organizei a resolucao em dados do problema, formula e conclusao.",
+        "Se a Hugging Face estiver ativa, a explicacao pode ficar mais completa.",
+    ]
 
-    return {"title": "Explicacao guiada de fisica", "steps": steps, "answer": answer, "graph": None}
+    ai_answer = request_huggingface_general_answer(question)
+    if ai_answer:
+        return {
+            "title": "Resposta de fisica",
+            "steps": steps,
+            "answer": ai_answer,
+            "graph": None,
+        }
+
+    return {"title": "Explicacao guiada de fisica", "steps": steps, "answer": base_answer, "graph": None}
 
 
 def solve_text(question: str) -> dict:
-    steps = [
-        "Detectei que a questao parece mais textual do que numerica.",
-        "Montei uma estrutura de resposta com ideia central, desenvolvimento e conclusao.",
-        "O modelo da Hugging Face pode complementar a explicacao automaticamente.",
-    ]
-    answer = (
-        "Modelo de resposta: apresente a ideia central do enunciado, explique os argumentos "
-        "ou evidencias e finalize com uma conclusao objetiva."
-    )
-    ai_explanation = request_huggingface_explanation(question, "texto", answer, steps)
-    if ai_explanation:
-        steps.append(ai_explanation)
+    ai_answer = request_huggingface_general_answer(question)
+    if ai_answer:
+        return {
+            "title": "Resposta geral",
+            "steps": [
+                "Detectei que sua pergunta nao exige apenas calculo simbolico.",
+                "Enviei a consulta para o modelo de IA para montar uma resposta mais ampla.",
+                "Organizei a resposta final em linguagem direta para ficar mais util no estudo.",
+            ],
+            "answer": ai_answer,
+            "graph": None,
+        }
 
-    return {"title": "Analise de texto", "steps": steps, "answer": answer, "graph": None}
+    return {
+        "title": "Resposta geral",
+        "steps": [
+            "Detectei que sua pergunta e mais geral ou textual.",
+            "Neste modo, o ideal e usar a chave da Hugging Face para respostas realmente completas.",
+            "Sem a API ativa, ainda consigo orientar a estrutura basica da resposta.",
+        ],
+        "answer": (
+            "Posso responder perguntas gerais tambem, mas para respostas completas ative a chave "
+            "da Hugging Face no backend. Sem isso, eu consigo apenas montar uma orientacao base."
+        ),
+        "graph": None,
+    }
 
 
 def solve_question(question: str) -> dict:
