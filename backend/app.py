@@ -31,7 +31,6 @@ jwt = JWTManager()
 PHYSICS_KEYWORDS = {
     "velocidade",
     "aceleracao",
-    "aceleracao",
     "forca",
     "massa",
     "energia",
@@ -59,12 +58,13 @@ TEXT_KEYWORDS = {
     "explique",
     "comente",
     "leitura",
-    "oque",
     "o que",
+    "oque",
     "quem",
     "quando",
     "porque",
     "por que",
+    "como funciona",
 }
 
 MATH_KEYWORDS = {
@@ -140,12 +140,11 @@ def create_app():
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "troque-esta-chave-em-producao")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
 
-    cors_origins = build_cors_origins()
     CORS(
         app,
         resources={
             r"/api/*": {
-                "origins": cors_origins,
+                "origins": build_cors_origins(),
                 "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
                 "allow_headers": ["Content-Type", "Authorization"],
             }
@@ -167,12 +166,15 @@ def build_cors_origins():
     raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").strip()
     if not raw_origins or raw_origins == "*":
         return "*"
-
     origins = [origin.strip().rstrip("/") for origin in raw_origins.split(",") if origin.strip()]
     return origins or "*"
 
 
 def register_routes(app):
+    @app.get("/")
+    def index():
+        return jsonify({"status": "online", "service": "ResolveAI API"})
+
     @app.get("/api/health")
     def health_check():
         return jsonify({"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()})
@@ -185,7 +187,6 @@ def register_routes(app):
 
         if not email or not password:
             return jsonify({"error": "Email e senha sao obrigatorios."}), 400
-
         if len(password) < 6:
             return jsonify({"error": "A senha precisa ter pelo menos 6 caracteres."}), 400
 
@@ -234,29 +235,47 @@ def register_routes(app):
 
     @app.post("/api/solve")
     @jwt_required()
-    def solve_question_route():
-        payload = request.get_json(silent=True) or {}
-        question = (payload.get("question") or "").strip()
+    def solve_auto_route():
+        question = extract_question()
+        return jsonify(save_history(question, solve_question(question)))
 
-        if not question:
-            return jsonify({"error": "Envie uma questao para resolver."}), 400
+    @app.post("/api/solve/math")
+    @jwt_required()
+    def solve_math_route():
+        question = extract_question()
+        return jsonify(save_history(question, solve_math(question, forced=True)))
 
-        result = solve_question(question)
-        user = get_current_user()
+    @app.post("/api/solve/physics")
+    @jwt_required()
+    def solve_physics_route():
+        question = extract_question()
+        return jsonify(save_history(question, solve_physics(question, forced=True)))
 
-        history_item = AIHistory(
-            user_id=user.id,
-            question=question,
-            subject=result["subject"],
-            answer=result["answer"],
-            steps_json=json.dumps(result["steps"], ensure_ascii=True),
-            graph_json=json.dumps(result["graph"], ensure_ascii=True) if result["graph"] else None,
-        )
-        db.session.add(history_item)
-        db.session.commit()
+    @app.post("/api/solve/general")
+    @jwt_required()
+    def solve_general_route():
+        question = extract_question()
+        return jsonify(save_history(question, solve_general(question, forced=True)))
 
-        result["history_id"] = history_item.id
-        return jsonify(result)
+
+def extract_question():
+    payload = request.get_json(silent=True) or {}
+    question = (payload.get("question") or "").strip()
+    if not question:
+        raise_api_error("Envie uma questao para resolver.", 400)
+    return question
+
+
+def raise_api_error(message: str, status_code: int):
+    response = jsonify({"error": message})
+    response.status_code = status_code
+    raise ExceptionWithResponse(response)
+
+
+class ExceptionWithResponse(Exception):
+    def __init__(self, response):
+        super().__init__("api error")
+        self.response = response
 
 
 def get_current_user():
@@ -267,10 +286,25 @@ def get_current_user():
     return user
 
 
+def save_history(question: str, result: dict):
+    user = get_current_user()
+    history_item = AIHistory(
+        user_id=user.id,
+        question=question,
+        subject=result["subject"],
+        answer=result["answer"],
+        steps_json=json.dumps(result["steps"], ensure_ascii=True),
+        graph_json=json.dumps(result["graph"], ensure_ascii=True) if result["graph"] else None,
+    )
+    db.session.add(history_item)
+    db.session.commit()
+    result["history_id"] = history_item.id
+    return result
+
+
 def replace_unicode_superscripts(text: str) -> str:
     result = []
     index = 0
-
     while index < len(text):
         char = text[index]
         if char not in SUPERSCRIPT_MAP:
@@ -288,7 +322,6 @@ def replace_unicode_superscripts(text: str) -> str:
             result.append(f"**({superscript_value})")
         else:
             result.append(superscript_value)
-
     return "".join(result)
 
 
@@ -311,22 +344,16 @@ def detect_subject(question: str) -> str:
 
     if any(keyword in normalized for keyword in PHYSICS_KEYWORDS):
         return "fisica"
-
     if any(keyword in normalized for keyword in MATH_KEYWORDS):
         return "matematica"
-
     if any(symbol in normalized for symbol in ["x", "y", "=", "^", "+", "-", "*", "/", "f(", "**"]):
         return "matematica"
-
     if any(char in lowered for char in SUPERSCRIPT_MAP):
         return "matematica"
-
     if re.search(r"\d+\s*[%+\-/*=]", normalized):
         return "matematica"
-
     if any(keyword in normalized for keyword in TEXT_KEYWORDS):
         return "geral"
-
     return "geral"
 
 
@@ -349,7 +376,6 @@ def extract_expression(question: str) -> str | None:
     cleaned = normalized_question
     if any(token in cleaned for token in ["=", "x", "+", "-", "*", "/", "**"]):
         return cleaned
-
     return None
 
 
@@ -374,7 +400,6 @@ def build_graph_data(expression: str) -> dict | None:
 
     if len(points) < 2:
         return None
-
     return {"title": f"Grafico de y = {expression}", "points": points}
 
 
@@ -408,7 +433,6 @@ def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | No
                 return generated.strip()
     except Exception:
         return None
-
     return None
 
 
@@ -435,7 +459,7 @@ def request_huggingface_general_answer(question: str) -> str | None:
     return request_huggingface_response(prompt, max_tokens=280)
 
 
-def solve_math(question: str) -> dict:
+def solve_math(question: str, forced: bool = False) -> dict:
     expression = extract_expression(question)
     if not expression:
         return {
@@ -446,10 +470,11 @@ def solve_math(question: str) -> dict:
             ],
             "answer": "Tente reescrever a questao com a conta ou a funcao explicitamente.",
             "graph": None,
+            "subject": "matematica",
+            "mode": "math",
         }
 
     normalized = normalize_expression(expression)
-
     try:
         if "=" in normalized:
             left, right = normalized.split("=", 1)
@@ -464,7 +489,14 @@ def solve_math(question: str) -> dict:
             ai_explanation = request_huggingface_explanation(question, "matematica", answer, steps)
             if ai_explanation:
                 steps.append(ai_explanation)
-            return {"title": "Resolucao de equacao", "steps": steps, "answer": answer, "graph": None}
+            return {
+                "title": "Resolucao de equacao",
+                "steps": steps,
+                "answer": answer,
+                "graph": None,
+                "subject": "matematica",
+                "mode": "math",
+            }
 
         lowered = normalize_expression(question.lower())
         expr = sympify(normalized)
@@ -484,6 +516,8 @@ def solve_math(question: str) -> dict:
                 "steps": steps,
                 "answer": str(result),
                 "graph": build_graph_data(normalized),
+                "subject": "matematica",
+                "mode": "math",
             }
 
         if "integr" in lowered:
@@ -501,6 +535,8 @@ def solve_math(question: str) -> dict:
                 "steps": steps,
                 "answer": f"{result} + C",
                 "graph": build_graph_data(normalized),
+                "subject": "matematica",
+                "mode": "math",
             }
 
         simplified = simplify(expr)
@@ -517,7 +553,14 @@ def solve_math(question: str) -> dict:
         if ai_explanation:
             steps.append(ai_explanation)
 
-        return {"title": "Analise matematica", "steps": steps, "answer": str(simplified), "graph": graph}
+        return {
+            "title": "Analise matematica",
+            "steps": steps,
+            "answer": str(simplified),
+            "graph": graph,
+            "subject": "matematica",
+            "mode": "math",
+        }
     except Exception as exc:
         return {
             "title": "Falha ao resolver",
@@ -528,10 +571,12 @@ def solve_math(question: str) -> dict:
             ],
             "answer": "Tente enviar apenas a parte matematica principal.",
             "graph": None,
+            "subject": "matematica",
+            "mode": "math",
         }
 
 
-def solve_physics(question: str) -> dict:
+def solve_physics(question: str, forced: bool = False) -> dict:
     base_answer = (
         "Estrutura sugerida: liste os dados conhecidos, escolha a formula principal, "
         "substitua os valores com unidade e finalize interpretando o resultado."
@@ -541,62 +586,65 @@ def solve_physics(question: str) -> dict:
         "Organizei a resolucao em dados do problema, formula e conclusao.",
         "Se a Hugging Face estiver ativa, a explicacao pode ficar mais completa.",
     ]
-
     ai_answer = request_huggingface_general_answer(question)
-    if ai_answer:
-        return {
-            "title": "Resposta de fisica",
-            "steps": steps,
-            "answer": ai_answer,
-            "graph": None,
-        }
+    return {
+        "title": "Resposta de fisica" if ai_answer else "Explicacao guiada de fisica",
+        "steps": steps,
+        "answer": ai_answer or base_answer,
+        "graph": None,
+        "subject": "fisica",
+        "mode": "physics",
+    }
 
-    return {"title": "Explicacao guiada de fisica", "steps": steps, "answer": base_answer, "graph": None}
 
-
-def solve_text(question: str) -> dict:
+def solve_general(question: str, forced: bool = False) -> dict:
     ai_answer = request_huggingface_general_answer(question)
     if ai_answer:
         return {
             "title": "Resposta geral",
             "steps": [
-                "Detectei que sua pergunta nao exige apenas calculo simbolico.",
-                "Enviei a consulta para o modelo de IA para montar uma resposta mais ampla.",
-                "Organizei a resposta final em linguagem direta para ficar mais util no estudo.",
+                "Enviei sua pergunta para o modo geral da IA.",
+                "Organizei a resposta em linguagem mais direta para ficar util no estudo.",
+                "Se precisar, voce pode refazer a pergunta pedindo mais detalhes ou exemplos.",
             ],
             "answer": ai_answer,
             "graph": None,
+            "subject": "geral",
+            "mode": "general",
         }
 
     return {
         "title": "Resposta geral",
         "steps": [
-            "Detectei que sua pergunta e mais geral ou textual.",
-            "Neste modo, o ideal e usar a chave da Hugging Face para respostas realmente completas.",
-            "Sem a API ativa, ainda consigo orientar a estrutura basica da resposta.",
+            "Sua pergunta foi enviada para o modo geral.",
+            "Neste caso, a melhor resposta depende da Hugging Face estar ativa no backend.",
+            "Sem a API externa, ainda deixei uma orientacao base para nao retornar vazio.",
         ],
         "answer": (
             "Posso responder perguntas gerais tambem, mas para respostas completas ative a chave "
             "da Hugging Face no backend. Sem isso, eu consigo apenas montar uma orientacao base."
         ),
         "graph": None,
+        "subject": "geral",
+        "mode": "general",
     }
 
 
 def solve_question(question: str) -> dict:
     subject = detect_subject(question)
     if subject == "matematica":
-        result = solve_math(question)
-    elif subject == "fisica":
-        result = solve_physics(question)
-    else:
-        result = solve_text(question)
-
-    result["subject"] = subject
-    return result
+        return solve_math(question)
+    if subject == "fisica":
+        return solve_physics(question)
+    return solve_general(question)
 
 
 app = create_app()
+
+
+@app.errorhandler(ExceptionWithResponse)
+def handle_api_exception(error):
+    return error.response
 
 
 if __name__ == "__main__":

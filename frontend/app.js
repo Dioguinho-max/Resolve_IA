@@ -10,6 +10,7 @@ const userEmail = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
 const questionInput = document.getElementById("questionInput");
 const solveBtn = document.getElementById("solveBtn");
+const modeChips = document.querySelectorAll(".mode-chip");
 const subjectBadge = document.getElementById("subjectBadge");
 const resultTitle = document.getElementById("resultTitle");
 const resultAnswer = document.getElementById("resultAnswer");
@@ -18,6 +19,7 @@ const historyList = document.getElementById("historyList");
 const chartTitle = document.getElementById("chartTitle");
 const chartCanvas = document.getElementById("chartCanvas");
 const ctx = chartCanvas.getContext("2d");
+let selectedMode = "math";
 
 function getToken() {
   return localStorage.getItem(storageKey);
@@ -75,6 +77,15 @@ function subjectLabel(subject) {
     texto: "Texto",
   };
   return labels[subject] || "Aguardando";
+}
+
+function apiPathForMode(mode) {
+  const paths = {
+    math: "/api/solve/math",
+    physics: "/api/solve/physics",
+    general: "/api/solve/general",
+  };
+  return paths[mode] || "/api/solve/math";
 }
 
 function drawEmptyChart(message) {
@@ -224,6 +235,13 @@ tabs.forEach((tab) => {
   tab.addEventListener("click", () => setAuthMode(tab.dataset.tab));
 });
 
+modeChips.forEach((chip) => {
+  chip.addEventListener("click", () => {
+    selectedMode = chip.dataset.mode;
+    modeChips.forEach((item) => item.classList.toggle("active", item === chip));
+  });
+});
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const email = document.getElementById("loginEmail").value.trim();
@@ -291,7 +309,7 @@ solveBtn.addEventListener("click", async () => {
   solveBtn.textContent = "Resolvendo...";
 
   try {
-    const data = await apiFetch("/api/solve", {
+    const data = await apiFetch(apiPathForMode(selectedMode), {
       method: "POST",
       body: JSON.stringify({ question }),
     });

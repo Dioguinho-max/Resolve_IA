@@ -230,6 +230,27 @@ button:hover {
   display: inline-block;
 }
 
+.mode-switch {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.mode-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.64);
+  color: var(--muted);
+  border: 1px solid rgba(24, 32, 28, 0.08);
+  box-shadow: none;
+}
+
+.mode-chip.active {
+  background: linear-gradient(135deg, var(--accent), #ef8b4a);
+  color: #ffffff;
+}
+
 .result-box {
   margin-top: 22px;
   padding-top: 20px;
