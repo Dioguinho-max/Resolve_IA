@@ -325,9 +325,9 @@ def detect_subject(question: str) -> str:
         return "matematica"
 
     if any(keyword in normalized for keyword in TEXT_KEYWORDS):
-        return "texto"
+        return "geral"
 
-    return "texto"
+    return "geral"
 
 
 def extract_expression(question: str) -> str | None:

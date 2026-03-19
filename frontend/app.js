@@ -71,6 +71,7 @@ function subjectLabel(subject) {
   const labels = {
     matematica: "Matematica",
     fisica: "Fisica",
+    geral: "Geral",
     texto: "Texto",
   };
   return labels[subject] || "Aguardando";
