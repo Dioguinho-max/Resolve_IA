@@ -411,19 +411,25 @@ def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | No
 
     model_name = os.getenv("HUGGINGFACE_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
     max_tokens = min(max_tokens, int(os.getenv("HUGGINGFACE_MAX_TOKENS", "140")))
-    api_url = f"https://api-inference.huggingface.co/models/{model_name}"
+    api_url = "https://router.huggingface.co/v1/chat/completions"
 
     try:
         response = requests.post(
             api_url,
-            headers={"Authorization": f"Bearer {api_key}"},
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
             json={
-                "inputs": prompt,
-                "parameters": {
-                    "max_new_tokens": max_tokens,
-                    "temperature": 0.5,
-                    "return_full_text": False,
-                },
+                "model": model_name,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                "max_tokens": max_tokens,
+                "temperature": 0.5,
             },
             timeout=40,
         )
@@ -431,13 +437,14 @@ def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | No
         response.raise_for_status()
         data = response.json()
         current_app.logger.warning("Hugging Face: tipo_resposta=%s", type(data).__name__)
-        if isinstance(data, list) and data and isinstance(data[0], dict):
-            generated = data[0].get("generated_text")
-            if generated:
-                return generated.strip()
-            current_app.logger.warning("Hugging Face: resposta sem generated_text -> %s", data[0])
-        else:
-            current_app.logger.warning("Hugging Face: formato inesperado -> %s", data)
+        choices = data.get("choices", []) if isinstance(data, dict) else []
+        if choices and isinstance(choices[0], dict):
+            message = choices[0].get("message", {})
+            content = message.get("content")
+            if isinstance(content, str) and content.strip():
+                return content.strip()
+            current_app.logger.warning("Hugging Face: message sem content -> %s", message)
+        current_app.logger.warning("Hugging Face: formato inesperado -> %s", data)
     except Exception:
         current_app.logger.exception("Hugging Face: falha na requisicao para %s", model_name)
         return None
