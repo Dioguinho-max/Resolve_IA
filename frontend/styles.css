@@ -561,6 +561,10 @@ select:focus {
   z-index: 40;
 }
 
+.modal-backdrop.hidden {
+  display: none;
+}
+
 .modal-card {
   width: min(100%, 420px);
   padding: 24px;

@@ -81,9 +81,13 @@ function clearToken() {
 function openLogoutModal() {
   logoutModal.classList.remove("hidden");
   logoutModal.setAttribute("aria-hidden", "false");
+  logoutCancelBtn.focus();
 }
 
 function closeLogoutModal() {
+  if (document.activeElement === logoutConfirmBtn || document.activeElement === logoutCancelBtn) {
+    logoutBtn.focus();
+  }
   logoutModal.classList.add("hidden");
   logoutModal.setAttribute("aria-hidden", "true");
 }
