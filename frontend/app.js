@@ -419,8 +419,7 @@ forgotPasswordBtn.addEventListener("click", async () => {
       method: "POST",
       body: JSON.stringify({ email }),
     });
-    const tokenMessage = data.reset_token ? ` Codigo: ${data.reset_token}` : "";
-    setMessage(`${data.message || "Codigo gerado com sucesso."}${tokenMessage}`, false);
+    setMessage(data.message || "Codigo gerado com sucesso.", false);
     if (data.reset_token) {
       resetTokenInput.value = data.reset_token;
     }

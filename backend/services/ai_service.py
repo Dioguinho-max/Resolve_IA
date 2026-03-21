@@ -517,9 +517,9 @@ def solve_general(question: str) -> dict:
         return {
             "title": "Resposta geral",
             "steps": [
-                "Enviei sua pergunta para o modo geral da IA.",
-                "Organizei a resposta em linguagem mais direta para ficar util no estudo.",
-                "Como respostas gerais podem conter imprecisoes, vale revisar fatos e datas importantes.",
+                "Analisei sua pergunta como um tema geral e montei uma resposta mais direta.",
+                "Busquei deixar a explicacao clara, curta e facil de aproveitar no estudo.",
+                "Se a resposta envolver fatos, datas ou nomes importantes, vale conferir antes de usar como referencia final.",
             ],
             "answer": ai_answer,
             "graph": None,
