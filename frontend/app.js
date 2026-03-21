@@ -4,6 +4,9 @@ const storageKey = "resolveai_token";
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
 const recoverForm = document.getElementById("recoverForm");
+const authEyebrow = document.getElementById("authEyebrow");
+const authTitle = document.getElementById("authTitle");
+const authSubtitle = document.getElementById("authSubtitle");
 const authMessage = document.getElementById("authMessage");
 const tabs = document.querySelectorAll(".tab");
 const userBox = document.getElementById("userBox");
@@ -42,6 +45,24 @@ let historyQuery = { page: 1, pageSize: 8, subject: "", q: "" };
 let historyPagination = { page: 1, total_pages: 1 };
 let graphState = { zoom: 1 };
 
+const authModeContent = {
+  login: {
+    eyebrow: "Acesso",
+    title: "Entrar na sua conta",
+    subtitle: "Use seu email e senha para abrir o painel e continuar seus estudos.",
+  },
+  register: {
+    eyebrow: "Cadastro",
+    title: "Criar uma conta nova",
+    subtitle: "Abra sua conta para salvar historico, organizar perguntas e acompanhar respostas da IA.",
+  },
+  recover: {
+    eyebrow: "Recuperacao",
+    title: "Redefinir sua senha",
+    subtitle: "Gere um codigo, confirme sua identidade e escolha uma nova senha sem sair do app.",
+  },
+};
+
 function getToken() {
   return localStorage.getItem(storageKey);
 }
@@ -59,6 +80,13 @@ function setAuthMode(mode) {
   loginForm.classList.toggle("hidden", mode !== "login");
   registerForm.classList.toggle("hidden", mode !== "register");
   recoverForm.classList.toggle("hidden", mode !== "recover");
+  loginForm.classList.toggle("active-form", mode === "login");
+  registerForm.classList.toggle("active-form", mode === "register");
+  recoverForm.classList.toggle("active-form", mode === "recover");
+  const content = authModeContent[mode] || authModeContent.login;
+  authEyebrow.textContent = content.eyebrow;
+  authTitle.textContent = content.title;
+  authSubtitle.textContent = content.subtitle;
   authMessage.textContent = "";
 }
 

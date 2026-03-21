@@ -22,13 +22,18 @@
 
     <section class="grid">
       <aside class="panel auth-panel">
+        <div class="auth-intro">
+          <p id="authEyebrow" class="section-tag">Acesso</p>
+          <h2 id="authTitle" class="auth-title">Entrar na sua conta</h2>
+          <p id="authSubtitle" class="auth-subtitle">Use seu email e senha para abrir o painel e continuar seus estudos.</p>
+        </div>
         <div class="tabs">
           <button class="tab active" data-tab="login">Entrar</button>
           <button class="tab" data-tab="register">Criar conta</button>
           <button class="tab" data-tab="recover">Recuperar</button>
         </div>
 
-        <form id="loginForm" class="auth-form">
+        <form id="loginForm" class="auth-form active-form">
           <label for="loginEmail">Email</label>
           <input id="loginEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
           <label for="loginPassword">Senha</label>
