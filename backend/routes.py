@@ -1,5 +1,8 @@
 import json
 import os
+import secrets
+from datetime import datetime, timedelta, timezone
+from hashlib import sha256
 from math import ceil
 
 from flask import Blueprint, current_app, jsonify, request
@@ -64,6 +67,66 @@ def login():
     return jsonify({"token": token, "user": {"id": user.id, "email": user.email}})
 
 
+@api.post("/api/auth/forgot-password")
+def forgot_password():
+    payload = request.get_json(silent=True) or {}
+    email = (payload.get("email") or "").strip().lower()
+
+    if not email:
+        return jsonify({"error": "Informe o email da conta."}), 400
+
+    user = User.query.filter_by(email=email).first()
+    response = {
+        "message": "Se o email existir, um codigo de recuperacao foi gerado.",
+    }
+
+    if not user:
+        return jsonify(response)
+
+    reset_token = secrets.token_urlsafe(24)
+    user.reset_token_hash = sha256(reset_token.encode("utf-8")).hexdigest()
+    user.reset_token_expires_at = datetime.now(timezone.utc) + timedelta(minutes=30)
+    db.session.commit()
+
+    current_app.logger.warning("Reset password token gerado para %s", user.email)
+    if os.getenv("EXPOSE_RESET_TOKEN", "1") == "1":
+        response["reset_token"] = reset_token
+        response["expires_in_minutes"] = 30
+
+    return jsonify(response)
+
+
+@api.post("/api/auth/reset-password")
+def reset_password():
+    payload = request.get_json(silent=True) or {}
+    token = (payload.get("token") or "").strip()
+    password = payload.get("password") or ""
+
+    if not token or not password:
+        return jsonify({"error": "Codigo e nova senha sao obrigatorios."}), 400
+    if len(password) < 6:
+        return jsonify({"error": "A senha precisa ter pelo menos 6 caracteres."}), 400
+
+    token_hash = sha256(token.encode("utf-8")).hexdigest()
+    user = User.query.filter_by(reset_token_hash=token_hash).first()
+    if not user or not user.reset_token_expires_at:
+        return jsonify({"error": "Codigo de recuperacao invalido."}), 400
+
+    expires_at = user.reset_token_expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at < datetime.now(timezone.utc):
+        return jsonify({"error": "Codigo de recuperacao expirado."}), 400
+
+    user.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+    user.reset_token_hash = None
+    user.reset_token_expires_at = None
+    db.session.commit()
+
+    return jsonify({"message": "Senha redefinida com sucesso."})
+
+
 @api.get("/api/auth/me")
 @jwt_required()
 def me():
@@ -114,6 +177,19 @@ def clear_history():
     deleted = AIHistory.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return jsonify({"deleted": deleted})
+
+
+@api.delete("/api/history/<int:history_id>")
+@jwt_required()
+def delete_history_item(history_id: int):
+    user = get_current_user()
+    item = AIHistory.query.filter_by(id=history_id, user_id=user.id).first()
+    if not item:
+        return jsonify({"error": "Item do historico nao encontrado."}), 404
+
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"deleted": 1, "history_id": history_id})
 
 
 @api.post("/api/solve/math")

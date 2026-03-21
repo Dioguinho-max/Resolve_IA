@@ -25,6 +25,7 @@
         <div class="tabs">
           <button class="tab active" data-tab="login">Entrar</button>
           <button class="tab" data-tab="register">Criar conta</button>
+          <button class="tab" data-tab="recover">Recuperar</button>
         </div>
 
         <form id="loginForm" class="auth-form">
@@ -54,6 +55,21 @@
             <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>.
           </p>
         </form>
+
+        <section id="recoverForm" class="auth-form hidden">
+          <label for="recoverEmail">Email da conta</label>
+          <input id="recoverEmail" type="email" placeholder="voce@email.com" autocomplete="email">
+          <button id="forgotPasswordBtn" type="button">Gerar codigo de recuperacao</button>
+
+          <label for="resetToken">Codigo de recuperacao</label>
+          <input id="resetToken" type="text" placeholder="Cole o codigo recebido">
+          <label for="resetPassword">Nova senha</label>
+          <input id="resetPassword" type="password" placeholder="Minimo 6 caracteres" autocomplete="new-password">
+          <button id="resetPasswordBtn" class="secondary" type="button">Redefinir senha</button>
+          <p class="legal-copy">
+            Nesta versao, o backend pode expor o codigo de recuperacao para teste. Em producao, o ideal e enviar por email.
+          </p>
+        </section>
 
         <div id="userBox" class="user-box hidden">
           <p id="userEmail"></p>

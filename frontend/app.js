@@ -3,6 +3,7 @@ const storageKey = "resolveai_token";
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
+const recoverForm = document.getElementById("recoverForm");
 const authMessage = document.getElementById("authMessage");
 const tabs = document.querySelectorAll(".tab");
 const userBox = document.getElementById("userBox");
@@ -26,6 +27,11 @@ const historyPrevBtn = document.getElementById("historyPrevBtn");
 const historyNextBtn = document.getElementById("historyNextBtn");
 const historyPageInfo = document.getElementById("historyPageInfo");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+const recoverEmail = document.getElementById("recoverEmail");
+const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
+const resetTokenInput = document.getElementById("resetToken");
+const resetPasswordInput = document.getElementById("resetPassword");
+const resetPasswordBtn = document.getElementById("resetPasswordBtn");
 const chartTitle = document.getElementById("chartTitle");
 const chartCanvas = document.getElementById("chartCanvas");
 const ctx = chartCanvas.getContext("2d");
@@ -52,6 +58,7 @@ function setAuthMode(mode) {
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === mode));
   loginForm.classList.toggle("hidden", mode !== "login");
   registerForm.classList.toggle("hidden", mode !== "register");
+  recoverForm.classList.toggle("hidden", mode !== "recover");
   authMessage.textContent = "";
 }
 
@@ -237,6 +244,18 @@ async function loadHistory() {
   return data;
 }
 
+async function deleteHistoryItem(historyId) {
+  await apiFetch(`/api/history/${historyId}`, { method: "DELETE" });
+  if (currentResult?.id === historyId || currentResult?.history_id === historyId) {
+    resetWorkspaceAfterClear();
+  }
+  const maxPageAfterDelete = Math.max(1, historyPagination.total_pages || 1);
+  if (historyQuery.page > maxPageAfterDelete) {
+    historyQuery.page = maxPageAfterDelete;
+  }
+  await loadHistory();
+}
+
 function renderHistory(items) {
   historyList.innerHTML = "";
   if (!items.length) {
@@ -250,12 +269,22 @@ function renderHistory(items) {
     article.innerHTML = `
       <div class="history-top">
         <h3>${subjectLabel(item.subject)}</h3>
-        <span class="history-date">${new Date(item.created_at).toLocaleString("pt-BR")}</span>
+        <div class="history-actions">
+          <span class="history-date">${new Date(item.created_at).toLocaleString("pt-BR")}</span>
+          <button class="history-delete secondary" type="button" data-id="${item.id}">Excluir</button>
+        </div>
       </div>
       <p><strong>Pergunta:</strong> ${item.question}</p>
       <p><strong>Resposta:</strong> ${item.answer}</p>
     `;
     article.addEventListener("click", () => renderResult(item));
+    article.querySelector(".history-delete").addEventListener("click", async (event) => {
+      event.stopPropagation();
+      if (!confirm("Deseja apagar este item do historico?")) {
+        return;
+      }
+      await deleteHistoryItem(item.id);
+    });
     historyList.appendChild(article);
   });
 }
@@ -373,6 +402,50 @@ registerForm.addEventListener("submit", async (event) => {
     historyQuery.page = 1;
     await loadHistory();
     drawEmptyChart("Resolva uma funcao para ver o grafico.");
+  } catch (error) {
+    setMessage(error.message, true);
+  }
+});
+
+forgotPasswordBtn.addEventListener("click", async () => {
+  const email = recoverEmail.value.trim();
+  if (!email) {
+    setMessage("Informe o email da conta para gerar o codigo.", true);
+    return;
+  }
+
+  try {
+    const data = await apiFetch("/api/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    const tokenMessage = data.reset_token ? ` Codigo: ${data.reset_token}` : "";
+    setMessage(`${data.message || "Codigo gerado com sucesso."}${tokenMessage}`, false);
+    if (data.reset_token) {
+      resetTokenInput.value = data.reset_token;
+    }
+  } catch (error) {
+    setMessage(error.message, true);
+  }
+});
+
+resetPasswordBtn.addEventListener("click", async () => {
+  const token = resetTokenInput.value.trim();
+  const password = resetPasswordInput.value;
+  if (!token || !password) {
+    setMessage("Preencha o codigo e a nova senha.", true);
+    return;
+  }
+
+  try {
+    const data = await apiFetch("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    });
+    setMessage(data.message || "Senha redefinida com sucesso.", false);
+    resetTokenInput.value = "";
+    resetPasswordInput.value = "";
+    setAuthMode("login");
   } catch (error) {
     setMessage(error.message, true);
   }

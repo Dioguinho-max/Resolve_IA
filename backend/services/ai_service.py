@@ -5,7 +5,7 @@ from datetime import datetime
 
 import requests
 from flask import current_app
-from sympy import Eq, SympifyError, diff, integrate, simplify, solve
+from sympy import Eq, diff, factor, integrate, simplify, solve, sqrt, together
 from sympy.abc import x
 from sympy.parsing.sympy_parser import (
     convert_xor,
@@ -73,32 +73,33 @@ MATH_KEYWORDS = {
     "seno",
     "cosseno",
     "tangente",
+    "fracao",
 }
 
 SUPERSCRIPT_MAP = {
-    "⁰": "0",
-    "¹": "1",
-    "²": "2",
-    "³": "3",
-    "⁴": "4",
-    "⁵": "5",
-    "⁶": "6",
-    "⁷": "7",
-    "⁸": "8",
-    "⁹": "9",
-    "⁺": "+",
-    "⁻": "-",
-    "⁽": "(",
-    "⁾": ")",
-    "ⁿ": "n",
+    "\u2070": "0",
+    "\u00b9": "1",
+    "\u00b2": "2",
+    "\u00b3": "3",
+    "\u2074": "4",
+    "\u2075": "5",
+    "\u2076": "6",
+    "\u2077": "7",
+    "\u2078": "8",
+    "\u2079": "9",
+    "\u207a": "+",
+    "\u207b": "-",
+    "\u207d": "(",
+    "\u207e": ")",
+    "\u207f": "n",
 }
 
 UNICODE_FRACTIONS = {
-    "½": "(1/2)",
-    "⅓": "(1/3)",
-    "⅔": "(2/3)",
-    "¼": "(1/4)",
-    "¾": "(3/4)",
+    "\u00bd": "(1/2)",
+    "\u2153": "(1/3)",
+    "\u2154": "(2/3)",
+    "\u00bc": "(1/4)",
+    "\u00be": "(3/4)",
 }
 
 TRANSFORMATIONS = standard_transformations + (
@@ -132,9 +133,16 @@ def replace_unicode_superscripts(text: str) -> str:
 
 
 def normalize_expression(raw_text: str) -> str:
-    expression = replace_unicode_superscripts(raw_text.strip())
+    expression = replace_unicode_superscripts(raw_text.strip().lower())
     for old, new in UNICODE_FRACTIONS.items():
         expression = expression.replace(old, new)
+
+    expression = expression.replace(",", ".")
+    expression = expression.replace("\u221a", "sqrt")
+
+    expression = re.sub(r"raiz quadrada de\s*\(?([^\n]+?)\)?$", r"sqrt(\1)", expression)
+    expression = re.sub(r"raiz\(([^)]+)\)", r"sqrt(\1)", expression)
+    expression = re.sub(r"sqrt\s*\(?([a-z0-9x+\-*/^. ]+)\)?", r"sqrt(\1)", expression)
 
     replacements = {
         "^": "**",
@@ -144,14 +152,13 @@ def normalize_expression(raw_text: str) -> str:
         "cosseno(": "cos(",
         "tg(": "tan(",
         "tangente(": "tan(",
-        "raiz(": "sqrt(",
-        "√(": "sqrt(",
-        "raiz quadrada de ": "sqrt(",
         "ln(": "log(",
+        "log10(": "log(",
     }
     for old, new in replacements.items():
         expression = expression.replace(old, new)
-    return expression
+
+    return " ".join(expression.split())
 
 
 def parse_math_expression(expression: str):
@@ -193,9 +200,23 @@ def extract_expression(question: str) -> str | None:
         if match:
             return normalize_expression(match.group(1))
 
-    if any(token in normalized_question for token in ["=", "x", "+", "-", "*", "/", "**", "sin(", "cos(", "tan(", "sqrt("]):
+    if any(token in normalized_question for token in ["=", "x", "+", "-", "*", "/", "**", "sin(", "cos(", "tan(", "sqrt(", "log("]):
         return normalized_question
     return None
+
+
+def describe_math_features(expression: str) -> list[str]:
+    features = []
+    lowered = expression.lower()
+    if "/" in lowered:
+        features.append("Reconheci fracoes e mantive a estrutura racional da conta.")
+    if "sqrt(" in lowered:
+        features.append("Interpretei a raiz como uma potencia fracionaria equivalente quando necessario.")
+    if "log(" in lowered:
+        features.append("Mantive o logaritmo na forma simbolica para simplificar com seguranca.")
+    if any(func in lowered for func in ["sin(", "cos(", "tan("]):
+        features.append("Detectei funcao trigonometrica e preservei a forma simbolica para evitar aproximacoes ruins.")
+    return features
 
 
 def build_graph_data(expression: str) -> dict | None:
@@ -335,7 +356,7 @@ def solve_math(question: str) -> dict:
             "title": "Nao consegui identificar a expressao",
             "steps": [
                 "Verifique se a questao contem uma expressao matematica clara.",
-                "Exemplos validos: 2*x + 3 = 7, f(x)=x^2-4x+3, x² + 4x + 4, derivada de x^3, sqrt(16), log(100).",
+                "Exemplos validos: 2*x + 3 = 7, f(x)=x^2-4x+3, x² + 4x + 4, derivada de x^3, sqrt(16), log(100), sin(x).",
             ],
             "answer": "Tente reescrever a questao com a conta ou a funcao explicitamente.",
             "graph": None,
@@ -347,15 +368,19 @@ def solve_math(question: str) -> dict:
     try:
         if "=" in normalized:
             left, right = normalized.split("=", 1)
-            equation = Eq(parse_math_expression(left.strip()), parse_math_expression(right.strip()))
+            left_expr = parse_math_expression(left.strip())
+            right_expr = parse_math_expression(right.strip())
+            equation = Eq(left_expr, right_expr)
+            reduced = simplify(left_expr - right_expr)
             solution = solve(equation, x)
             answer = ", ".join(str(item) for item in solution) if solution else "Sem solucao real simples"
             steps = [
-                f"Identifiquei a equacao: {left.strip()} = {right.strip()}",
-                "Converti a expressao para algebra simbolica.",
-                "Isolei a variavel principal x.",
-                f"Encontrei a solucao: x = {answer}",
+                f"Identifiquei a equacao original: {left.strip()} = {right.strip()}",
+                f"Levei tudo para um lado e obtive: {reduced} = 0",
+                "Resolvi a equacao simbolicamente em relacao a x.",
+                f"Cheguei ao conjunto de solucoes: x = {answer}",
             ]
+            steps.extend(describe_math_features(normalized))
             ai_explanation = request_huggingface_explanation(question, "matematica", answer, steps)
             if ai_explanation:
                 steps.append(ai_explanation)
@@ -375,9 +400,10 @@ def solve_math(question: str) -> dict:
             result = diff(expr, x)
             steps = [
                 f"Considerei a funcao {normalized}.",
-                "Apliquei derivacao em relacao a x.",
-                f"Resultado final: {result}",
+                "Identifiquei que o pedido era de derivada em relacao a x.",
+                f"Derivei termo a termo e obtive: {result}",
             ]
+            steps.extend(describe_math_features(normalized))
             return {
                 "title": "Derivada calculada",
                 "steps": steps,
@@ -391,9 +417,10 @@ def solve_math(question: str) -> dict:
             result = integrate(expr, x)
             steps = [
                 f"Considerei a expressao {normalized}.",
-                "Apliquei integracao simbolica em relacao a x.",
-                f"Resultado: {result} + C",
+                "Identifiquei que o pedido era de integral indefinida.",
+                f"Integrei simbolicamente em relacao a x: {result} + C",
             ]
+            steps.extend(describe_math_features(normalized))
             return {
                 "title": "Integral calculada",
                 "steps": steps,
@@ -404,12 +431,24 @@ def solve_math(question: str) -> dict:
             }
 
         simplified = simplify(expr)
+        rational = together(expr)
+        factored = factor(expr)
         graph = build_graph_data(normalized)
+
         steps = [
             f"Interpretei a expressao como: {normalized}",
-            "Converti a expressao usando multiplicacao implicita e funcoes matematicas quando necessario.",
-            f"Resultado simplificado: {simplified}",
+            "Converti a conta para uma forma simbolica compativel com operacoes algébricas.",
         ]
+        steps.extend(describe_math_features(normalized))
+
+        if str(rational) != str(expr):
+            steps.append(f"Reescrevi a expressao com denominador comum quando fez sentido: {rational}")
+        if str(simplified) != str(expr):
+            steps.append(f"Simplifiquei a expressao para a forma mais enxuta: {simplified}")
+        else:
+            steps.append("A expressao ja estava em uma forma simplificada adequada.")
+        if str(factored) not in {str(expr), str(simplified)}:
+            steps.append(f"Tambem observei a forma fatorada equivalente: {factored}")
         if graph:
             steps.append("Como a expressao depende de x, gerei um grafico para ajudar na visualizacao.")
 
@@ -426,7 +465,7 @@ def solve_math(question: str) -> dict:
             "title": "Falha ao resolver",
             "steps": [
                 "A expressao foi detectada, mas nao consegui processa-la automaticamente.",
-                "Tente escrever com mais clareza, por exemplo: 1/2 + 3/4, sqrt(16), sin(x), log(100).",
+                "Tente escrever com mais clareza, por exemplo: 1/2 + 3/4, sqrt(16), sin(x), cos(x), tan(x), log(100).",
                 f"Detalhe tecnico: {exc}",
             ],
             "answer": "Tente enviar apenas a parte matematica principal.",

@@ -12,6 +12,8 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    reset_token_hash = db.Column(db.String(255), nullable=True)
+    reset_token_expires_at = db.Column(db.DateTime(timezone=True), nullable=True)
     histories = db.relationship("AIHistory", backref="user", lazy=True, cascade="all, delete-orphan")
 
 

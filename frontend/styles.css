@@ -93,7 +93,7 @@ label {
 
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 18px;
 }
@@ -403,10 +403,22 @@ button:hover {
   justify-content: space-between;
 }
 
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .history-date {
   color: var(--muted);
   font-size: 0.8rem;
   font-family: "IBM Plex Mono", monospace;
+}
+
+.history-delete {
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
 }
 
 .history-pagination {
@@ -517,13 +529,18 @@ select:focus {
 
   .history-toolbar,
   .history-pagination,
-  .result-header {
+  .result-header,
+  .history-top {
     flex-direction: column;
     align-items: stretch;
   }
 
   .history-toolbar select {
     max-width: none;
+  }
+
+  .history-actions {
+    justify-content: space-between;
   }
 }
 

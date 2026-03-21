@@ -4,6 +4,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
+from sqlalchemy import inspect, text
 
 from extensions import bcrypt, db, jwt
 from routes import api
@@ -20,12 +21,35 @@ def build_cors_origins():
     return origins or "*"
 
 
-def create_app():
+def ensure_runtime_schema(app: Flask):
+    inspector = inspect(db.engine)
+    if "users" not in inspector.get_table_names():
+        return
+
+    user_columns = {column["name"] for column in inspector.get_columns("users")}
+    statements = []
+    if "reset_token_hash" not in user_columns:
+        statements.append(text("ALTER TABLE users ADD COLUMN reset_token_hash VARCHAR(255)"))
+    if "reset_token_expires_at" not in user_columns:
+        statements.append(text("ALTER TABLE users ADD COLUMN reset_token_expires_at TIMESTAMP"))
+
+    if not statements:
+        return
+
+    with db.engine.begin() as connection:
+        for statement in statements:
+            connection.execute(statement)
+    app.logger.warning("Schema atualizado em runtime para suportar reset de senha.")
+
+
+def create_app(config_overrides=None):
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///local.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "troque-esta-chave-em-producao")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
+    if config_overrides:
+        app.config.update(config_overrides)
 
     CORS(
         app,
@@ -45,6 +69,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        ensure_runtime_schema(app)
 
     return app
 
