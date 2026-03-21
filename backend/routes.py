@@ -11,7 +11,6 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from extensions import bcrypt, db
 from models import AIHistory, User
 from services.ai_service import solve_general, solve_math, solve_physics
-from services.email_service import email_delivery_enabled, send_reset_code_email
 from services.rate_limit import rate_limiter
 
 
@@ -90,18 +89,9 @@ def forgot_password():
     db.session.commit()
 
     current_app.logger.warning("Reset password token gerado para %s", user.email)
-    email_sent = send_reset_code_email(user.email, reset_token, expires_in_minutes=30)
-    response["email_sent"] = email_sent
-    if email_sent:
-        response["message"] = "Se o email existir, enviamos um codigo de recuperacao."
-    elif os.getenv("EXPOSE_RESET_TOKEN", "1") == "1":
-        response["reset_token"] = reset_token
-        response["expires_in_minutes"] = 30
-        response["message"] = "Email nao configurado no servidor. Codigo de teste retornado na resposta."
-    else:
-        response["message"] = "Se o email existir, um codigo de recuperacao foi processado."
-
-    response["email_configured"] = email_delivery_enabled()
+    response["reset_token"] = reset_token
+    response["expires_in_minutes"] = 30
+    response["message"] = "Codigo de recuperacao gerado com sucesso."
 
     return jsonify(response)
 
