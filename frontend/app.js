@@ -10,16 +10,31 @@ const userEmail = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
 const questionInput = document.getElementById("questionInput");
 const solveBtn = document.getElementById("solveBtn");
+const newQuestionBtn = document.getElementById("newQuestionBtn");
+const copyAnswerBtn = document.getElementById("copyAnswerBtn");
+const solveLoading = document.getElementById("solveLoading");
+const generalNotice = document.getElementById("generalNotice");
 const modeChips = document.querySelectorAll(".mode-chip");
 const subjectBadge = document.getElementById("subjectBadge");
 const resultTitle = document.getElementById("resultTitle");
 const resultAnswer = document.getElementById("resultAnswer");
 const stepsList = document.getElementById("stepsList");
 const historyList = document.getElementById("historyList");
+const historySearch = document.getElementById("historySearch");
+const historyFilter = document.getElementById("historyFilter");
+const historyPrevBtn = document.getElementById("historyPrevBtn");
+const historyNextBtn = document.getElementById("historyNextBtn");
+const historyPageInfo = document.getElementById("historyPageInfo");
+const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 const chartTitle = document.getElementById("chartTitle");
 const chartCanvas = document.getElementById("chartCanvas");
 const ctx = chartCanvas.getContext("2d");
+
 let selectedMode = "math";
+let currentResult = null;
+let historyQuery = { page: 1, pageSize: 8, subject: "", q: "" };
+let historyPagination = { page: 1, total_pages: 1 };
+let graphState = { zoom: 1 };
 
 function getToken() {
   return localStorage.getItem(storageKey);
@@ -74,7 +89,6 @@ function subjectLabel(subject) {
     matematica: "Matematica",
     fisica: "Fisica",
     geral: "Geral",
-    texto: "Texto",
   };
   return labels[subject] || "Aguardando";
 }
@@ -86,6 +100,13 @@ function apiPathForMode(mode) {
     general: "/api/solve/general",
   };
   return paths[mode] || "/api/solve/math";
+}
+
+function setLoading(isLoading) {
+  solveLoading.classList.toggle("hidden", !isLoading);
+  solveBtn.disabled = isLoading;
+  newQuestionBtn.disabled = isLoading;
+  solveBtn.textContent = isLoading ? "Resolvendo..." : "Resolver com IA";
 }
 
 function drawEmptyChart(message) {
@@ -107,26 +128,44 @@ function drawGraph(graph) {
 
   const width = chartCanvas.width;
   const height = chartCanvas.height;
-  const padding = 50;
+  const padding = 52;
   const xs = graph.points.map((point) => point.x);
   const ys = graph.points.map((point) => point.y);
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
-  const xRange = maxX - minX || 1;
-  const yRange = maxY - minY || 1;
+  const xMid = (minX + maxX) / 2;
+  const yMid = (minY + maxY) / 2;
+  const xRange = ((maxX - minX) || 1) / graphState.zoom;
+  const yRange = ((maxY - minY) || 1) / graphState.zoom;
+  const visibleMinX = xMid - xRange / 2;
+  const visibleMaxX = xMid + xRange / 2;
+  const visibleMinY = yMid - yRange / 2;
+  const visibleMaxY = yMid + yRange / 2;
 
-  const projectX = (value) => padding + ((value - minX) / xRange) * (width - padding * 2);
-  const projectY = (value) => height - padding - ((value - minY) / yRange) * (height - padding * 2);
+  const projectX = (value) => padding + ((value - visibleMinX) / (visibleMaxX - visibleMinX || 1)) * (width - padding * 2);
+  const projectY = (value) => height - padding - ((value - visibleMinY) / (visibleMaxY - visibleMinY || 1)) * (height - padding * 2);
 
-  ctx.strokeStyle = "rgba(24, 32, 28, 0.18)";
+  ctx.strokeStyle = "rgba(24, 32, 28, 0.1)";
   ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i += 1) {
+    const xPos = padding + ((width - padding * 2) / 4) * i;
+    const yPos = padding + ((height - padding * 2) / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(xPos, padding);
+    ctx.lineTo(xPos, height - padding);
+    ctx.moveTo(padding, yPos);
+    ctx.lineTo(width - padding, yPos);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = "rgba(24, 32, 28, 0.22)";
   ctx.beginPath();
-  ctx.moveTo(padding, height / 2);
-  ctx.lineTo(width - padding, height / 2);
-  ctx.moveTo(width / 2, padding);
-  ctx.lineTo(width / 2, height - padding);
+  ctx.moveTo(projectX(0), padding);
+  ctx.lineTo(projectX(0), height - padding);
+  ctx.moveTo(padding, projectY(0));
+  ctx.lineTo(width - padding, projectY(0));
   ctx.stroke();
 
   ctx.strokeStyle = "#d75f39";
@@ -163,17 +202,45 @@ function renderSteps(steps) {
 }
 
 function renderResult(data) {
+  currentResult = data;
   subjectBadge.textContent = subjectLabel(data.subject);
-  resultTitle.textContent = data.title;
-  resultAnswer.textContent = `Resposta final: ${data.answer}`;
-  renderSteps(data.steps);
-  drawGraph(data.graph);
+  resultTitle.textContent = data.title || `Resposta ${subjectLabel(data.subject).toLowerCase()}`;
+  resultAnswer.textContent = `Resposta final: ${data.answer || "Sem resposta disponivel."}`;
+  generalNotice.classList.toggle("hidden", data.subject !== "geral");
+  copyAnswerBtn.classList.remove("hidden");
+  renderSteps(data.steps || []);
+  graphState.zoom = 1;
+  drawGraph(data.graph || null);
+}
+
+function buildHistoryParams() {
+  const params = new URLSearchParams({
+    page: String(historyQuery.page),
+    page_size: String(historyQuery.pageSize),
+  });
+  if (historyQuery.subject) {
+    params.set("subject", historyQuery.subject);
+  }
+  if (historyQuery.q) {
+    params.set("q", historyQuery.q);
+  }
+  return params.toString();
+}
+
+async function loadHistory() {
+  const data = await apiFetch(`/api/history?${buildHistoryParams()}`, { method: "GET" });
+  historyPagination = data.pagination;
+  renderHistory(data.items);
+  historyPageInfo.textContent = `Pagina ${historyPagination.page} de ${historyPagination.total_pages}`;
+  historyPrevBtn.disabled = historyPagination.page <= 1;
+  historyNextBtn.disabled = historyPagination.page >= historyPagination.total_pages;
+  return data;
 }
 
 function renderHistory(items) {
   historyList.innerHTML = "";
   if (!items.length) {
-    historyList.innerHTML = '<p class="empty-state">Seu historico salvo vai aparecer aqui.</p>';
+    historyList.innerHTML = '<p class="empty-state">Nenhum item encontrado para esse filtro.</p>';
     return;
   }
 
@@ -181,7 +248,10 @@ function renderHistory(items) {
     const article = document.createElement("article");
     article.className = "history-item";
     article.innerHTML = `
-      <h3>${item.subject.toUpperCase()}</h3>
+      <div class="history-top">
+        <h3>${subjectLabel(item.subject)}</h3>
+        <span class="history-date">${new Date(item.created_at).toLocaleString("pt-BR")}</span>
+      </div>
       <p><strong>Pergunta:</strong> ${item.question}</p>
       <p><strong>Resposta:</strong> ${item.answer}</p>
     `;
@@ -205,7 +275,23 @@ function setLoggedOutState() {
   resultAnswer.textContent = "Entre com sua conta para comecar.";
   stepsList.innerHTML = "";
   historyList.innerHTML = '<p class="empty-state">Seu historico salvo vai aparecer aqui.</p>';
+  historyPageInfo.textContent = "Pagina 1 de 1";
+  copyAnswerBtn.classList.add("hidden");
+  generalNotice.classList.add("hidden");
+  currentResult = null;
   drawEmptyChart("Faca login para usar o grafico.");
+}
+
+function resetWorkspaceAfterClear() {
+  subjectBadge.textContent = "Aguardando";
+  resultTitle.textContent = "Historico limpo";
+  resultAnswer.textContent = "Seu historico foi apagado. Faca uma nova pergunta para gerar uma resposta.";
+  stepsList.innerHTML = "";
+  copyAnswerBtn.classList.add("hidden");
+  generalNotice.classList.add("hidden");
+  currentResult = null;
+  graphState.zoom = 1;
+  drawEmptyChart("Nenhum grafico salvo no historico.");
 }
 
 async function bootstrapAuth() {
@@ -218,10 +304,9 @@ async function bootstrapAuth() {
   try {
     const user = await apiFetch("/api/auth/me", { method: "GET" });
     setLoggedInState(user);
-    const history = await apiFetch("/api/history", { method: "GET" });
-    renderHistory(history);
-    if (history.length) {
-      renderResult(history[0]);
+    const historyData = await loadHistory();
+    if (historyData.items.length) {
+      renderResult(historyData.items[0]);
     } else {
       drawEmptyChart("Resolva uma funcao para ver o grafico.");
     }
@@ -229,6 +314,14 @@ async function bootstrapAuth() {
     clearToken();
     setLoggedOutState();
   }
+}
+
+function debounce(fn, delay = 350) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
 }
 
 tabs.forEach((tab) => {
@@ -255,8 +348,10 @@ loginForm.addEventListener("submit", async (event) => {
     setToken(data.token);
     setLoggedInState(data.user);
     setMessage("Login realizado com sucesso.", false);
-    const history = await apiFetch("/api/history", { method: "GET" });
-    renderHistory(history);
+    const historyData = await loadHistory();
+    if (historyData.items.length) {
+      renderResult(historyData.items[0]);
+    }
   } catch (error) {
     setMessage(error.message, true);
   }
@@ -275,7 +370,8 @@ registerForm.addEventListener("submit", async (event) => {
     setToken(data.token);
     setLoggedInState(data.user);
     setMessage("Conta criada com sucesso.", false);
-    renderHistory([]);
+    historyQuery.page = 1;
+    await loadHistory();
     drawEmptyChart("Resolva uma funcao para ver o grafico.");
   } catch (error) {
     setMessage(error.message, true);
@@ -305,26 +401,100 @@ solveBtn.addEventListener("click", async () => {
     return;
   }
 
-  solveBtn.disabled = true;
-  solveBtn.textContent = "Resolvendo...";
-
+  setLoading(true);
   try {
     const data = await apiFetch(apiPathForMode(selectedMode), {
       method: "POST",
       body: JSON.stringify({ question }),
     });
     renderResult(data);
-    const history = await apiFetch("/api/history", { method: "GET" });
-    renderHistory(history);
+    historyQuery.page = 1;
+    await loadHistory();
   } catch (error) {
     resultTitle.textContent = "Erro";
     resultAnswer.textContent = error.message;
     renderSteps([]);
     drawEmptyChart("Nao foi possivel montar o grafico.");
   } finally {
-    solveBtn.disabled = false;
-    solveBtn.textContent = "Resolver com IA";
+    setLoading(false);
   }
+});
+
+newQuestionBtn.addEventListener("click", () => {
+  questionInput.value = "";
+  questionInput.focus();
+});
+
+copyAnswerBtn.addEventListener("click", async () => {
+  if (!currentResult) {
+    return;
+  }
+
+  const text = `${currentResult.title}\n\n${currentResult.answer}\n\n${(currentResult.steps || []).join("\n")}`;
+  await navigator.clipboard.writeText(text);
+  copyAnswerBtn.textContent = "Copiado";
+  setTimeout(() => {
+    copyAnswerBtn.textContent = "Copiar resposta";
+  }, 1400);
+});
+
+historyFilter.addEventListener("change", async () => {
+  historyQuery.subject = historyFilter.value;
+  historyQuery.page = 1;
+  await loadHistory();
+});
+
+historySearch.addEventListener(
+  "input",
+  debounce(async () => {
+    historyQuery.q = historySearch.value.trim();
+    historyQuery.page = 1;
+    await loadHistory();
+  }),
+);
+
+historyPrevBtn.addEventListener("click", async () => {
+  if (historyQuery.page <= 1) {
+    return;
+  }
+  historyQuery.page -= 1;
+  await loadHistory();
+});
+
+historyNextBtn.addEventListener("click", async () => {
+  if (historyQuery.page >= historyPagination.total_pages) {
+    return;
+  }
+  historyQuery.page += 1;
+  await loadHistory();
+});
+
+clearHistoryBtn.addEventListener("click", async () => {
+  if (!confirm("Deseja apagar todo o historico salvo?")) {
+    return;
+  }
+  clearHistoryBtn.disabled = true;
+  try {
+    await apiFetch("/api/history", { method: "DELETE" });
+    historyQuery.page = 1;
+    await loadHistory();
+    resetWorkspaceAfterClear();
+  } catch (error) {
+    resultTitle.textContent = "Nao foi possivel apagar";
+    resultAnswer.textContent = error.message;
+    renderSteps([]);
+  } finally {
+    clearHistoryBtn.disabled = false;
+  }
+});
+
+chartCanvas.addEventListener("wheel", (event) => {
+  if (!currentResult?.graph) {
+    return;
+  }
+  event.preventDefault();
+  graphState.zoom = Math.min(4, Math.max(1, graphState.zoom + (event.deltaY < 0 ? 0.2 : -0.2)));
+  drawGraph(currentResult.graph);
 });
 
 drawEmptyChart("Faca login para usar o grafico.");

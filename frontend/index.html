@@ -79,10 +79,23 @@
           <button type="button" class="mode-chip" data-mode="general">Geral</button>
         </div>
         <textarea id="questionInput" placeholder="Exemplo: 2*x + 3 = 11"></textarea>
-        <button id="solveBtn">Resolver com IA</button>
+        <div class="action-row">
+          <button id="solveBtn">Resolver com IA</button>
+          <button id="newQuestionBtn" class="secondary" type="button">Nova pergunta</button>
+        </div>
+        <div id="solveLoading" class="loading-box hidden">
+          <span class="loading-dot"></span>
+          <span>Analisando sua pergunta e montando a resposta...</span>
+        </div>
 
         <div class="result-box">
-          <h3 id="resultTitle">A resposta aparece aqui</h3>
+          <div class="result-header">
+            <h3 id="resultTitle">A resposta aparece aqui</h3>
+            <button id="copyAnswerBtn" class="secondary hidden" type="button">Copiar resposta</button>
+          </div>
+          <p id="generalNotice" class="notice hidden">
+            Respostas gerais podem conter imprecisoes factuais. Vale conferir datas, nomes e eventos importantes.
+          </p>
           <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
           <ol id="stepsList" class="steps"></ol>
         </div>
@@ -107,9 +120,24 @@
             <p class="section-tag">Historico</p>
             <h2>Ultimas consultas</h2>
           </div>
+          <button id="clearHistoryBtn" class="secondary" type="button">Apagar historico</button>
+        </div>
+        <div class="history-toolbar">
+          <input id="historySearch" type="search" placeholder="Buscar no historico">
+          <select id="historyFilter">
+            <option value="">Todos</option>
+            <option value="matematica">Matematica</option>
+            <option value="fisica">Fisica</option>
+            <option value="geral">Geral</option>
+          </select>
         </div>
         <div id="historyList" class="history-list">
           <p class="empty-state">Seu historico salvo vai aparecer aqui.</p>
+        </div>
+        <div class="history-pagination">
+          <button id="historyPrevBtn" class="secondary" type="button">Anterior</button>
+          <p id="historyPageInfo" class="tiny">Pagina 1 de 1</p>
+          <button id="historyNextBtn" class="secondary" type="button">Proxima</button>
         </div>
       </section>
     </section>
