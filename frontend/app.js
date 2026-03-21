@@ -12,6 +12,9 @@ const tabs = document.querySelectorAll(".tab");
 const userBox = document.getElementById("userBox");
 const userEmail = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
+const logoutModal = document.getElementById("logoutModal");
+const logoutCancelBtn = document.getElementById("logoutCancelBtn");
+const logoutConfirmBtn = document.getElementById("logoutConfirmBtn");
 const questionInput = document.getElementById("questionInput");
 const solveBtn = document.getElementById("solveBtn");
 const newQuestionBtn = document.getElementById("newQuestionBtn");
@@ -73,6 +76,16 @@ function setToken(token) {
 
 function clearToken() {
   localStorage.removeItem(storageKey);
+}
+
+function openLogoutModal() {
+  logoutModal.classList.remove("hidden");
+  logoutModal.setAttribute("aria-hidden", "false");
+}
+
+function closeLogoutModal() {
+  logoutModal.classList.add("hidden");
+  logoutModal.setAttribute("aria-hidden", "true");
 }
 
 function setAuthMode(mode) {
@@ -479,8 +492,23 @@ resetPasswordBtn.addEventListener("click", async () => {
 });
 
 logoutBtn.addEventListener("click", () => {
+  openLogoutModal();
+});
+
+logoutCancelBtn.addEventListener("click", () => {
+  closeLogoutModal();
+});
+
+logoutConfirmBtn.addEventListener("click", () => {
+  closeLogoutModal();
   clearToken();
   setLoggedOutState();
+});
+
+logoutModal.addEventListener("click", (event) => {
+  if (event.target === logoutModal) {
+    closeLogoutModal();
+  }
 });
 
 solveBtn.addEventListener("click", async () => {
