@@ -501,11 +501,7 @@ def solve_general(question: str) -> dict:
     if local_answer:
         return {
             "title": "Resposta geral",
-            "steps": [
-                "Detectei que sua pergunta pode ser respondida localmente com mais confiabilidade.",
-                "Usei uma resposta direta para evitar erro de contexto temporal ou interpretacao.",
-                "Se quiser, voce pode pedir mais detalhes ou exemplos na proxima pergunta.",
-            ],
+            "steps": [],
             "answer": local_answer,
             "graph": None,
             "subject": "geral",
@@ -516,11 +512,7 @@ def solve_general(question: str) -> dict:
     if ai_answer:
         return {
             "title": "Resposta geral",
-            "steps": [
-                "Analisei sua pergunta como um tema geral e montei uma resposta mais direta.",
-                "Busquei deixar a explicacao clara, curta e facil de aproveitar no estudo.",
-                "Se a resposta envolver fatos, datas ou nomes importantes, vale conferir antes de usar como referencia final.",
-            ],
+            "steps": [],
             "answer": ai_answer,
             "graph": None,
             "subject": "geral",
@@ -529,11 +521,7 @@ def solve_general(question: str) -> dict:
 
     return {
         "title": "Resposta geral",
-        "steps": [
-            "Sua pergunta foi enviada para o modo geral.",
-            "Neste caso, a melhor resposta depende da Hugging Face estar ativa no backend.",
-            "Sem a API externa, ainda deixei uma orientacao base para nao retornar vazio.",
-        ],
+        "steps": [],
         "answer": (
             "Posso responder perguntas gerais tambem, mas para respostas completas ative a chave "
             "da Hugging Face no backend. Sem isso, eu consigo apenas montar uma orientacao base."
