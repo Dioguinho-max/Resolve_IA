@@ -12,9 +12,12 @@ const tabs = document.querySelectorAll(".tab");
 const userBox = document.getElementById("userBox");
 const userEmail = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
-const logoutModal = document.getElementById("logoutModal");
-const logoutCancelBtn = document.getElementById("logoutCancelBtn");
-const logoutConfirmBtn = document.getElementById("logoutConfirmBtn");
+const confirmModal = document.getElementById("confirmModal");
+const confirmModalTag = document.getElementById("confirmModalTag");
+const confirmModalTitle = document.getElementById("confirmModalTitle");
+const confirmModalCopy = document.getElementById("confirmModalCopy");
+const confirmModalCancelBtn = document.getElementById("confirmModalCancelBtn");
+const confirmModalActionBtn = document.getElementById("confirmModalActionBtn");
 const questionInput = document.getElementById("questionInput");
 const solveBtn = document.getElementById("solveBtn");
 const newQuestionBtn = document.getElementById("newQuestionBtn");
@@ -47,6 +50,7 @@ let currentResult = null;
 let historyQuery = { page: 1, pageSize: 8, subject: "", q: "" };
 let historyPagination = { page: 1, total_pages: 1 };
 let graphState = { zoom: 1 };
+let confirmModalAction = null;
 
 const authModeContent = {
   login: {
@@ -78,18 +82,24 @@ function clearToken() {
   localStorage.removeItem(storageKey);
 }
 
-function openLogoutModal() {
-  logoutModal.classList.remove("hidden");
-  logoutModal.setAttribute("aria-hidden", "false");
-  logoutCancelBtn.focus();
+function openConfirmModal({ tag = "Confirmacao", title, copy, actionLabel = "Confirmar", onConfirm }) {
+  confirmModalTag.textContent = tag;
+  confirmModalTitle.textContent = title;
+  confirmModalCopy.textContent = copy;
+  confirmModalActionBtn.textContent = actionLabel;
+  confirmModalAction = onConfirm;
+  confirmModal.classList.remove("hidden");
+  confirmModal.setAttribute("aria-hidden", "false");
+  confirmModalCancelBtn.focus();
 }
 
-function closeLogoutModal() {
-  if (document.activeElement === logoutConfirmBtn || document.activeElement === logoutCancelBtn) {
-    logoutBtn.focus();
+function closeConfirmModal(returnFocusElement = null) {
+  if (document.activeElement === confirmModalActionBtn || document.activeElement === confirmModalCancelBtn) {
+    (returnFocusElement || logoutBtn).focus();
   }
-  logoutModal.classList.add("hidden");
-  logoutModal.setAttribute("aria-hidden", "true");
+  confirmModal.classList.add("hidden");
+  confirmModal.setAttribute("aria-hidden", "true");
+  confirmModalAction = null;
 }
 
 function setAuthMode(mode) {
@@ -325,10 +335,15 @@ function renderHistory(items) {
     article.addEventListener("click", () => renderResult(item));
     article.querySelector(".history-delete").addEventListener("click", async (event) => {
       event.stopPropagation();
-      if (!confirm("Deseja apagar este item do historico?")) {
-        return;
-      }
-      await deleteHistoryItem(item.id);
+      openConfirmModal({
+        tag: "Historico",
+        title: "Excluir este item?",
+        copy: "Essa resposta sera removida do seu historico e nao podera ser recuperada depois.",
+        actionLabel: "Excluir item",
+        onConfirm: async () => {
+          await deleteHistoryItem(item.id);
+        },
+      });
     });
     historyList.appendChild(article);
   });
@@ -496,22 +511,33 @@ resetPasswordBtn.addEventListener("click", async () => {
 });
 
 logoutBtn.addEventListener("click", () => {
-  openLogoutModal();
+  openConfirmModal({
+    tag: "Confirmacao",
+    title: "Deseja sair da sua conta?",
+    copy: "Voce pode entrar novamente a qualquer momento com seu email e senha.",
+    actionLabel: "Sair agora",
+    onConfirm: () => {
+      clearToken();
+      setLoggedOutState();
+    },
+  });
 });
 
-logoutCancelBtn.addEventListener("click", () => {
-  closeLogoutModal();
+confirmModalCancelBtn.addEventListener("click", () => {
+  closeConfirmModal();
 });
 
-logoutConfirmBtn.addEventListener("click", () => {
-  closeLogoutModal();
-  clearToken();
-  setLoggedOutState();
+confirmModalActionBtn.addEventListener("click", async () => {
+  const action = confirmModalAction;
+  closeConfirmModal();
+  if (action) {
+    await action();
+  }
 });
 
-logoutModal.addEventListener("click", (event) => {
-  if (event.target === logoutModal) {
-    closeLogoutModal();
+confirmModal.addEventListener("click", (event) => {
+  if (event.target === confirmModal) {
+    closeConfirmModal();
   }
 });
 
@@ -602,22 +628,27 @@ historyNextBtn.addEventListener("click", async () => {
 });
 
 clearHistoryBtn.addEventListener("click", async () => {
-  if (!confirm("Deseja apagar todo o historico salvo?")) {
-    return;
-  }
-  clearHistoryBtn.disabled = true;
-  try {
-    await apiFetch("/api/history", { method: "DELETE" });
-    historyQuery.page = 1;
-    await loadHistory();
-    resetWorkspaceAfterClear();
-  } catch (error) {
-    resultTitle.textContent = "Nao foi possivel apagar";
-    resultAnswer.textContent = error.message;
-    renderSteps([]);
-  } finally {
-    clearHistoryBtn.disabled = false;
-  }
+  openConfirmModal({
+    tag: "Historico",
+    title: "Apagar todo o historico?",
+    copy: "Todas as consultas salvas serao removidas da sua conta. Essa acao nao pode ser desfeita.",
+    actionLabel: "Apagar tudo",
+    onConfirm: async () => {
+      clearHistoryBtn.disabled = true;
+      try {
+        await apiFetch("/api/history", { method: "DELETE" });
+        historyQuery.page = 1;
+        await loadHistory();
+        resetWorkspaceAfterClear();
+      } catch (error) {
+        resultTitle.textContent = "Nao foi possivel apagar";
+        resultAnswer.textContent = error.message;
+        renderSteps([]);
+      } finally {
+        clearHistoryBtn.disabled = false;
+      }
+    },
+  });
 });
 
 chartCanvas.addEventListener("wheel", (event) => {

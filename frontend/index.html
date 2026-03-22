@@ -171,14 +171,14 @@
     </footer>
   </main>
 
-  <div id="logoutModal" class="modal-backdrop hidden" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle">
-      <p class="section-tag">Confirmacao</p>
-      <h3 id="logoutModalTitle">Deseja sair da sua conta?</h3>
-      <p class="modal-copy">Voce pode entrar novamente a qualquer momento com seu email e senha.</p>
+  <div id="confirmModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+      <p id="confirmModalTag" class="section-tag">Confirmacao</p>
+      <h3 id="confirmModalTitle">Deseja sair da sua conta?</h3>
+      <p id="confirmModalCopy" class="modal-copy">Voce pode entrar novamente a qualquer momento com seu email e senha.</p>
       <div class="modal-actions">
-        <button id="logoutCancelBtn" class="secondary" type="button">Cancelar</button>
-        <button id="logoutConfirmBtn" type="button">Sair agora</button>
+        <button id="confirmModalCancelBtn" class="secondary" type="button">Cancelar</button>
+        <button id="confirmModalActionBtn" type="button">Confirmar</button>
       </div>
     </div>
   </div>
