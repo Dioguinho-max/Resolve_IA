@@ -91,6 +91,17 @@ def create_app(config_overrides=None):
     jwt.init_app(app)
     app.register_blueprint(api)
 
+    def build_request_context():
+        return {
+            "path": request.path,
+            "method": request.method,
+            "remote_addr": request.headers.get("CF-Connecting-IP") or request.remote_addr,
+            "origin": request.headers.get("Origin"),
+            "referer": request.headers.get("Referer"),
+            "sec_fetch_site": request.headers.get("Sec-Fetch-Site"),
+            "user_agent": request.headers.get("User-Agent"),
+        }
+
     @app.before_request
     def enforce_allowed_origin_for_state_changes():
         if current_app.config.get("TESTING"):
@@ -122,14 +133,17 @@ def create_app(config_overrides=None):
 
     @jwt.revoked_token_loader
     def revoked_token_callback(_jwt_header, _jwt_payload):
+        current_app.logger.warning("JWT revogado usado: %s", build_request_context())
         return jsonify({"error": "Sua sessao expirou ou foi revogada. Faca login novamente."}), 401
 
     @jwt.invalid_token_loader
-    def invalid_token_callback(_error):
+    def invalid_token_callback(error):
+        current_app.logger.warning("JWT invalido: erro=%s contexto=%s", error, build_request_context())
         return jsonify({"error": "Token de acesso invalido."}), 401
 
     @jwt.unauthorized_loader
-    def missing_token_callback(_error):
+    def missing_token_callback(error):
+        current_app.logger.warning("JWT ausente: erro=%s contexto=%s", error, build_request_context())
         return jsonify({"error": "Autenticacao obrigatoria."}), 401
 
     @app.after_request
@@ -158,7 +172,8 @@ def create_app(config_overrides=None):
         return jsonify({"error": "Requisicao muito grande."}), 413
 
     @app.errorhandler(500)
-    def internal_error(_error):
+    def internal_error(error):
+        current_app.logger.exception("Erro interno 500: contexto=%s", build_request_context(), exc_info=error)
         return jsonify({"error": "Erro interno do servidor."}), 500
 
     with app.app_context():
