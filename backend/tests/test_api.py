@@ -1,9 +1,12 @@
 def test_register_login_and_me_flow(client):
     register_response = client.post("/api/auth/register", json={"email": "user@test.com", "password": "Senha123"})
     assert register_response.status_code == 201
-    token = register_response.get_json()["token"]
 
-    me_response = client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
+    payload = register_response.get_json()
+    assert payload["user"]["email"] == "user@test.com"
+    assert "token" in payload
+
+    me_response = client.get("/api/auth/me")
     assert me_response.status_code == 200
     assert me_response.get_json()["email"] == "user@test.com"
 
@@ -64,55 +67,6 @@ def test_reset_password_flow(client):
 
     login_response = client.post("/api/auth/login", json={"email": "reset@test.com", "password": "NovaSenha123"})
     assert login_response.status_code == 200
-
-
-def test_forgot_password_uses_same_message_for_existing_and_missing_accounts(client):
-    client.post("/api/auth/register", json={"email": "existing@test.com", "password": "Senha123"})
-
-    existing_response = client.post("/api/auth/forgot-password", json={"email": "existing@test.com"})
-    missing_response = client.post("/api/auth/forgot-password", json={"email": "missing@test.com"})
-
-    assert existing_response.status_code == 200
-    assert missing_response.status_code == 200
-    assert existing_response.get_json()["message"] == missing_response.get_json()["message"]
-
-
-def test_cookie_auth_and_csrf_flow(client):
-    register_response = client.post("/api/auth/register", json={"email": "cookie@test.com", "password": "Senha123"})
-    assert register_response.status_code == 201
-
-    me_response = client.get("/api/auth/me")
-    assert me_response.status_code == 200
-
-    blocked_response = client.post("/api/solve/general", json={"question": "o que e ia"})
-    assert blocked_response.status_code in {401, 422}
-
-    csrf_cookie = client.get_cookie("csrf_access_token")
-    assert csrf_cookie is not None
-
-    allowed_response = client.post(
-        "/api/solve/general",
-        json={"question": "o que e ia"},
-        headers={"X-CSRF-TOKEN": csrf_cookie.value},
-    )
-    assert allowed_response.status_code == 200
-
-
-def test_sensitive_general_question_is_not_sent_to_external_ai(client):
-    register_response = client.post("/api/auth/register", json={"email": "privacy@test.com", "password": "Senha123"})
-    assert register_response.status_code == 201
-    csrf_cookie = client.get_cookie("csrf_access_token")
-
-    response = client.post(
-        "/api/solve/general",
-        json={"question": "Meu email e aluno@test.com e meu CPF e 123.456.789-00"},
-        headers={"X-CSRF-TOKEN": csrf_cookie.value},
-    )
-
-    assert response.status_code == 200
-    payload = response.get_json()
-    assert payload["title"] == "Privacidade protegida"
-    assert "privacidade" in payload["answer"].lower()
 
 
 def test_forgot_password_uses_same_message_for_existing_and_missing_accounts(client):
