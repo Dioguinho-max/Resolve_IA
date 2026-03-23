@@ -363,9 +363,9 @@ function renderHistory(items) {
   });
 }
 
-function setLoggedInState(user) {
+function setLoggedInState(user, nextCsrfToken = "") {
   isAuthenticated = true;
-  csrfToken = user.csrf_token || csrfToken;
+  csrfToken = nextCsrfToken || user.csrf_token || csrfToken;
   userBox.classList.remove("hidden");
   userEmail.textContent = user.email;
   loginForm.classList.add("hidden");
@@ -405,7 +405,7 @@ function resetWorkspaceAfterClear() {
 async function bootstrapAuth() {
   try {
     const user = await apiFetch("/api/auth/me", { method: "GET" });
-    setLoggedInState(user);
+    setLoggedInState(user, user.csrf_token);
     const historyData = await loadHistory();
     if (historyData.items.length) {
       renderResult(historyData.items[0]);
@@ -446,7 +446,7 @@ loginForm.addEventListener("submit", async (event) => {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    setLoggedInState(data.user);
+    setLoggedInState(data.user, data.csrf_token);
     setMessage("Login realizado com sucesso.", false);
     const historyData = await loadHistory();
     if (historyData.items.length) {
@@ -467,7 +467,7 @@ registerForm.addEventListener("submit", async (event) => {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    setLoggedInState(data.user);
+    setLoggedInState(data.user, data.csrf_token);
     setMessage("Conta criada com sucesso.", false);
     historyQuery.page = 1;
     await loadHistory();
