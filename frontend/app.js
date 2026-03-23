@@ -110,11 +110,22 @@ function setMessage(message, isError = true) {
   authMessage.style.color = isError ? "#b33e2d" : "#2f6c54";
 }
 
+function getCookieValue(name) {
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
 async function apiFetch(path, options = {}) {
   const headers = {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
+  const csrfToken = getCookieValue("csrf_access_token");
+  const method = (options.method || "GET").toUpperCase();
+  if (csrfToken && !["GET", "HEAD", "OPTIONS"].includes(method)) {
+    headers["X-CSRF-TOKEN"] = csrfToken;
+  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,

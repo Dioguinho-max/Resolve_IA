@@ -64,7 +64,7 @@ def create_app(config_overrides=None):
     app.config["JWT_COOKIE_SAMESITE"] = os.getenv(
         "JWT_COOKIE_SAMESITE", "Lax" if os.getenv("FLASK_DEBUG", "0") == "1" else "None"
     )
-    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = True
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_pre_ping": True,
     }
@@ -80,7 +80,7 @@ def create_app(config_overrides=None):
             r"/api/*": {
                 "origins": allowed_origins,
                 "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-                "allow_headers": ["Content-Type", "Authorization"],
+                "allow_headers": ["Content-Type", "Authorization", "X-CSRF-TOKEN"],
                 "supports_credentials": True,
             }
         },

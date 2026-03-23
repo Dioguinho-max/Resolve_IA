@@ -122,7 +122,6 @@ def forgot_password():
     db.session.commit()
 
     current_app.logger.warning("Reset password token gerado para %s", user.email)
-    response["message"] = "Codigo de recuperacao gerado com sucesso."
     if os.getenv("EXPOSE_RESET_TOKEN", "0") == "1" or current_app.config.get("TESTING"):
         response["reset_token"] = reset_token
         response["expires_in_minutes"] = 30

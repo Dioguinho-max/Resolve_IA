@@ -3,7 +3,3 @@ __pycache__/
 backend/.venv/
 backend/.env
 frontend/.vercel/
-mobile/node_modules/
-mobile/.expo/
-mobile/dist/
-mobile/android/app/debug.keystore
