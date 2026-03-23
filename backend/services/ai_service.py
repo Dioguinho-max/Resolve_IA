@@ -126,6 +126,10 @@ SAFE_PARSE_GLOBALS = {
 ALLOWED_NAME_TOKENS = set(ALLOWED_FUNCTIONS.keys())
 ALLOWED_EXPRESSION_CHARS = re.compile(r"^[a-z0-9+\-*/().,=\s*]+$")
 DISALLOWED_SEQUENCE_PATTERN = re.compile(r"__|[\[\]{}:;\"'`\\]|import|lambda|eval|exec|open|os|sys")
+EMAIL_PATTERN = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
+PHONE_PATTERN = re.compile(r"\b(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?(?:9?\d{4})[-.\s]?\d{4}\b")
+CPF_PATTERN = re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b")
+CREDIT_CARD_PATTERN = re.compile(r"\b(?:\d[ -]*?){13,19}\b")
 
 
 def replace_unicode_superscripts(text: str) -> str:
@@ -354,6 +358,20 @@ def request_huggingface_general_answer(question: str) -> str | None:
     return request_huggingface_response(prompt, max_tokens=160)
 
 
+def contains_sensitive_content(text: str) -> bool:
+    return any(
+        pattern.search(text)
+        for pattern in (EMAIL_PATTERN, PHONE_PATTERN, CPF_PATTERN, CREDIT_CARD_PATTERN)
+    )
+
+
+def build_sensitive_content_warning() -> str:
+    return (
+        "Detectei possiveis dados sensiveis na pergunta. Por privacidade, eu nao envio esse texto para a IA externa. "
+        "Remova emails, telefones, CPF, numeros de cartao ou outros dados pessoais e tente novamente."
+    )
+
+
 def get_local_general_answer(question: str) -> str | None:
     lowered = question.lower().strip()
     now = datetime.now()
@@ -517,6 +535,16 @@ def solve_math(question: str) -> dict:
 
 
 def solve_physics(question: str) -> dict:
+    if contains_sensitive_content(question):
+        return {
+            "title": "Privacidade protegida",
+            "steps": [],
+            "answer": build_sensitive_content_warning(),
+            "graph": None,
+            "subject": "fisica",
+            "mode": "physics",
+        }
+
     base_answer = (
         "Estrutura sugerida: liste os dados conhecidos, escolha a formula principal, "
         "substitua os valores com unidade e finalize interpretando o resultado."
@@ -544,6 +572,16 @@ def solve_general(question: str) -> dict:
             "title": "Resposta geral",
             "steps": [],
             "answer": local_answer,
+            "graph": None,
+            "subject": "geral",
+            "mode": "general",
+        }
+
+    if contains_sensitive_content(question):
+        return {
+            "title": "Privacidade protegida",
+            "steps": [],
+            "answer": build_sensitive_content_warning(),
             "graph": None,
             "subject": "geral",
             "mode": "general",

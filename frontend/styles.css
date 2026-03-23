@@ -405,6 +405,12 @@ button:hover {
   font-size: 0.94rem;
 }
 
+.subtle-notice {
+  background: rgba(24, 32, 28, 0.04);
+  border-color: rgba(24, 32, 28, 0.08);
+  color: var(--muted);
+}
+
 .result-box {
   margin-top: 22px;
   padding-top: 20px;

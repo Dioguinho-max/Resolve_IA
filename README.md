@@ -4,7 +4,6 @@
 ![Frontend](https://img.shields.io/badge/Frontend-Web-green)
 ![Backend](https://img.shields.io/badge/Backend-Flask-orange)
 ![Banco](https://img.shields.io/badge/Banco-PostgreSQL-blueviolet)
-![Mobile](https://img.shields.io/badge/Mobile-React%20Native-lightgrey)
 
 **ResolveAI** é uma plataforma online que ajuda estudantes a **resolver exercícios**, **entender respostas** e **acompanhar seu aprendizado** de forma simples, prática e organizada.
 
@@ -18,7 +17,6 @@
 - 🔹 Visualizar **gráficos em questões matemáticas**  
 - 🔹 Salvar, buscar e organizar seu **histórico de respostas**  
 - 🔹 Redefinir a senha com **código de segurança**  
-- 🔹 Usar no celular via **WebView**  
 
 ---
 
@@ -35,7 +33,6 @@
 - 📝 Envio de novas perguntas e **cópia de respostas**  
 - 📚 Histórico com **busca, filtro, exclusão individual e limpeza total**  
 - 📈 Gráficos matemáticos com **zoom**  
-- 📱 Versão mobile pronta para **abrir o site direto no app**  
 
 ---
 
@@ -55,7 +52,12 @@
 - **Autenticação:** JWT, bcrypt  
 - **IA Matemática:** SymPy  
 - **IA Geral:** Hugging Face  
-- **Mobile:** React Native + Expo  
+
+## Privacidade
+
+- Evite enviar emails, telefones, CPF, numeros de cartao ou outros dados pessoais nas perguntas.
+- Quando a pergunta aparenta conter dados sensiveis, o backend bloqueia o envio para a IA externa.
+- Perguntas gerais e de fisica podem usar a Hugging Face quando a integracao estiver ativa.
 
 ---
 
