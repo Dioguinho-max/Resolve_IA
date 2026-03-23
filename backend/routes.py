@@ -4,9 +4,10 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from math import ceil
+from re import fullmatch
 
 from flask import Blueprint, current_app, jsonify, request
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies
 
 from extensions import bcrypt, db
 from models import AIHistory, User
@@ -15,6 +16,26 @@ from services.rate_limit import rate_limiter
 
 
 api = Blueprint("api", __name__)
+
+EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+MAX_EMAIL_LENGTH = 255
+MAX_PASSWORD_LENGTH = 128
+MAX_QUESTION_LENGTH = 4000
+MAX_RESET_TOKEN_LENGTH = 255
+
+
+def create_user_token(user: User) -> str:
+    return create_access_token(identity=str(user.id), additional_claims={"token_version": user.token_version})
+
+
+def build_auth_response(user: User, status_code: int = 200):
+    token = create_user_token(user)
+    payload = {"user": {"id": user.id, "email": user.email}}
+    if current_app.config.get("TESTING"):
+        payload["token"] = token
+    response = jsonify(payload)
+    set_access_cookies(response, token)
+    return response, status_code
 
 
 @api.get("/")
@@ -35,10 +56,12 @@ def register():
     email = (payload.get("email") or "").strip().lower()
     password = payload.get("password") or ""
 
-    if not email or not password:
-        return jsonify({"error": "Email e senha sao obrigatorios."}), 400
-    if len(password) < 6:
-        return jsonify({"error": "A senha precisa ter pelo menos 6 caracteres."}), 400
+    valid, error_response = validate_auth_payload(email, password)
+    if not valid:
+        return error_response
+    limited = enforce_rate_limit(f"auth:register:{request.remote_addr}", 8, 300)
+    if limited:
+        return limited
 
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
@@ -49,8 +72,7 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    token = create_access_token(identity=str(user.id))
-    return jsonify({"token": token, "user": {"id": user.id, "email": user.email}}), 201
+    return build_auth_response(user, 201)
 
 
 @api.post("/api/auth/login")
@@ -59,12 +81,20 @@ def login():
     email = (payload.get("email") or "").strip().lower()
     password = payload.get("password") or ""
 
+    valid, error_response = validate_auth_payload(email, password, validate_strength=False)
+    if not valid:
+        return error_response
+    limited = enforce_rate_limit(f"auth:login:{request.remote_addr}:{email}", 10, 300)
+    if limited:
+        return limited
+
     user = User.query.filter_by(email=email).first()
     if not user or not bcrypt.check_password_hash(user.password_hash, password):
+        current_app.logger.warning("Falha de login para %s", email)
         return jsonify({"error": "Email ou senha invalidos."}), 401
 
-    token = create_access_token(identity=str(user.id))
-    return jsonify({"token": token, "user": {"id": user.id, "email": user.email}})
+    current_app.logger.warning("Login realizado com sucesso para %s", email)
+    return build_auth_response(user)
 
 
 @api.post("/api/auth/forgot-password")
@@ -72,8 +102,11 @@ def forgot_password():
     payload = request.get_json(silent=True) or {}
     email = (payload.get("email") or "").strip().lower()
 
-    if not email:
-        return jsonify({"error": "Informe o email da conta."}), 400
+    if not email or len(email) > MAX_EMAIL_LENGTH or not fullmatch(EMAIL_PATTERN, email):
+        return jsonify({"error": "Informe um email valido."}), 400
+    limited = enforce_rate_limit(f"auth:forgot:{request.remote_addr}:{email}", 5, 600)
+    if limited:
+        return limited
 
     user = User.query.filter_by(email=email).first()
     response = {
@@ -89,9 +122,10 @@ def forgot_password():
     db.session.commit()
 
     current_app.logger.warning("Reset password token gerado para %s", user.email)
-    response["reset_token"] = reset_token
-    response["expires_in_minutes"] = 30
     response["message"] = "Codigo de recuperacao gerado com sucesso."
+    if os.getenv("EXPOSE_RESET_TOKEN", "0") == "1" or current_app.config.get("TESTING"):
+        response["reset_token"] = reset_token
+        response["expires_in_minutes"] = 30
 
     return jsonify(response)
 
@@ -102,10 +136,14 @@ def reset_password():
     token = (payload.get("token") or "").strip()
     password = payload.get("password") or ""
 
-    if not token or not password:
-        return jsonify({"error": "Codigo e nova senha sao obrigatorios."}), 400
-    if len(password) < 6:
-        return jsonify({"error": "A senha precisa ter pelo menos 6 caracteres."}), 400
+    if not token or len(token) > MAX_RESET_TOKEN_LENGTH:
+        return jsonify({"error": "Codigo de recuperacao invalido."}), 400
+    valid_password, password_error = validate_password_strength(password)
+    if not valid_password:
+        return jsonify({"error": password_error}), 400
+    limited = enforce_rate_limit(f"auth:reset:{request.remote_addr}", 8, 600)
+    if limited:
+        return limited
 
     token_hash = sha256(token.encode("utf-8")).hexdigest()
     user = User.query.filter_by(reset_token_hash=token_hash).first()
@@ -120,11 +158,19 @@ def reset_password():
         return jsonify({"error": "Codigo de recuperacao expirado."}), 400
 
     user.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+    user.token_version += 1
     user.reset_token_hash = None
     user.reset_token_expires_at = None
     db.session.commit()
 
     return jsonify({"message": "Senha redefinida com sucesso."})
+
+
+@api.post("/api/auth/logout")
+def logout():
+    response = jsonify({"message": "Sessao encerrada com sucesso."})
+    unset_jwt_cookies(response)
+    return response
 
 
 @api.get("/api/auth/me")
@@ -212,8 +258,10 @@ def solve_general_route():
 
 def get_current_user():
     user_id = get_jwt_identity()
+    jwt_payload = get_jwt()
+    token_version = int(jwt_payload.get("token_version", 0))
     user = db.session.get(User, int(user_id))
-    if not user:
+    if not user or user.token_version != token_version:
         return None
     return user
 
@@ -223,6 +271,8 @@ def extract_question():
     question = (payload.get("question") or "").strip()
     if not question:
         return None
+    if len(question) > MAX_QUESTION_LENGTH:
+        return "__too_long__"
     return question
 
 
@@ -230,6 +280,8 @@ def run_solve(mode: str):
     question = extract_question()
     if not question:
         return {"error": "Envie uma questao para resolver."}, 400
+    if question == "__too_long__":
+        return {"error": "Questao muito grande. Reduza o texto e tente novamente."}, 400
 
     user = get_current_user()
     limit = int(os.getenv("SOLVE_RATE_LIMIT_COUNT", "12"))
@@ -267,3 +319,36 @@ def save_history(result_with_status):
     db.session.commit()
     result["history_id"] = history_item.id
     return jsonify(result)
+
+
+def validate_auth_payload(email: str, password: str, validate_strength: bool = True):
+    if not email or not password:
+        return False, (jsonify({"error": "Email e senha sao obrigatorios."}), 400)
+    if len(email) > MAX_EMAIL_LENGTH or not fullmatch(EMAIL_PATTERN, email):
+        return False, (jsonify({"error": "Informe um email valido."}), 400)
+    if len(password) > MAX_PASSWORD_LENGTH:
+        return False, (jsonify({"error": "A senha e muito longa."}), 400)
+    if validate_strength:
+        valid_password, password_error = validate_password_strength(password)
+        if not valid_password:
+            return False, (jsonify({"error": password_error}), 400)
+    return True, None
+
+
+def validate_password_strength(password: str):
+    if len(password) < 8:
+        return False, "A senha precisa ter pelo menos 8 caracteres."
+    if not any(char.islower() for char in password):
+        return False, "A senha precisa ter pelo menos uma letra minuscula."
+    if not any(char.isupper() for char in password):
+        return False, "A senha precisa ter pelo menos uma letra maiuscula."
+    if not any(char.isdigit() for char in password):
+        return False, "A senha precisa ter pelo menos um numero."
+    return True, None
+
+
+def enforce_rate_limit(key: str, limit: int, window_seconds: int):
+    allowed, retry_after = rate_limiter.allow(key, limit, window_seconds)
+    if allowed:
+        return None
+    return jsonify({"error": f"Muitas tentativas. Tente novamente em {retry_after}s."}), 429

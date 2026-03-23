@@ -1,8 +1,5 @@
-from services.rate_limit import rate_limiter
-
-
 def test_register_login_and_me_flow(client):
-    register_response = client.post("/api/auth/register", json={"email": "user@test.com", "password": "123456"})
+    register_response = client.post("/api/auth/register", json={"email": "user@test.com", "password": "Senha123"})
     assert register_response.status_code == 201
     token = register_response.get_json()["token"]
 
@@ -48,7 +45,8 @@ def test_math_response_contains_detailed_steps(client, auth_headers):
 
 
 def test_reset_password_flow(client):
-    client.post("/api/auth/register", json={"email": "reset@test.com", "password": "123456"})
+    register_response = client.post("/api/auth/register", json={"email": "reset@test.com", "password": "Senha123"})
+    old_token = register_response.get_json()["token"]
     forgot_response = client.post("/api/auth/forgot-password", json={"email": "reset@test.com"})
 
     assert forgot_response.status_code == 200
@@ -57,18 +55,18 @@ def test_reset_password_flow(client):
 
     reset_response = client.post(
         "/api/auth/reset-password",
-        json={"token": forgot_payload["reset_token"], "password": "654321"},
+        json={"token": forgot_payload["reset_token"], "password": "NovaSenha123"},
     )
     assert reset_response.status_code == 200
 
-    login_response = client.post("/api/auth/login", json={"email": "reset@test.com", "password": "654321"})
+    old_me_response = client.get("/api/auth/me", headers={"Authorization": f"Bearer {old_token}"})
+    assert old_me_response.status_code == 401
+
+    login_response = client.post("/api/auth/login", json={"email": "reset@test.com", "password": "NovaSenha123"})
     assert login_response.status_code == 200
 
 
-def test_rate_limit_blocks_excess_requests(client, auth_headers, app):
-    app.config["TESTING"] = True
-    rate_limiter._events.clear()
-
+def test_rate_limit_blocks_excess_requests(client, auth_headers, clear_rate_limits):
     for _ in range(12):
         response = client.post("/api/solve/general", json={"question": "o que e ia"}, headers=auth_headers)
         assert response.status_code == 200

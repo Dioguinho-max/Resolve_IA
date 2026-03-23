@@ -8,12 +8,11 @@ import pytest
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
+os.environ["FLASK_SKIP_APP_BOOTSTRAP"] = "1"
 
 from app import create_app  # noqa: E402
 from extensions import db  # noqa: E402
-from models import User  # noqa: E402
-from services.rate_limit import rate_limiter  # noqa: E402
-
+from models import RateLimitBucket, User  # noqa: E402
 
 @pytest.fixture()
 def app():
@@ -36,8 +35,6 @@ def app():
         yield test_app
         db.session.remove()
         db.drop_all()
-
-    rate_limiter._events.clear()
     if database_path.exists():
         database_path.unlink()
 
@@ -49,8 +46,8 @@ def client(app):
 
 @pytest.fixture()
 def auth_headers(client):
-    client.post("/api/auth/register", json={"email": "aluno@test.com", "password": "123456"})
-    login_response = client.post("/api/auth/login", json={"email": "aluno@test.com", "password": "123456"})
+    client.post("/api/auth/register", json={"email": "aluno@test.com", "password": "Senha123"})
+    login_response = client.post("/api/auth/login", json={"email": "aluno@test.com", "password": "Senha123"})
     token = login_response.get_json()["token"]
     return {"Authorization": f"Bearer {token}"}
 
@@ -59,3 +56,11 @@ def auth_headers(client):
 def registered_user(app):
     with app.app_context():
         return User.query.filter_by(email="aluno@test.com").first()
+
+
+@pytest.fixture()
+def clear_rate_limits(app):
+    with app.app_context():
+        RateLimitBucket.query.delete()
+        db.session.commit()
+    yield

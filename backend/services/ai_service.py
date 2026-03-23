@@ -5,7 +5,7 @@ from datetime import datetime
 
 import requests
 from flask import current_app
-from sympy import Eq, diff, factor, integrate, simplify, solve, sqrt, together
+from sympy import Eq, Float, Integer, Rational, Symbol, cos, diff, factor, integrate, log, simplify, sin, solve, sqrt, tan, together
 from sympy.abc import x
 from sympy.parsing.sympy_parser import (
     convert_xor,
@@ -108,6 +108,25 @@ TRANSFORMATIONS = standard_transformations + (
     function_exponentiation,
 )
 
+ALLOWED_FUNCTIONS = {
+    "x": x,
+    "sin": sin,
+    "cos": cos,
+    "tan": tan,
+    "sqrt": sqrt,
+    "log": log,
+}
+SAFE_PARSE_GLOBALS = {
+    "__builtins__": {},
+    "Integer": Integer,
+    "Float": Float,
+    "Rational": Rational,
+    "Symbol": Symbol,
+}
+ALLOWED_NAME_TOKENS = set(ALLOWED_FUNCTIONS.keys())
+ALLOWED_EXPRESSION_CHARS = re.compile(r"^[a-z0-9+\-*/().,=\s*]+$")
+DISALLOWED_SEQUENCE_PATTERN = re.compile(r"__|[\[\]{}:;\"'`\\]|import|lambda|eval|exec|open|os|sys")
+
 
 def replace_unicode_superscripts(text: str) -> str:
     result = []
@@ -162,7 +181,29 @@ def normalize_expression(raw_text: str) -> str:
 
 
 def parse_math_expression(expression: str):
-    return parse_expr(normalize_expression(expression), transformations=TRANSFORMATIONS, evaluate=True)
+    normalized = normalize_expression(expression)
+    validate_math_expression(normalized)
+    return parse_expr(
+        normalized,
+        transformations=TRANSFORMATIONS,
+        local_dict=ALLOWED_FUNCTIONS,
+        global_dict=SAFE_PARSE_GLOBALS,
+        evaluate=True,
+    )
+
+
+def validate_math_expression(expression: str) -> None:
+    if not expression or len(expression) > 300:
+        raise ValueError("Expressao matematica invalida ou muito longa.")
+    if not ALLOWED_EXPRESSION_CHARS.fullmatch(expression):
+        raise ValueError("A expressao contem caracteres nao permitidos.")
+    if DISALLOWED_SEQUENCE_PATTERN.search(expression):
+        raise ValueError("A expressao contem termos nao permitidos.")
+
+    alpha_tokens = re.findall(r"[a-z_]+", expression)
+    unknown_tokens = [token for token in alpha_tokens if token not in ALLOWED_NAME_TOKENS]
+    if unknown_tokens:
+        raise ValueError("A expressao contem funcoes ou nomes nao suportados.")
 
 
 def detect_subject(question: str) -> str:

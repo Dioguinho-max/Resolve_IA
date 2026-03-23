@@ -6,3 +6,4 @@ frontend/.vercel/
 mobile/node_modules/
 mobile/.expo/
 mobile/dist/
+mobile/android/app/debug.keystore

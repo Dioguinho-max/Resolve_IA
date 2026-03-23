@@ -1,9 +1,10 @@
 import React, { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { WebView } from "react-native-webview";
 
 const APP_URL = "https://resolve-ia.vercel.app";
+const ALLOWED_ORIGIN = "https://resolve-ia.vercel.app";
 
 export default function App() {
   const webViewRef = useRef(null);
@@ -20,6 +21,23 @@ export default function App() {
     webViewRef.current?.reload();
   }
 
+  function shouldAllowNavigation(request) {
+    const url = request?.url || "";
+    if (!url) {
+      return false;
+    }
+
+    if (url === "about:blank" || url === ALLOWED_ORIGIN || url.startsWith(`${ALLOWED_ORIGIN}/`)) {
+      return true;
+    }
+
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      Linking.openURL(url).catch(() => {});
+    }
+
+    return false;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
@@ -30,8 +48,9 @@ export default function App() {
           style={styles.webview}
           javaScriptEnabled
           domStorageEnabled
-          originWhitelist={["*"]}
+          originWhitelist={[ALLOWED_ORIGIN]}
           setSupportMultipleWindows={false}
+          onShouldStartLoadWithRequest={shouldAllowNavigation}
           onLoadStart={() => {
             setIsLoading(true);
             setHasError(false);

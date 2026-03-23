@@ -1,5 +1,4 @@
 const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || "http://127.0.0.1:5000";
-const storageKey = "resolveai_token";
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
@@ -51,6 +50,7 @@ let historyQuery = { page: 1, pageSize: 8, subject: "", q: "" };
 let historyPagination = { page: 1, total_pages: 1 };
 let graphState = { zoom: 1 };
 let confirmModalAction = null;
+let isAuthenticated = false;
 
 const authModeContent = {
   login: {
@@ -69,18 +69,6 @@ const authModeContent = {
     subtitle: "Gere um codigo, confirme sua identidade e escolha uma nova senha sem sair do app.",
   },
 };
-
-function getToken() {
-  return localStorage.getItem(storageKey);
-}
-
-function setToken(token) {
-  localStorage.setItem(storageKey, token);
-}
-
-function clearToken() {
-  localStorage.removeItem(storageKey);
-}
 
 function openConfirmModal({ tag = "Confirmacao", title, copy, actionLabel = "Confirmar", onConfirm }) {
   confirmModalTag.textContent = tag;
@@ -123,19 +111,15 @@ function setMessage(message, isError = true) {
 }
 
 async function apiFetch(path, options = {}) {
-  const token = getToken();
   const headers = {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
+    credentials: "include",
   });
 
   const data = await response.json().catch(() => ({}));
@@ -314,26 +298,51 @@ async function deleteHistoryItem(historyId) {
 function renderHistory(items) {
   historyList.innerHTML = "";
   if (!items.length) {
-    historyList.innerHTML = '<p class="empty-state">Nenhum item encontrado para esse filtro.</p>';
+    const emptyState = document.createElement("p");
+    emptyState.className = "empty-state";
+    emptyState.textContent = "Nenhum item encontrado para esse filtro.";
+    historyList.appendChild(emptyState);
     return;
   }
 
   items.forEach((item) => {
     const article = document.createElement("article");
     article.className = "history-item";
-    article.innerHTML = `
-      <div class="history-top">
-        <h3>${subjectLabel(item.subject)}</h3>
-        <div class="history-actions">
-          <span class="history-date">${new Date(item.created_at).toLocaleString("pt-BR")}</span>
-          <button class="history-delete secondary" type="button" data-id="${item.id}">Excluir</button>
-        </div>
-      </div>
-      <p><strong>Pergunta:</strong> ${item.question}</p>
-      <p><strong>Resposta:</strong> ${item.answer}</p>
-    `;
+
+    const top = document.createElement("div");
+    top.className = "history-top";
+
+    const title = document.createElement("h3");
+    title.textContent = subjectLabel(item.subject);
+
+    const actions = document.createElement("div");
+    actions.className = "history-actions";
+
+    const date = document.createElement("span");
+    date.className = "history-date";
+    date.textContent = new Date(item.created_at).toLocaleString("pt-BR");
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "history-delete secondary";
+    deleteButton.type = "button";
+    deleteButton.textContent = "Excluir";
+
+    const question = document.createElement("p");
+    const questionStrong = document.createElement("strong");
+    questionStrong.textContent = "Pergunta:";
+    question.append(questionStrong, ` ${item.question}`);
+
+    const answer = document.createElement("p");
+    const answerStrong = document.createElement("strong");
+    answerStrong.textContent = "Resposta:";
+    answer.append(answerStrong, ` ${item.answer}`);
+
+    actions.append(date, deleteButton);
+    top.append(title, actions);
+    article.append(top, question, answer);
+
     article.addEventListener("click", () => renderResult(item));
-    article.querySelector(".history-delete").addEventListener("click", async (event) => {
+    deleteButton.addEventListener("click", async (event) => {
       event.stopPropagation();
       openConfirmModal({
         tag: "Historico",
@@ -350,13 +359,16 @@ function renderHistory(items) {
 }
 
 function setLoggedInState(user) {
+  isAuthenticated = true;
   userBox.classList.remove("hidden");
   userEmail.textContent = user.email;
   loginForm.classList.add("hidden");
   registerForm.classList.add("hidden");
+  recoverForm.classList.add("hidden");
 }
 
 function setLoggedOutState() {
+  isAuthenticated = false;
   userBox.classList.add("hidden");
   setAuthMode("login");
   subjectBadge.textContent = "Aguardando";
@@ -384,12 +396,6 @@ function resetWorkspaceAfterClear() {
 }
 
 async function bootstrapAuth() {
-  const token = getToken();
-  if (!token) {
-    setLoggedOutState();
-    return;
-  }
-
   try {
     const user = await apiFetch("/api/auth/me", { method: "GET" });
     setLoggedInState(user);
@@ -400,7 +406,6 @@ async function bootstrapAuth() {
       drawEmptyChart("Resolva uma funcao para ver o grafico.");
     }
   } catch (error) {
-    clearToken();
     setLoggedOutState();
   }
 }
@@ -434,7 +439,6 @@ loginForm.addEventListener("submit", async (event) => {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    setToken(data.token);
     setLoggedInState(data.user);
     setMessage("Login realizado com sucesso.", false);
     const historyData = await loadHistory();
@@ -456,7 +460,6 @@ registerForm.addEventListener("submit", async (event) => {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    setToken(data.token);
     setLoggedInState(data.user);
     setMessage("Conta criada com sucesso.", false);
     historyQuery.page = 1;
@@ -517,8 +520,11 @@ logoutBtn.addEventListener("click", () => {
     copy: "Voce pode entrar novamente a qualquer momento com seu email e senha.",
     actionLabel: "Sair agora",
     onConfirm: () => {
-      clearToken();
-      setLoggedOutState();
+      apiFetch("/api/auth/logout", { method: "POST" })
+        .catch(() => null)
+        .finally(() => {
+          setLoggedOutState();
+        });
     },
   });
 });
@@ -551,7 +557,7 @@ solveBtn.addEventListener("click", async () => {
     return;
   }
 
-  if (!getToken()) {
+  if (!isAuthenticated) {
     resultTitle.textContent = "Login necessario";
     resultAnswer.textContent = "Entre na sua conta para usar a IA e salvar o historico.";
     renderSteps([]);
