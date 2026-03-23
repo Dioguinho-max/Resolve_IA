@@ -16,6 +16,7 @@ from flask_jwt_extended import (
     set_access_cookies,
     unset_jwt_cookies,
 )
+from sqlalchemy import text
 
 from extensions import bcrypt, db
 from models import AIHistory, User
@@ -202,6 +203,9 @@ def me():
 @jwt_required()
 def history():
     user = get_current_user()
+    rls_error = activate_history_rls(user)
+    if rls_error:
+        return rls_error
     page = max(int(request.args.get("page", 1)), 1)
     page_size = min(max(int(request.args.get("page_size", 10)), 1), 50)
     subject = (request.args.get("subject") or "").strip().lower()
@@ -238,6 +242,9 @@ def history():
 @jwt_required()
 def clear_history():
     user = get_current_user()
+    rls_error = activate_history_rls(user)
+    if rls_error:
+        return rls_error
     deleted = AIHistory.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return jsonify({"deleted": deleted})
@@ -247,6 +254,9 @@ def clear_history():
 @jwt_required()
 def delete_history_item(history_id: int):
     user = get_current_user()
+    rls_error = activate_history_rls(user)
+    if rls_error:
+        return rls_error
     item = AIHistory.query.filter_by(id=history_id, user_id=user.id).first()
     if not item:
         return jsonify({"error": "Item do historico nao encontrado."}), 404
@@ -282,6 +292,19 @@ def get_current_user():
     if not user or user.token_version != token_version:
         return None
     return user
+
+
+def activate_history_rls(user):
+    if not user:
+        return jsonify({"error": "Autenticacao obrigatoria."}), 401
+
+    # Keep the authenticated user id bound to the current SQL transaction so
+    # Postgres RLS can validate reads and writes on ai_history.
+    db.session.execute(
+        text("select set_config('app.current_user_id', :user_id, true)"),
+        {"user_id": str(user.id)},
+    )
+    return None
 
 
 def extract_question():
@@ -325,6 +348,9 @@ def save_history(result_with_status):
         return jsonify(result), status
 
     user = get_current_user()
+    rls_error = activate_history_rls(user)
+    if rls_error:
+        return rls_error
     history_item = AIHistory(
         user_id=user.id,
         question=result["question"],
