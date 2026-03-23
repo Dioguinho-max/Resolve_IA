@@ -7,7 +7,15 @@ from math import ceil
 from re import fullmatch
 
 from flask import Blueprint, current_app, jsonify, request
-from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required, set_access_cookies, unset_jwt_cookies
+from flask_jwt_extended import (
+    create_access_token,
+    get_csrf_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+    set_access_cookies,
+    unset_jwt_cookies,
+)
 
 from extensions import bcrypt, db
 from models import AIHistory, User
@@ -30,7 +38,10 @@ def create_user_token(user: User) -> str:
 
 def build_auth_response(user: User, status_code: int = 200):
     token = create_user_token(user)
-    payload = {"user": {"id": user.id, "email": user.email}}
+    payload = {
+        "user": {"id": user.id, "email": user.email},
+        "csrf_token": get_csrf_token(token),
+    }
     if current_app.config.get("TESTING"):
         payload["token"] = token
     response = jsonify(payload)
@@ -176,7 +187,15 @@ def logout():
 @jwt_required()
 def me():
     user = get_current_user()
-    return jsonify({"id": user.id, "email": user.email, "created_at": user.created_at.isoformat()})
+    jwt_payload = get_jwt()
+    return jsonify(
+        {
+            "id": user.id,
+            "email": user.email,
+            "created_at": user.created_at.isoformat(),
+            "csrf_token": jwt_payload.get("csrf"),
+        }
+    )
 
 
 @api.get("/api/history")

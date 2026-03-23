@@ -51,6 +51,7 @@ let historyPagination = { page: 1, total_pages: 1 };
 let graphState = { zoom: 1 };
 let confirmModalAction = null;
 let isAuthenticated = false;
+let csrfToken = "";
 
 const authModeContent = {
   login: {
@@ -110,18 +111,11 @@ function setMessage(message, isError = true) {
   authMessage.style.color = isError ? "#b33e2d" : "#2f6c54";
 }
 
-function getCookieValue(name) {
-  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : "";
-}
-
 async function apiFetch(path, options = {}) {
   const headers = {
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
-  const csrfToken = getCookieValue("csrf_access_token");
   const method = (options.method || "GET").toUpperCase();
   if (csrfToken && !["GET", "HEAD", "OPTIONS"].includes(method)) {
     headers["X-CSRF-TOKEN"] = csrfToken;
@@ -371,6 +365,7 @@ function renderHistory(items) {
 
 function setLoggedInState(user) {
   isAuthenticated = true;
+  csrfToken = user.csrf_token || csrfToken;
   userBox.classList.remove("hidden");
   userEmail.textContent = user.email;
   loginForm.classList.add("hidden");
@@ -380,6 +375,7 @@ function setLoggedInState(user) {
 
 function setLoggedOutState() {
   isAuthenticated = false;
+  csrfToken = "";
   userBox.classList.add("hidden");
   setAuthMode("login");
   subjectBadge.textContent = "Aguardando";
