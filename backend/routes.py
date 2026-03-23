@@ -360,8 +360,10 @@ def save_history(result_with_status):
         graph_json=json.dumps(result["graph"], ensure_ascii=True) if result["graph"] else None,
     )
     db.session.add(history_item)
+    db.session.flush()
+    history_id = history_item.id
     db.session.commit()
-    result["history_id"] = history_item.id
+    result["history_id"] = history_id
     return jsonify(result)
 
 
