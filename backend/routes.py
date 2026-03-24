@@ -15,6 +15,7 @@ from flask_jwt_extended import (
     jwt_required,
     set_access_cookies,
     unset_jwt_cookies,
+    verify_jwt_in_request,
 )
 from sqlalchemy import text
 
@@ -185,12 +186,20 @@ def logout():
 
 
 @api.get("/api/auth/me")
-@jwt_required()
 def me():
+    verify_jwt_in_request(optional=True)
+    user_id = get_jwt_identity()
+    if not user_id:
+        return jsonify({"authenticated": False})
+
     user = get_current_user()
+    if not user:
+        return jsonify({"authenticated": False})
+
     jwt_payload = get_jwt()
     return jsonify(
         {
+            "authenticated": True,
             "id": user.id,
             "email": user.email,
             "created_at": user.created_at.isoformat(),

@@ -405,6 +405,10 @@ function resetWorkspaceAfterClear() {
 async function bootstrapAuth() {
   try {
     const user = await apiFetch("/api/auth/me", { method: "GET" });
+    if (!user.authenticated) {
+      setLoggedOutState();
+      return;
+    }
     setLoggedInState(user, user.csrf_token);
     const historyData = await loadHistory();
     if (historyData.items.length) {
