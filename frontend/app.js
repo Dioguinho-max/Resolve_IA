@@ -98,6 +98,15 @@ function closeConfirmModal(returnFocusElement = null) {
 }
 
 function setAuthMode(mode) {
+  if (isAuthenticated) {
+    authEyebrow.textContent = loggedInAuthContent.eyebrow;
+    authTitle.textContent = loggedInAuthContent.title;
+    authSubtitle.textContent = loggedInAuthContent.subtitle;
+    tabs.forEach((tab) => tab.classList.remove("active"));
+    authMessage.textContent = "";
+    return;
+  }
+
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === mode));
   loginForm.classList.toggle("hidden", mode !== "login");
   registerForm.classList.toggle("hidden", mode !== "register");
