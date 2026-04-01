@@ -641,6 +641,26 @@ function resetWorkspaceAfterClear() {
   drawEmptyChart("Nenhum grafico salvo no historico.");
 }
 
+function showIdleWorkspace(message = "Escolha uma consulta no historico ou faca uma nova pergunta para gerar uma resposta.") {
+  answerAnimationToken += 1;
+  currentResult = null;
+  subjectBadge.textContent = "Aguardando";
+  resultTitle.textContent = "A resposta aparece aqui";
+  resultAnswer.textContent = message;
+  stepsList.innerHTML = "";
+  generalNotice.classList.add("hidden");
+  copyAnswerBtn.disabled = true;
+  exportImageBtn.disabled = true;
+  exportPdfBtn.disabled = true;
+  favoriteResultBtn.disabled = true;
+  favoriteResultBtn.textContent = "Favoritar";
+  saveCategoryBtn.disabled = true;
+  resultCategoryInput.disabled = true;
+  resultCategoryInput.value = "";
+  graphState.zoom = 1;
+  drawEmptyChart("Selecione um item do historico ou faca uma nova pergunta.");
+}
+
 function buildExportTitle() {
   const subject = currentResult?.subject ? subjectLabel(currentResult.subject) : "Resposta";
   return `${subject} - ResolveAI`;
@@ -795,7 +815,7 @@ async function bootstrapAuth() {
     setLoggedInState(user, user.csrf_token);
     const historyData = await loadHistory();
     if (historyData.items.length) {
-      renderResult(historyData.items[0]);
+      showIdleWorkspace();
     } else {
       drawEmptyChart("Resolva uma funcao para ver o grafico.");
     }
@@ -853,7 +873,9 @@ loginForm.addEventListener("submit", async (event) => {
     setMessage("Login realizado com sucesso.", false);
     const historyData = await loadHistory();
     if (historyData.items.length) {
-      renderResult(historyData.items[0]);
+      showIdleWorkspace();
+    } else {
+      drawEmptyChart("Resolva uma funcao para ver o grafico.");
     }
   } catch (error) {
     setMessage(error.message, true);
@@ -874,7 +896,7 @@ registerForm.addEventListener("submit", async (event) => {
     setMessage("Conta criada com sucesso.", false);
     historyQuery.page = 1;
     await loadHistory();
-    drawEmptyChart("Resolva uma funcao para ver o grafico.");
+    showIdleWorkspace("Conta pronta. Faca sua primeira pergunta para gerar uma resposta.");
   } catch (error) {
     setMessage(error.message, true);
   }
