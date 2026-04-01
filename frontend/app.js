@@ -330,11 +330,12 @@ function renderResult(data) {
   const answerText = `Resposta final: ${data.answer || "Sem resposta disponivel."}`;
   resultAnswer.textContent = "";
   generalNotice.classList.toggle("hidden", data.subject !== "geral");
-  copyAnswerBtn.classList.remove("hidden");
-  exportImageBtn.classList.remove("hidden");
-  exportPdfBtn.classList.remove("hidden");
-  favoriteResultBtn.classList.toggle("hidden", !currentResult.history_id);
-  saveCategoryBtn.classList.toggle("hidden", !currentResult.history_id);
+  copyAnswerBtn.disabled = false;
+  exportImageBtn.disabled = false;
+  exportPdfBtn.disabled = false;
+  favoriteResultBtn.disabled = !currentResult.history_id;
+  saveCategoryBtn.disabled = !currentResult.history_id;
+  resultCategoryInput.disabled = !currentResult.history_id;
   favoriteResultBtn.textContent = currentResult.is_favorite ? "Desfavoritar" : "Favoritar";
   resultCategoryInput.value = currentResult.category;
   stepsList.innerHTML = "";
@@ -505,11 +506,12 @@ function setLoggedOutState() {
   stepsList.innerHTML = "";
   historyList.innerHTML = '<p class="empty-state">Seu historico salvo vai aparecer aqui.</p>';
   historyPageInfo.textContent = "Pagina 1 de 1";
-  copyAnswerBtn.classList.add("hidden");
-  exportImageBtn.classList.add("hidden");
-  exportPdfBtn.classList.add("hidden");
-  favoriteResultBtn.classList.add("hidden");
-  saveCategoryBtn.classList.add("hidden");
+  copyAnswerBtn.disabled = true;
+  exportImageBtn.disabled = true;
+  exportPdfBtn.disabled = true;
+  favoriteResultBtn.disabled = true;
+  saveCategoryBtn.disabled = true;
+  resultCategoryInput.disabled = true;
   generalNotice.classList.add("hidden");
   resultCategoryInput.value = "";
   currentResult = null;
@@ -521,11 +523,12 @@ function resetWorkspaceAfterClear() {
   resultTitle.textContent = "Historico limpo";
   resultAnswer.textContent = "Seu historico foi apagado. Faca uma nova pergunta para gerar uma resposta.";
   stepsList.innerHTML = "";
-  copyAnswerBtn.classList.add("hidden");
-  exportImageBtn.classList.add("hidden");
-  exportPdfBtn.classList.add("hidden");
-  favoriteResultBtn.classList.add("hidden");
-  saveCategoryBtn.classList.add("hidden");
+  copyAnswerBtn.disabled = true;
+  exportImageBtn.disabled = true;
+  exportPdfBtn.disabled = true;
+  favoriteResultBtn.disabled = true;
+  saveCategoryBtn.disabled = true;
+  resultCategoryInput.disabled = true;
   generalNotice.classList.add("hidden");
   resultCategoryInput.value = "";
   currentResult = null;
@@ -562,12 +565,7 @@ function exportCurrentResultAsPdf() {
     return;
   }
 
-  const exportWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
-  if (!exportWindow) {
-    return;
-  }
-
-  exportWindow.document.write(`
+  const printableMarkup = `
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head>
@@ -584,10 +582,32 @@ function exportCurrentResultAsPdf() {
     </head>
     <body>${buildExportMarkup()}</body>
     </html>
-  `);
-  exportWindow.document.close();
-  exportWindow.focus();
-  window.setTimeout(() => exportWindow.print(), 300);
+  `;
+
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  const frameDocument = iframe.contentWindow?.document;
+  if (!frameDocument || !iframe.contentWindow) {
+    iframe.remove();
+    return;
+  }
+
+  frameDocument.open();
+  frameDocument.write(printableMarkup);
+  frameDocument.close();
+
+  window.setTimeout(() => {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    window.setTimeout(() => iframe.remove(), 1200);
+  }, 300);
 }
 
 function exportCurrentResultAsImage() {
@@ -655,7 +675,9 @@ function exportCurrentResultAsImage() {
   const link = document.createElement("a");
   link.href = canvas.toDataURL("image/png");
   link.download = `${buildExportTitle().replace(/\s+/g, "-").toLowerCase()}.png`;
+  document.body.appendChild(link);
   link.click();
+  link.remove();
 }
 
 async function bootstrapAuth() {
