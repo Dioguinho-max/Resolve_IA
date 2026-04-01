@@ -87,6 +87,11 @@ function applyTheme(theme) {
   if (themeToggleBtn) {
     themeToggleBtn.textContent = currentTheme === "dark" ? "Modo claro" : "Modo escuro";
   }
+  if (currentResult?.graph) {
+    drawGraph(currentResult.graph);
+  } else {
+    drawEmptyChart(isAuthenticated ? "Resolva uma funcao para ver o grafico." : "Faca login para usar o grafico.");
+  }
 }
 
 function initializeTheme() {
@@ -200,7 +205,7 @@ function setLoading(isLoading) {
 
 function drawEmptyChart(message) {
   ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-  ctx.fillStyle = "#74695f";
+  ctx.fillStyle = currentTheme === "dark" ? "#c0c8bf" : "#74695f";
   ctx.font = "20px IBM Plex Mono";
   ctx.fillText(message, 28, 48);
 }
@@ -232,11 +237,15 @@ function drawGraph(graph) {
   const visibleMaxX = xMid + xRange / 2;
   const visibleMinY = yMid - yRange / 2;
   const visibleMaxY = yMid + yRange / 2;
+  const gridStroke = currentTheme === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(24, 32, 28, 0.1)";
+  const axisStroke = currentTheme === "dark" ? "rgba(255, 255, 255, 0.18)" : "rgba(24, 32, 28, 0.22)";
+  const graphStroke = currentTheme === "dark" ? "#f18a45" : "#d75f39";
+  const graphFill = currentTheme === "dark" ? "#68b394" : "#2f6c54";
 
   const projectX = (value) => padding + ((value - visibleMinX) / (visibleMaxX - visibleMinX || 1)) * (width - padding * 2);
   const projectY = (value) => height - padding - ((value - visibleMinY) / (visibleMaxY - visibleMinY || 1)) * (height - padding * 2);
 
-  ctx.strokeStyle = "rgba(24, 32, 28, 0.1)";
+  ctx.strokeStyle = gridStroke;
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i += 1) {
     const xPos = padding + ((width - padding * 2) / 4) * i;
@@ -249,7 +258,7 @@ function drawGraph(graph) {
     ctx.stroke();
   }
 
-  ctx.strokeStyle = "rgba(24, 32, 28, 0.22)";
+  ctx.strokeStyle = axisStroke;
   ctx.beginPath();
   ctx.moveTo(projectX(0), padding);
   ctx.lineTo(projectX(0), height - padding);
@@ -257,7 +266,7 @@ function drawGraph(graph) {
   ctx.lineTo(width - padding, projectY(0));
   ctx.stroke();
 
-  ctx.strokeStyle = "#d75f39";
+  ctx.strokeStyle = graphStroke;
   ctx.lineWidth = 3;
   ctx.beginPath();
   graph.points.forEach((point, index) => {
@@ -271,7 +280,7 @@ function drawGraph(graph) {
   });
   ctx.stroke();
 
-  ctx.fillStyle = "#2f6c54";
+  ctx.fillStyle = graphFill;
   graph.points.forEach((point) => {
     const px = projectX(point.x);
     const py = projectY(point.y);

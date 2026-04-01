@@ -131,9 +131,6 @@ label {
 body[data-theme="dark"] .tabs,
 body[data-theme="dark"] .auth-form,
 body[data-theme="dark"] .history-item,
-body[data-theme="dark"] .response-stage,
-body[data-theme="dark"] .response-tools,
-body[data-theme="dark"] .result-actions,
 body[data-theme="dark"] .user-box,
 body[data-theme="dark"] .history-favorites-toggle,
 body[data-theme="dark"] #chartCanvas {
@@ -159,6 +156,14 @@ button {
 .tab:hover {
   transform: translateY(-1px);
   background: rgba(255, 255, 255, 0.56);
+}
+
+body[data-theme="dark"] .tab {
+  color: #d6ddd4;
+}
+
+body[data-theme="dark"] .tab:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .tab.active {
@@ -204,6 +209,10 @@ button {
   height: 120px;
   background: linear-gradient(135deg, rgba(215, 95, 57, 0.12), rgba(47, 108, 84, 0.08));
   pointer-events: none;
+}
+
+body[data-theme="dark"] .auth-panel::before {
+  background: linear-gradient(135deg, rgba(241, 138, 69, 0.12), rgba(104, 179, 148, 0.08));
 }
 
 .auth-panel > * {
@@ -395,6 +404,12 @@ body[data-theme="dark"] .secondary {
   box-shadow: none;
 }
 
+body[data-theme="dark"] .mode-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #d8e0d7;
+}
+
 .mode-chip.active {
   background: linear-gradient(135deg, var(--accent), #ef8b4a);
   color: #ffffff;
@@ -465,6 +480,11 @@ body[data-theme="dark"] .secondary {
   border: 1px solid rgba(24, 32, 28, 0.05);
 }
 
+body[data-theme="dark"] .result-actions {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
 .result-actions button {
   padding: 10px 14px;
   border-radius: 14px;
@@ -521,6 +541,14 @@ body[data-theme="dark"] .subtle-notice {
     0 18px 34px rgba(56, 41, 26, 0.06);
 }
 
+body[data-theme="dark"] .response-stage {
+  background: linear-gradient(180deg, rgba(34, 39, 39, 0.98), rgba(24, 29, 29, 0.98));
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 18px 34px rgba(0, 0, 0, 0.2);
+}
+
 .response-stage-header {
   display: grid;
   gap: 6px;
@@ -537,6 +565,11 @@ body[data-theme="dark"] .subtle-notice {
   border-radius: 22px;
   background: rgba(24, 32, 28, 0.03);
   border: 1px solid rgba(24, 32, 28, 0.06);
+}
+
+body[data-theme="dark"] .response-tools {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .response-tools-header {
@@ -579,6 +612,10 @@ body[data-theme="dark"] .loading-box {
   background: rgba(255, 255, 255, 0.6);
 }
 
+body[data-theme="dark"] .result-meta-actions input {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .answer,
 .tiny,
 .empty-state {
@@ -619,6 +656,11 @@ body[data-theme="dark"] .loading-box {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 248, 238, 0.88));
 }
 
+body[data-theme="dark"] #chartCanvas {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(30, 35, 35, 0.98), rgba(22, 27, 27, 0.98));
+}
+
 .history-list {
   display: grid;
   gap: 12px;
@@ -641,6 +683,13 @@ body[data-theme="dark"] .loading-box {
   background: rgba(255, 255, 255, 0.72);
 }
 
+body[data-theme="dark"] .history-toolbar input,
+body[data-theme="dark"] .history-toolbar select {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
 .history-toolbar select {
   max-width: 170px;
 }
@@ -654,6 +703,11 @@ body[data-theme="dark"] .loading-box {
   background: rgba(255, 255, 255, 0.62);
   border: 1px solid rgba(24, 32, 28, 0.08);
   white-space: nowrap;
+}
+
+body[data-theme="dark"] .history-favorites-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .history-favorites-toggle input {
@@ -788,6 +842,12 @@ select:focus {
   box-shadow: 0 28px 80px rgba(24, 32, 28, 0.2);
 }
 
+body[data-theme="dark"] .modal-card {
+  background: linear-gradient(180deg, rgba(33, 38, 38, 0.98), rgba(23, 28, 28, 0.98));
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+}
+
 .modal-card h3 {
   margin: 6px 0 8px;
   font-size: 1.6rem;
@@ -795,10 +855,28 @@ select:focus {
   letter-spacing: -0.04em;
 }
 
+body[data-theme="dark"] .modal-card h3 {
+  color: var(--text);
+}
+
 .modal-copy {
   margin: 0;
   color: var(--muted);
   line-height: 1.6;
+}
+
+body[data-theme="dark"] .modal-copy,
+body[data-theme="dark"] .footer-version {
+  color: #c3cbc2;
+}
+
+body[data-theme="dark"] .footer-version {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body[data-theme="dark"] button:disabled {
+  opacity: 0.45;
+  color: #b8c0b7;
 }
 
 .modal-actions {
