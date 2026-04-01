@@ -392,25 +392,41 @@ button:hover {
 .result-header {
   align-items: center;
   justify-content: space-between;
+  gap: 14px;
 }
 
 .result-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+  padding: 6px;
+  border-radius: 18px;
+  background: rgba(24, 32, 28, 0.035);
+  border: 1px solid rgba(24, 32, 28, 0.05);
+}
+
+.result-actions button {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  box-shadow: none;
+}
+
+.result-actions button:hover {
+  box-shadow: none;
 }
 
 .notice {
-  margin: 14px 0 0;
-  padding: 12px 14px;
+  margin: 12px 0 0;
+  padding: 10px 12px;
   border-radius: 16px;
   background: rgba(215, 95, 57, 0.08);
   border: 1px solid rgba(215, 95, 57, 0.14);
   color: #8b4d2c;
   line-height: 1.6;
-  font-size: 0.94rem;
+  font-size: 0.9rem;
 }
 
 .subtle-notice {
@@ -427,16 +443,13 @@ button:hover {
 
 .result-meta-row {
   display: grid;
-  gap: 10px;
-  margin-top: 16px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(24, 32, 28, 0.035);
-  border: 1px solid rgba(24, 32, 28, 0.06);
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .result-meta-row label {
   margin: 0;
+  font-size: 0.74rem;
 }
 
 .result-meta-actions {
@@ -447,6 +460,7 @@ button:hover {
 
 .result-meta-actions input {
   flex: 1;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .answer,
@@ -762,6 +776,10 @@ select:focus {
 
   .history-actions {
     justify-content: space-between;
+  }
+
+  .result-actions {
+    justify-content: flex-start;
   }
 }
 
