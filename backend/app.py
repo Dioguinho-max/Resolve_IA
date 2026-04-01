@@ -4,6 +4,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 from flask import Flask, current_app, jsonify, request
 from flask_cors import CORS
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import inspect, text
 
 from extensions import bcrypt, db, jwt
@@ -47,10 +48,17 @@ def ensure_runtime_schema(app: Flask):
     if not statements:
         return
 
+    applied_statements = 0
     with db.engine.begin() as connection:
         for statement in statements:
-            connection.execute(statement)
-    app.logger.warning("Schema atualizado em runtime para suportar novos recursos do produto.")
+            try:
+                connection.execute(statement)
+                applied_statements += 1
+            except SQLAlchemyError as error:
+                app.logger.warning("Nao foi possivel atualizar o schema em runtime: %s", error)
+
+    if applied_statements:
+        app.logger.warning("Schema atualizado em runtime para suportar novos recursos do produto.")
 
 
 def create_app(config_overrides=None):
