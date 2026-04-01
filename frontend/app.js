@@ -143,6 +143,9 @@ async function apiFetch(path, options = {}) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401) {
+      setLoggedOutState();
+    }
     throw new Error(data.error || "Erro ao processar a requisicao.");
   }
 
@@ -699,6 +702,16 @@ async function bootstrapAuth() {
   }
 }
 
+async function ensureAuthenticatedSession() {
+  const user = await apiFetch("/api/auth/me", { method: "GET" });
+  if (!user.authenticated) {
+    setLoggedOutState();
+    throw new Error("Sua sessao expirou. Faca login novamente.");
+  }
+  setLoggedInState(user, user.csrf_token);
+  return user;
+}
+
 function debounce(fn, delay = 350) {
   let timer = null;
   return (...args) => {
@@ -856,6 +869,7 @@ solveBtn.addEventListener("click", async () => {
 
   setLoading(true);
   try {
+    await ensureAuthenticatedSession();
     const data = await apiFetch(apiPathForMode(selectedMode), {
       method: "POST",
       body: JSON.stringify({ question }),
@@ -882,6 +896,7 @@ favoriteResultBtn.addEventListener("click", async () => {
   if (!currentResult?.history_id) {
     return;
   }
+  await ensureAuthenticatedSession();
   const updated = await updateHistoryItem(currentResult.history_id, {
     is_favorite: !currentResult.is_favorite,
   });
@@ -893,6 +908,7 @@ saveCategoryBtn.addEventListener("click", async () => {
   if (!currentResult?.history_id) {
     return;
   }
+  await ensureAuthenticatedSession();
   const updated = await updateHistoryItem(currentResult.history_id, {
     category: resultCategoryInput.value.trim(),
   });
@@ -975,6 +991,7 @@ clearHistoryBtn.addEventListener("click", async () => {
     onConfirm: async () => {
       clearHistoryBtn.disabled = true;
       try {
+        await ensureAuthenticatedSession();
         await apiFetch("/api/history", { method: "DELETE" });
         historyQuery.page = 1;
         await loadHistory();
