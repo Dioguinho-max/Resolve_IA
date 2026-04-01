@@ -71,12 +71,6 @@ const authModeContent = {
   },
 };
 
-const loggedInAuthContent = {
-  eyebrow: "Sessao ativa",
-  title: "Voce ja esta na sua conta",
-  subtitle: "Seu acesso esta liberado. Agora voce pode usar a IA, consultar o historico salvo e sair quando quiser.",
-};
-
 function openConfirmModal({ tag = "Confirmacao", title, copy, actionLabel = "Confirmar", onConfirm }) {
   confirmModalTag.textContent = tag;
   confirmModalTitle.textContent = title;
@@ -99,9 +93,6 @@ function closeConfirmModal(returnFocusElement = null) {
 
 function setAuthMode(mode) {
   if (isAuthenticated) {
-    authEyebrow.textContent = loggedInAuthContent.eyebrow;
-    authTitle.textContent = loggedInAuthContent.title;
-    authSubtitle.textContent = loggedInAuthContent.subtitle;
     tabs.forEach((tab) => tab.classList.remove("active"));
     authMessage.textContent = "";
     return;
@@ -381,10 +372,6 @@ function renderHistory(items) {
 function setLoggedInState(user, nextCsrfToken = "") {
   isAuthenticated = true;
   csrfToken = nextCsrfToken || user.csrf_token || csrfToken;
-  authEyebrow.textContent = loggedInAuthContent.eyebrow;
-  authTitle.textContent = loggedInAuthContent.title;
-  authSubtitle.textContent = loggedInAuthContent.subtitle;
-  tabs.forEach((tab) => tab.classList.remove("active"));
   userBox.classList.remove("hidden");
   userEmail.textContent = user.email;
   loginForm.classList.add("hidden");
