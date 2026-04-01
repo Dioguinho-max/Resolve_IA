@@ -7,6 +7,7 @@ const authEyebrow = document.getElementById("authEyebrow");
 const authTitle = document.getElementById("authTitle");
 const authSubtitle = document.getElementById("authSubtitle");
 const authMessage = document.getElementById("authMessage");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 const tabs = document.querySelectorAll(".tab");
 const userBox = document.getElementById("userBox");
 const userEmail = document.getElementById("userEmail");
@@ -60,6 +61,7 @@ let confirmModalAction = null;
 let isAuthenticated = false;
 let csrfToken = "";
 let answerAnimationToken = 0;
+let currentTheme = "light";
 
 const authModeContent = {
   login: {
@@ -78,6 +80,25 @@ const authModeContent = {
     subtitle: "Gere um codigo, confirme sua identidade e escolha uma nova senha sem sair do app.",
   },
 };
+
+function applyTheme(theme) {
+  currentTheme = theme === "dark" ? "dark" : "light";
+  document.body.dataset.theme = currentTheme;
+  if (themeToggleBtn) {
+    themeToggleBtn.textContent = currentTheme === "dark" ? "Modo claro" : "Modo escuro";
+  }
+}
+
+function initializeTheme() {
+  const storedTheme = window.localStorage.getItem("resolveai-theme");
+  if (storedTheme === "dark" || storedTheme === "light") {
+    applyTheme(storedTheme);
+    return;
+  }
+
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(prefersDark ? "dark" : "light");
+}
 
 function openConfirmModal({ tag = "Confirmacao", title, copy, actionLabel = "Confirmar", onConfirm }) {
   confirmModalTag.textContent = tag;
@@ -724,6 +745,12 @@ tabs.forEach((tab) => {
   tab.addEventListener("click", () => setAuthMode(tab.dataset.tab));
 });
 
+themeToggleBtn?.addEventListener("click", () => {
+  const nextTheme = currentTheme === "dark" ? "light" : "dark";
+  applyTheme(nextTheme);
+  window.localStorage.setItem("resolveai-theme", nextTheme);
+});
+
 modeChips.forEach((chip) => {
   chip.addEventListener("click", () => {
     selectedMode = chip.dataset.mode;
@@ -1017,4 +1044,5 @@ chartCanvas.addEventListener("wheel", (event) => {
 });
 
 drawEmptyChart("Faca login para usar o grafico.");
+initializeTheme();
 bootstrapAuth();

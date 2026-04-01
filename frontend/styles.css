@@ -10,6 +10,18 @@
   --shadow: 0 24px 80px rgba(56, 41, 26, 0.12);
 }
 
+body[data-theme="dark"] {
+  --bg: #141818;
+  --panel: rgba(28, 33, 33, 0.9);
+  --line: rgba(228, 230, 224, 0.1);
+  --text: #eef1eb;
+  --muted: #b5beb4;
+  --accent: #f18a45;
+  --accent-2: #68b394;
+  --danger: #e06b54;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -25,6 +37,13 @@ body {
     linear-gradient(135deg, #f4ead8, #f8f4ec 52%, #efe6d7);
 }
 
+body[data-theme="dark"] {
+  background:
+    radial-gradient(circle at top left, rgba(241, 138, 69, 0.14), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(104, 179, 148, 0.12), transparent 24%),
+    linear-gradient(135deg, #0f1212, #151919 55%, #101414);
+}
+
 .shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -34,6 +53,13 @@ body {
 .hero {
   max-width: 800px;
   margin-bottom: 26px;
+}
+
+.hero-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .eyebrow,
@@ -100,6 +126,18 @@ label {
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.42);
   border: 1px solid rgba(24, 32, 28, 0.06);
+}
+
+body[data-theme="dark"] .tabs,
+body[data-theme="dark"] .auth-form,
+body[data-theme="dark"] .history-item,
+body[data-theme="dark"] .response-stage,
+body[data-theme="dark"] .response-tools,
+body[data-theme="dark"] .result-actions,
+body[data-theme="dark"] .user-box,
+body[data-theme="dark"] .history-favorites-toggle,
+body[data-theme="dark"] #chartCanvas {
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .tab,
@@ -195,6 +233,15 @@ textarea {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
+body[data-theme="dark"] input,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] select {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
 textarea {
   min-height: 220px;
   resize: vertical;
@@ -217,6 +264,17 @@ button:hover {
 .secondary {
   background: rgba(24, 32, 28, 0.08);
   color: var(--text);
+}
+
+body[data-theme="dark"] .secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.theme-toggle {
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .message {
@@ -435,6 +493,18 @@ button:hover {
   color: var(--muted);
 }
 
+body[data-theme="dark"] .notice {
+  background: rgba(241, 138, 69, 0.1);
+  border-color: rgba(241, 138, 69, 0.18);
+  color: #f3bf9d;
+}
+
+body[data-theme="dark"] .subtle-notice {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+
 .result-box {
   margin-top: 22px;
   padding-top: 20px;
@@ -480,6 +550,11 @@ button:hover {
 .response-tools-header .section-tag,
 .response-tools-header .tiny {
   margin: 0;
+}
+
+body[data-theme="dark"] .loading-box {
+  background: rgba(104, 179, 148, 0.08);
+  border-color: rgba(104, 179, 148, 0.14);
 }
 
 .result-meta-row {
@@ -798,6 +873,11 @@ select:focus {
   }
 
   .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-topbar {
     flex-direction: column;
     align-items: flex-start;
   }
