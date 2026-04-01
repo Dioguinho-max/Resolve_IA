@@ -217,8 +217,22 @@ function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function lockHistoryHeight() {
+  historyList.style.minHeight = `${historyList.offsetHeight}px`;
+  historyList.classList.add("history-height-lock");
+}
+
+async function releaseHistoryHeightLock() {
+  const nextHeight = historyList.scrollHeight;
+  historyList.style.minHeight = `${nextHeight}px`;
+  await wait(280);
+  historyList.style.minHeight = "";
+  historyList.classList.remove("history-height-lock");
+}
+
 async function animateHistoryClear() {
   const items = Array.from(historyList.querySelectorAll(".history-item"));
+  lockHistoryHeight();
   if (!items.length) {
     historyList.classList.add("history-clearing");
     await wait(220);
@@ -1074,8 +1088,10 @@ clearHistoryBtn.addEventListener("click", async () => {
         await apiFetch("/api/history", { method: "DELETE" });
         historyQuery.page = 1;
         await loadHistory();
+        await releaseHistoryHeightLock();
         resetWorkspaceAfterClear();
       } catch (error) {
+        await releaseHistoryHeightLock();
         resultTitle.textContent = "Nao foi possivel apagar";
         resultAnswer.textContent = error.message;
         renderSteps([]);

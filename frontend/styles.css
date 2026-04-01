@@ -665,6 +665,11 @@ body[data-theme="dark"] #chartCanvas {
   display: grid;
   gap: 12px;
   margin-top: 18px;
+  transition: min-height 280ms ease;
+}
+
+.history-list.history-height-lock {
+  overflow: hidden;
 }
 
 .history-toolbar {
