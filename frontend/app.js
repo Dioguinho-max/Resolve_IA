@@ -50,6 +50,7 @@ const resetPasswordInput = document.getElementById("resetPassword");
 const resetPasswordBtn = document.getElementById("resetPasswordBtn");
 const chartTitle = document.getElementById("chartTitle");
 const chartCanvas = document.getElementById("chartCanvas");
+const historyPanel = document.querySelector(".history-panel");
 const ctx = chartCanvas.getContext("2d");
 
 let selectedMode = "math";
@@ -215,6 +216,21 @@ function keepResultInView(force = false) {
 
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function captureHistoryViewportAnchor() {
+  return historyPanel ? historyPanel.getBoundingClientRect().top : null;
+}
+
+function restoreHistoryViewportAnchor(anchorTop) {
+  if (anchorTop == null || !historyPanel) {
+    return;
+  }
+  const nextTop = historyPanel.getBoundingClientRect().top;
+  const delta = nextTop - anchorTop;
+  if (Math.abs(delta) > 1) {
+    window.scrollBy({ top: delta, left: 0, behavior: "auto" });
+  }
 }
 
 function lockHistoryHeight() {
@@ -1082,6 +1098,7 @@ clearHistoryBtn.addEventListener("click", async () => {
     actionLabel: "Apagar tudo",
     onConfirm: async () => {
       clearHistoryBtn.disabled = true;
+      const viewportAnchor = captureHistoryViewportAnchor();
       try {
         await ensureAuthenticatedSession();
         await animateHistoryClear();
@@ -1090,8 +1107,10 @@ clearHistoryBtn.addEventListener("click", async () => {
         await loadHistory();
         await releaseHistoryHeightLock();
         resetWorkspaceAfterClear();
+        restoreHistoryViewportAnchor(viewportAnchor);
       } catch (error) {
         await releaseHistoryHeightLock();
+        restoreHistoryViewportAnchor(viewportAnchor);
         resultTitle.textContent = "Nao foi possivel apagar";
         resultAnswer.textContent = error.message;
         renderSteps([]);
