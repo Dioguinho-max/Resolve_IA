@@ -730,6 +730,15 @@ body[data-theme="dark"] .history-favorites-toggle {
   box-shadow: 0 16px 30px rgba(56, 41, 26, 0.08);
 }
 
+.history-list.history-clearing {
+  pointer-events: none;
+}
+
+.history-item-removing {
+  animation: historyItemExit 320ms ease forwards;
+  animation-delay: var(--history-exit-delay, 0ms);
+}
+
 .history-item h3,
 .history-item p {
   margin: 0;
@@ -1017,5 +1026,16 @@ body[data-theme="dark"] button:disabled {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes historyItemExit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
   }
 }

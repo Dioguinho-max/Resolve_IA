@@ -62,6 +62,7 @@ let isAuthenticated = false;
 let csrfToken = "";
 let answerAnimationToken = 0;
 let currentTheme = "light";
+let lastAutoScrollAt = 0;
 
 const authModeContent = {
   login: {
@@ -203,6 +204,38 @@ function setLoading(isLoading) {
   solveBtn.textContent = isLoading ? "Resolvendo..." : "Resolver com IA";
 }
 
+function keepResultInView(force = false) {
+  const now = Date.now();
+  if (!force && now - lastAutoScrollAt < 90) {
+    return;
+  }
+  lastAutoScrollAt = now;
+  resultTitle.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function animateHistoryClear() {
+  const items = Array.from(historyList.querySelectorAll(".history-item"));
+  if (!items.length) {
+    historyList.classList.add("history-clearing");
+    await wait(220);
+    historyList.classList.remove("history-clearing");
+    return;
+  }
+
+  historyList.classList.add("history-clearing");
+  items.forEach((item, index) => {
+    item.style.setProperty("--history-exit-delay", `${index * 45}ms`);
+    item.classList.add("history-item-removing");
+  });
+
+  await wait(Math.min(520, 220 + items.length * 45));
+  historyList.classList.remove("history-clearing");
+}
+
 function drawEmptyChart(message) {
   ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
   ctx.fillStyle = currentTheme === "dark" ? "#c0c8bf" : "#74695f";
@@ -302,6 +335,7 @@ function renderSteps(steps) {
 function animateText(element, text, animationToken) {
   element.classList.add("typing");
   element.textContent = "";
+  keepResultInView(true);
 
   const content = text || "";
   if (!content) {
@@ -323,8 +357,10 @@ function animateText(element, text, animationToken) {
 
       index += 1;
       element.textContent = content.slice(0, index);
+      keepResultInView();
       if (index >= content.length) {
         element.classList.remove("typing");
+        keepResultInView(true);
         resolve();
         return;
       }
@@ -346,6 +382,11 @@ function animateSteps(steps, animationToken) {
       return;
     }
     stepsList.appendChild(li);
+    window.setTimeout(() => {
+      if (animationToken === answerAnimationToken) {
+        keepResultInView();
+      }
+    }, index * 110);
   });
 }
 
@@ -374,6 +415,7 @@ function renderResult(data) {
   stepsList.innerHTML = "";
   graphState.zoom = 1;
   drawGraph(data.graph || null);
+  keepResultInView(true);
   animateText(resultAnswer, answerText, animationToken).then(() => {
     if (animationToken !== answerAnimationToken) {
       return;
@@ -1028,6 +1070,7 @@ clearHistoryBtn.addEventListener("click", async () => {
       clearHistoryBtn.disabled = true;
       try {
         await ensureAuthenticatedSession();
+        await animateHistoryClear();
         await apiFetch("/api/history", { method: "DELETE" });
         historyQuery.page = 1;
         await loadHistory();
