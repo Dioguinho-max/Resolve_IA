@@ -109,7 +109,12 @@
         <div class="result-box">
           <div class="result-header">
             <h3 id="resultTitle">A resposta aparece aqui</h3>
-            <button id="copyAnswerBtn" class="secondary hidden" type="button">Copiar resposta</button>
+            <div class="result-actions">
+              <button id="favoriteResultBtn" class="secondary hidden" type="button">Favoritar</button>
+              <button id="exportImageBtn" class="secondary hidden" type="button">Baixar imagem</button>
+              <button id="exportPdfBtn" class="secondary hidden" type="button">Exportar PDF</button>
+              <button id="copyAnswerBtn" class="secondary hidden" type="button">Copiar resposta</button>
+            </div>
           </div>
           <p id="generalNotice" class="notice hidden">
             Respostas gerais podem conter imprecisoes factuais. Vale conferir datas, nomes e eventos importantes.
@@ -117,6 +122,13 @@
           <p class="notice subtle-notice">
             Nao envie dados pessoais sensiveis nas perguntas. Emails, telefones, CPF e numeros de cartao podem ser bloqueados por privacidade.
           </p>
+          <div class="result-meta-row">
+            <label for="resultCategoryInput">Categoria pessoal</label>
+            <div class="result-meta-actions">
+              <input id="resultCategoryInput" type="text" placeholder="Ex.: Prova 1, Revisao, Funcoes">
+              <button id="saveCategoryBtn" class="secondary hidden" type="button">Salvar categoria</button>
+            </div>
+          </div>
           <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
           <ol id="stepsList" class="steps"></ol>
         </div>
@@ -145,12 +157,17 @@
         </div>
         <div class="history-toolbar">
           <input id="historySearch" type="search" placeholder="Buscar no historico">
+          <input id="historyCategoryFilter" type="search" placeholder="Filtrar por categoria">
           <select id="historyFilter">
             <option value="">Todos</option>
             <option value="matematica">Matematica</option>
             <option value="fisica">Fisica</option>
             <option value="geral">Geral</option>
           </select>
+          <label class="history-favorites-toggle" for="historyFavoritesOnly">
+            <input id="historyFavoritesOnly" type="checkbox">
+            <span>So favoritos</span>
+          </label>
         </div>
         <div id="historyList" class="history-list">
           <p class="empty-state">Seu historico salvo vai aparecer aqui.</p>

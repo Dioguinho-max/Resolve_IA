@@ -32,6 +32,7 @@ MAX_EMAIL_LENGTH = 255
 MAX_PASSWORD_LENGTH = 128
 MAX_QUESTION_LENGTH = 4000
 MAX_RESET_TOKEN_LENGTH = 255
+MAX_CATEGORY_LENGTH = 100
 
 
 def create_user_token(user: User) -> str:
@@ -219,13 +220,23 @@ def history():
     page_size = min(max(int(request.args.get("page_size", 10)), 1), 50)
     subject = (request.args.get("subject") or "").strip().lower()
     query_text = (request.args.get("q") or "").strip()
+    category = (request.args.get("category") or "").strip()
+    favorites_only = (request.args.get("favorites") or "").strip() in {"1", "true", "True"}
 
     query = AIHistory.query.filter_by(user_id=user.id)
     if subject:
         query = query.filter(AIHistory.subject == subject)
+    if category:
+        query = query.filter(AIHistory.category.ilike(f"%{category}%"))
+    if favorites_only:
+        query = query.filter(AIHistory.is_favorite.is_(True))
     if query_text:
         like = f"%{query_text}%"
-        query = query.filter((AIHistory.question.ilike(like)) | (AIHistory.answer.ilike(like)))
+        query = query.filter(
+            (AIHistory.question.ilike(like))
+            | (AIHistory.answer.ilike(like))
+            | (AIHistory.category.ilike(like))
+        )
 
     total = query.count()
     records = (
@@ -273,6 +284,39 @@ def delete_history_item(history_id: int):
     db.session.delete(item)
     db.session.commit()
     return jsonify({"deleted": 1, "history_id": history_id})
+
+
+@api.patch("/api/history/<int:history_id>")
+@jwt_required()
+def update_history_item(history_id: int):
+    user = get_current_user()
+    rls_error = activate_history_rls(user)
+    if rls_error:
+        return rls_error
+
+    item = AIHistory.query.filter_by(id=history_id, user_id=user.id).first()
+    if not item:
+        return jsonify({"error": "Item do historico nao encontrado."}), 404
+
+    payload = request.get_json(silent=True) or {}
+    updated = False
+
+    if "is_favorite" in payload:
+        item.is_favorite = bool(payload.get("is_favorite"))
+        updated = True
+
+    if "category" in payload:
+        category = (payload.get("category") or "").strip()
+        if len(category) > MAX_CATEGORY_LENGTH:
+            return jsonify({"error": "A categoria e muito longa."}), 400
+        item.category = category or None
+        updated = True
+
+    if not updated:
+        return jsonify({"error": "Nenhum campo valido foi enviado para atualizacao."}), 400
+
+    db.session.commit()
+    return jsonify(item.to_dict())
 
 
 @api.post("/api/solve/math")

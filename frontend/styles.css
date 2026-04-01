@@ -394,6 +394,13 @@ button:hover {
   justify-content: space-between;
 }
 
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .notice {
   margin: 14px 0 0;
   padding: 12px 14px;
@@ -415,6 +422,26 @@ button:hover {
   margin-top: 22px;
   padding-top: 20px;
   border-top: 1px solid var(--line);
+}
+
+.result-meta-row {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.result-meta-row label {
+  margin: 0;
+}
+
+.result-meta-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.result-meta-actions input {
+  flex: 1;
 }
 
 .answer,
@@ -483,6 +510,22 @@ button:hover {
   max-width: 170px;
 }
 
+.history-favorites-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(24, 32, 28, 0.08);
+  white-space: nowrap;
+}
+
+.history-favorites-toggle input {
+  width: auto;
+  margin: 0;
+}
+
 .history-item {
   padding: 14px;
   border-radius: 20px;
@@ -513,6 +556,12 @@ button:hover {
   line-height: 1.5;
 }
 
+.history-category {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.8rem;
+  color: var(--accent-2);
+}
+
 .history-top {
   align-items: center;
   justify-content: space-between;
@@ -534,6 +583,12 @@ button:hover {
   padding: 8px 10px;
   border-radius: 12px;
   font-size: 0.82rem;
+}
+
+.history-favorite.active,
+#favoriteResultBtn {
+  background: rgba(215, 95, 57, 0.14);
+  color: var(--accent);
 }
 
 .history-pagination {
@@ -690,7 +745,8 @@ select:focus {
   .history-toolbar,
   .history-pagination,
   .result-header,
-  .history-top {
+  .history-top,
+  .result-meta-actions {
     flex-direction: column;
     align-items: stretch;
   }

@@ -28,6 +28,8 @@ class AIHistory(db.Model):
     answer = db.Column(db.Text, nullable=False)
     steps_json = db.Column(db.Text, nullable=False)
     graph_json = db.Column(db.Text, nullable=True)
+    is_favorite = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    category = db.Column(db.String(100), nullable=True, index=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
 
     def to_dict(self):
@@ -38,6 +40,8 @@ class AIHistory(db.Model):
             "answer": self.answer,
             "steps": json.loads(self.steps_json),
             "graph": json.loads(self.graph_json) if self.graph_json else None,
+            "is_favorite": bool(self.is_favorite),
+            "category": self.category,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

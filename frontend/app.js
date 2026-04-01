@@ -21,6 +21,11 @@ const questionInput = document.getElementById("questionInput");
 const solveBtn = document.getElementById("solveBtn");
 const newQuestionBtn = document.getElementById("newQuestionBtn");
 const copyAnswerBtn = document.getElementById("copyAnswerBtn");
+const favoriteResultBtn = document.getElementById("favoriteResultBtn");
+const exportImageBtn = document.getElementById("exportImageBtn");
+const exportPdfBtn = document.getElementById("exportPdfBtn");
+const resultCategoryInput = document.getElementById("resultCategoryInput");
+const saveCategoryBtn = document.getElementById("saveCategoryBtn");
 const solveLoading = document.getElementById("solveLoading");
 const generalNotice = document.getElementById("generalNotice");
 const modeChips = document.querySelectorAll(".mode-chip");
@@ -30,7 +35,9 @@ const resultAnswer = document.getElementById("resultAnswer");
 const stepsList = document.getElementById("stepsList");
 const historyList = document.getElementById("historyList");
 const historySearch = document.getElementById("historySearch");
+const historyCategoryFilter = document.getElementById("historyCategoryFilter");
 const historyFilter = document.getElementById("historyFilter");
+const historyFavoritesOnly = document.getElementById("historyFavoritesOnly");
 const historyPrevBtn = document.getElementById("historyPrevBtn");
 const historyNextBtn = document.getElementById("historyNextBtn");
 const historyPageInfo = document.getElementById("historyPageInfo");
@@ -46,7 +53,7 @@ const ctx = chartCanvas.getContext("2d");
 
 let selectedMode = "math";
 let currentResult = null;
-let historyQuery = { page: 1, pageSize: 8, subject: "", q: "" };
+let historyQuery = { page: 1, pageSize: 8, subject: "", q: "", category: "", favorites: false };
 let historyPagination = { page: 1, total_pages: 1 };
 let graphState = { zoom: 1 };
 let confirmModalAction = null;
@@ -312,13 +319,24 @@ function animateSteps(steps, animationToken) {
 function renderResult(data) {
   answerAnimationToken += 1;
   const animationToken = answerAnimationToken;
-  currentResult = data;
+  currentResult = {
+    ...data,
+    history_id: data.history_id || data.id || null,
+    is_favorite: Boolean(data.is_favorite),
+    category: data.category || "",
+  };
   subjectBadge.textContent = subjectLabel(data.subject);
   resultTitle.textContent = data.title || `Resposta ${subjectLabel(data.subject).toLowerCase()}`;
   const answerText = `Resposta final: ${data.answer || "Sem resposta disponivel."}`;
   resultAnswer.textContent = "";
   generalNotice.classList.toggle("hidden", data.subject !== "geral");
   copyAnswerBtn.classList.remove("hidden");
+  exportImageBtn.classList.remove("hidden");
+  exportPdfBtn.classList.remove("hidden");
+  favoriteResultBtn.classList.toggle("hidden", !currentResult.history_id);
+  saveCategoryBtn.classList.toggle("hidden", !currentResult.history_id);
+  favoriteResultBtn.textContent = currentResult.is_favorite ? "Desfavoritar" : "Favoritar";
+  resultCategoryInput.value = currentResult.category;
   stepsList.innerHTML = "";
   graphState.zoom = 1;
   drawGraph(data.graph || null);
@@ -340,6 +358,12 @@ function buildHistoryParams() {
   }
   if (historyQuery.q) {
     params.set("q", historyQuery.q);
+  }
+  if (historyQuery.category) {
+    params.set("category", historyQuery.category);
+  }
+  if (historyQuery.favorites) {
+    params.set("favorites", "1");
   }
   return params.toString();
 }
@@ -364,6 +388,22 @@ async function deleteHistoryItem(historyId) {
     historyQuery.page = maxPageAfterDelete;
   }
   await loadHistory();
+}
+
+async function updateHistoryItem(historyId, payload) {
+  const updatedItem = await apiFetch(`/api/history/${historyId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
+  if (currentResult?.id === historyId || currentResult?.history_id === historyId) {
+    currentResult = { ...currentResult, ...updatedItem, history_id: updatedItem.id };
+    favoriteResultBtn.textContent = updatedItem.is_favorite ? "Desfavoritar" : "Favoritar";
+    resultCategoryInput.value = updatedItem.category || "";
+  }
+
+  await loadHistory();
+  return updatedItem;
 }
 
 function renderHistory(items) {
@@ -398,6 +438,11 @@ function renderHistory(items) {
     deleteButton.type = "button";
     deleteButton.textContent = "Excluir";
 
+    const favoriteButton = document.createElement("button");
+    favoriteButton.className = `history-favorite secondary${item.is_favorite ? " active" : ""}`;
+    favoriteButton.type = "button";
+    favoriteButton.textContent = item.is_favorite ? "Favorito" : "Favoritar";
+
     const question = document.createElement("p");
     const questionStrong = document.createElement("strong");
     questionStrong.textContent = "Pergunta:";
@@ -408,11 +453,21 @@ function renderHistory(items) {
     answerStrong.textContent = "Resposta:";
     answer.append(answerStrong, ` ${item.answer}`);
 
-    actions.append(date, deleteButton);
+    const category = document.createElement("p");
+    category.className = "history-category";
+    category.textContent = item.category ? `Categoria: ${item.category}` : "Sem categoria";
+
+    actions.append(date, favoriteButton, deleteButton);
     top.append(title, actions);
-    article.append(top, question, answer);
+    article.append(top, category, question, answer);
 
     article.addEventListener("click", () => renderResult(item));
+    favoriteButton.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const updatedItem = await updateHistoryItem(item.id, { is_favorite: !item.is_favorite });
+      item.is_favorite = updatedItem.is_favorite;
+      item.category = updatedItem.category || "";
+    });
     deleteButton.addEventListener("click", async (event) => {
       event.stopPropagation();
       openConfirmModal({
@@ -451,7 +506,12 @@ function setLoggedOutState() {
   historyList.innerHTML = '<p class="empty-state">Seu historico salvo vai aparecer aqui.</p>';
   historyPageInfo.textContent = "Pagina 1 de 1";
   copyAnswerBtn.classList.add("hidden");
+  exportImageBtn.classList.add("hidden");
+  exportPdfBtn.classList.add("hidden");
+  favoriteResultBtn.classList.add("hidden");
+  saveCategoryBtn.classList.add("hidden");
   generalNotice.classList.add("hidden");
+  resultCategoryInput.value = "";
   currentResult = null;
   drawEmptyChart("Faca login para usar o grafico.");
 }
@@ -462,10 +522,140 @@ function resetWorkspaceAfterClear() {
   resultAnswer.textContent = "Seu historico foi apagado. Faca uma nova pergunta para gerar uma resposta.";
   stepsList.innerHTML = "";
   copyAnswerBtn.classList.add("hidden");
+  exportImageBtn.classList.add("hidden");
+  exportPdfBtn.classList.add("hidden");
+  favoriteResultBtn.classList.add("hidden");
+  saveCategoryBtn.classList.add("hidden");
   generalNotice.classList.add("hidden");
+  resultCategoryInput.value = "";
   currentResult = null;
   graphState.zoom = 1;
   drawEmptyChart("Nenhum grafico salvo no historico.");
+}
+
+function buildExportTitle() {
+  const subject = currentResult?.subject ? subjectLabel(currentResult.subject) : "Resposta";
+  return `${subject} - ResolveAI`;
+}
+
+function buildExportMarkup() {
+  if (!currentResult) {
+    return "";
+  }
+
+  const category = currentResult.category ? `<p><strong>Categoria:</strong> ${currentResult.category}</p>` : "";
+  const steps = (currentResult.steps || []).map((step) => `<li>${step}</li>`).join("");
+  return `
+    <article>
+      <h1>${buildExportTitle()}</h1>
+      <p><strong>Pergunta:</strong> ${currentResult.question || ""}</p>
+      ${category}
+      <p><strong>Resposta:</strong> ${currentResult.answer || ""}</p>
+      <h2>Passos</h2>
+      <ol>${steps}</ol>
+    </article>
+  `;
+}
+
+function exportCurrentResultAsPdf() {
+  if (!currentResult) {
+    return;
+  }
+
+  const exportWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+  if (!exportWindow) {
+    return;
+  }
+
+  exportWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <title>${buildExportTitle()}</title>
+      <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 32px; color: #1f1f1f; }
+        article { max-width: 820px; margin: 0 auto; }
+        h1 { margin-bottom: 18px; }
+        h2 { margin-top: 28px; }
+        p, li { line-height: 1.7; }
+        ol { padding-left: 24px; }
+      </style>
+    </head>
+    <body>${buildExportMarkup()}</body>
+    </html>
+  `);
+  exportWindow.document.close();
+  exportWindow.focus();
+  window.setTimeout(() => exportWindow.print(), 300);
+}
+
+function exportCurrentResultAsImage() {
+  if (!currentResult) {
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const width = 1400;
+  const padding = 70;
+  const lineHeight = 42;
+  const sections = [
+    buildExportTitle(),
+    "",
+    `Pergunta: ${currentResult.question || ""}`,
+    currentResult.category ? `Categoria: ${currentResult.category}` : "",
+    `Resposta: ${currentResult.answer || ""}`,
+    "",
+    "Passos:",
+    ...(currentResult.steps || []).map((step, index) => `${index + 1}. ${step}`),
+  ].filter((line, index, all) => line || (index > 0 && all[index - 1] !== ""));
+
+  const height = Math.max(920, padding * 2 + sections.length * lineHeight + 80);
+  canvas.width = width;
+  canvas.height = height;
+
+  context.fillStyle = "#f7f1e7";
+  context.fillRect(0, 0, width, height);
+  context.fillStyle = "#1f261f";
+  context.font = "bold 34px 'Segoe UI'";
+
+  let y = padding;
+  sections.forEach((line, index) => {
+    if (index === 0) {
+      context.fillStyle = "#d75f39";
+      context.font = "bold 38px 'Segoe UI'";
+    } else if (line === "Passos:") {
+      context.fillStyle = "#2f6c54";
+      context.font = "bold 30px 'Segoe UI'";
+    } else {
+      context.fillStyle = "#1f261f";
+      context.font = "24px 'Segoe UI'";
+    }
+
+    const words = line.split(" ");
+    let currentLine = "";
+    words.forEach((word) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (context.measureText(testLine).width > width - padding * 2) {
+        context.fillText(currentLine, padding, y);
+        y += lineHeight;
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+
+    if (currentLine || !line) {
+      context.fillText(currentLine, padding, y);
+      y += lineHeight;
+    }
+  });
+
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/png");
+  link.download = `${buildExportTitle().replace(/\s+/g, "-").toLowerCase()}.png`;
+  link.click();
 }
 
 async function bootstrapAuth() {
@@ -666,6 +856,35 @@ newQuestionBtn.addEventListener("click", () => {
   questionInput.focus();
 });
 
+favoriteResultBtn.addEventListener("click", async () => {
+  if (!currentResult?.history_id) {
+    return;
+  }
+  const updated = await updateHistoryItem(currentResult.history_id, {
+    is_favorite: !currentResult.is_favorite,
+  });
+  currentResult = { ...currentResult, ...updated, history_id: updated.id };
+  favoriteResultBtn.textContent = updated.is_favorite ? "Desfavoritar" : "Favoritar";
+});
+
+saveCategoryBtn.addEventListener("click", async () => {
+  if (!currentResult?.history_id) {
+    return;
+  }
+  const updated = await updateHistoryItem(currentResult.history_id, {
+    category: resultCategoryInput.value.trim(),
+  });
+  currentResult = { ...currentResult, ...updated, history_id: updated.id };
+});
+
+exportPdfBtn.addEventListener("click", () => {
+  exportCurrentResultAsPdf();
+});
+
+exportImageBtn.addEventListener("click", () => {
+  exportCurrentResultAsImage();
+});
+
 copyAnswerBtn.addEventListener("click", async () => {
   if (!currentResult) {
     return;
@@ -685,10 +904,25 @@ historyFilter.addEventListener("change", async () => {
   await loadHistory();
 });
 
+historyFavoritesOnly.addEventListener("change", async () => {
+  historyQuery.favorites = historyFavoritesOnly.checked;
+  historyQuery.page = 1;
+  await loadHistory();
+});
+
 historySearch.addEventListener(
   "input",
   debounce(async () => {
     historyQuery.q = historySearch.value.trim();
+    historyQuery.page = 1;
+    await loadHistory();
+  }),
+);
+
+historyCategoryFilter.addEventListener(
+  "input",
+  debounce(async () => {
+    historyQuery.category = historyCategoryFilter.value.trim();
     historyQuery.page = 1;
     await loadHistory();
   }),

@@ -37,13 +37,20 @@ def ensure_runtime_schema(app: Flask):
     if "token_version" not in user_columns:
         statements.append(text("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0"))
 
+    if "ai_history" in inspector.get_table_names():
+        history_columns = {column["name"] for column in inspector.get_columns("ai_history")}
+        if "is_favorite" not in history_columns:
+            statements.append(text("ALTER TABLE ai_history ADD COLUMN is_favorite BOOLEAN NOT NULL DEFAULT FALSE"))
+        if "category" not in history_columns:
+            statements.append(text("ALTER TABLE ai_history ADD COLUMN category VARCHAR(100)"))
+
     if not statements:
         return
 
     with db.engine.begin() as connection:
         for statement in statements:
             connection.execute(statement)
-    app.logger.warning("Schema atualizado em runtime para suportar reset de senha.")
+    app.logger.warning("Schema atualizado em runtime para suportar novos recursos do produto.")
 
 
 def create_app(config_overrides=None):
