@@ -52,6 +52,7 @@ let graphState = { zoom: 1 };
 let confirmModalAction = null;
 let isAuthenticated = false;
 let csrfToken = "";
+let answerAnimationToken = 0;
 
 const authModeContent = {
   login: {
@@ -258,16 +259,75 @@ function renderSteps(steps) {
   });
 }
 
+function animateText(element, text, animationToken) {
+  element.classList.add("typing");
+  element.textContent = "";
+
+  const content = text || "";
+  if (!content) {
+    element.classList.remove("typing");
+    return Promise.resolve();
+  }
+
+  const totalDuration = Math.min(2200, Math.max(700, content.length * 18));
+  const stepDelay = Math.max(14, Math.round(totalDuration / content.length));
+
+  return new Promise((resolve) => {
+    let index = 0;
+    const tick = () => {
+      if (animationToken !== answerAnimationToken) {
+        element.classList.remove("typing");
+        resolve();
+        return;
+      }
+
+      index += 1;
+      element.textContent = content.slice(0, index);
+      if (index >= content.length) {
+        element.classList.remove("typing");
+        resolve();
+        return;
+      }
+      window.setTimeout(tick, stepDelay);
+    };
+
+    window.setTimeout(tick, stepDelay);
+  });
+}
+
+function animateSteps(steps, animationToken) {
+  stepsList.innerHTML = "";
+  (steps || []).forEach((step, index) => {
+    const li = document.createElement("li");
+    li.textContent = step;
+    li.className = "step-enter";
+    li.style.animationDelay = `${index * 110}ms`;
+    if (animationToken !== answerAnimationToken) {
+      return;
+    }
+    stepsList.appendChild(li);
+  });
+}
+
 function renderResult(data) {
+  answerAnimationToken += 1;
+  const animationToken = answerAnimationToken;
   currentResult = data;
   subjectBadge.textContent = subjectLabel(data.subject);
   resultTitle.textContent = data.title || `Resposta ${subjectLabel(data.subject).toLowerCase()}`;
-  resultAnswer.textContent = `Resposta final: ${data.answer || "Sem resposta disponivel."}`;
+  const answerText = `Resposta final: ${data.answer || "Sem resposta disponivel."}`;
+  resultAnswer.textContent = "";
   generalNotice.classList.toggle("hidden", data.subject !== "geral");
   copyAnswerBtn.classList.remove("hidden");
-  renderSteps(data.steps || []);
+  stepsList.innerHTML = "";
   graphState.zoom = 1;
   drawGraph(data.graph || null);
+  animateText(resultAnswer, answerText, animationToken).then(() => {
+    if (animationToken !== answerAnimationToken) {
+      return;
+    }
+    animateSteps(data.steps || [], animationToken);
+  });
 }
 
 function buildHistoryParams() {
