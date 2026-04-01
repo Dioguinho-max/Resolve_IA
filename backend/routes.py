@@ -315,8 +315,10 @@ def update_history_item(history_id: int):
     if not updated:
         return jsonify({"error": "Nenhum campo valido foi enviado para atualizacao."}), 400
 
+    db.session.flush()
+    item_payload = item.to_dict()
     db.session.commit()
-    return jsonify(item.to_dict())
+    return jsonify(item_payload)
 
 
 @api.post("/api/solve/math")
