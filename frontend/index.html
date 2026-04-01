@@ -109,12 +109,6 @@
         <div class="result-box">
           <div class="result-header">
             <h3 id="resultTitle">A resposta aparece aqui</h3>
-            <div class="result-actions" aria-label="Ferramentas da resposta">
-              <button id="favoriteResultBtn" class="secondary" type="button" disabled>Favoritar</button>
-              <button id="exportImageBtn" class="secondary" type="button" disabled>Baixar imagem</button>
-              <button id="exportPdfBtn" class="secondary" type="button" disabled>Exportar PDF</button>
-              <button id="copyAnswerBtn" class="secondary" type="button" disabled>Copiar resposta</button>
-            </div>
           </div>
           <p id="generalNotice" class="notice hidden">
             Respostas gerais podem conter imprecisoes factuais. Vale conferir datas, nomes e eventos importantes.
@@ -122,15 +116,27 @@
           <p class="notice subtle-notice">
             Nao envie dados pessoais sensiveis nas perguntas. Emails, telefones, CPF e numeros de cartao podem ser bloqueados por privacidade.
           </p>
-          <div class="result-meta-row">
-            <label for="resultCategoryInput">Categoria</label>
-            <div class="result-meta-actions">
-              <input id="resultCategoryInput" type="text" placeholder="Ex.: Prova 1, Revisao, Funcoes" disabled>
-              <button id="saveCategoryBtn" class="secondary" type="button" disabled>Salvar categoria</button>
-            </div>
-          </div>
           <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
           <ol id="stepsList" class="steps"></ol>
+          <section class="response-tools" aria-label="Ferramentas da resposta">
+            <div class="response-tools-header">
+              <p class="section-tag">Ferramentas</p>
+              <p class="tiny">Organize, exporte e salve esta resposta.</p>
+            </div>
+            <div class="result-actions">
+              <button id="favoriteResultBtn" class="secondary" type="button" disabled>Favoritar</button>
+              <button id="exportImageBtn" class="secondary" type="button" disabled>Baixar imagem</button>
+              <button id="exportPdfBtn" class="secondary" type="button" disabled>Exportar PDF</button>
+              <button id="copyAnswerBtn" class="secondary" type="button" disabled>Copiar resposta</button>
+            </div>
+            <div class="result-meta-row">
+              <label for="resultCategoryInput">Categoria</label>
+              <div class="result-meta-actions">
+                <input id="resultCategoryInput" type="text" placeholder="Ex.: Prova 1, Revisao, Funcoes" disabled>
+                <button id="saveCategoryBtn" class="secondary" type="button" disabled>Salvar categoria</button>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </section>

@@ -441,10 +441,31 @@ button:hover {
   border-top: 1px solid var(--line);
 }
 
+.response-tools {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(24, 32, 28, 0.03);
+  border: 1px solid rgba(24, 32, 28, 0.06);
+}
+
+.response-tools-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.response-tools-header .section-tag,
+.response-tools-header .tiny {
+  margin: 0;
+}
+
 .result-meta-row {
   display: grid;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
 .result-meta-row label {
@@ -764,6 +785,7 @@ select:focus {
   .history-toolbar,
   .history-pagination,
   .result-header,
+  .response-tools-header,
   .history-top,
   .result-meta-actions {
     flex-direction: column;
