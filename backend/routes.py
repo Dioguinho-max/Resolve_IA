@@ -1,6 +1,7 @@
 import json
 import os
 import secrets
+from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 from math import ceil
@@ -321,6 +322,34 @@ def update_history_item(history_id: int):
     return jsonify(item_payload)
 
 
+@api.get("/api/dashboard")
+@jwt_required()
+def dashboard():
+    user = get_current_user()
+    rls_error = activate_history_rls(user)
+    if rls_error:
+        return rls_error
+
+    selected_period = (request.args.get("period") or "30d").strip().lower()
+    if selected_period not in {"7d", "30d", "all"}:
+        selected_period = "30d"
+
+    history_rows = (
+        AIHistory.query.with_entities(
+            AIHistory.created_at,
+            AIHistory.subject,
+            AIHistory.is_favorite,
+            AIHistory.category,
+        )
+        .filter_by(user_id=user.id)
+        .order_by(AIHistory.created_at.asc(), AIHistory.id.asc())
+        .all()
+    )
+
+    dashboard_payload = build_dashboard_payload(history_rows, selected_period)
+    return jsonify(dashboard_payload)
+
+
 @api.post("/api/solve/math")
 @jwt_required()
 def solve_math_route():
@@ -360,6 +389,128 @@ def activate_history_rls(user):
         {"user_id": str(user.id)},
     )
     return None
+
+
+def build_dashboard_payload(history_rows, selected_period: str):
+    now = datetime.now(timezone.utc)
+    normalized_rows = []
+    unique_days = set()
+
+    for created_at, subject, is_favorite, category in history_rows:
+        if created_at is None:
+            continue
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        day = created_at.astimezone(timezone.utc).date()
+        normalized_rows.append(
+            {
+                "created_at": created_at,
+                "day": day,
+                "subject": subject,
+                "is_favorite": bool(is_favorite),
+                "category": category,
+            }
+        )
+        unique_days.add(day)
+
+    periods = {
+        "7d": now - timedelta(days=7),
+        "30d": now - timedelta(days=30),
+        "all": None,
+    }
+
+    usage_by_period = {}
+    for key, start_at in periods.items():
+        rows_for_period = [row for row in normalized_rows if start_at is None or row["created_at"] >= start_at]
+        usage_by_period[key] = {
+            "label": {"7d": "Ultimos 7 dias", "30d": "Ultimos 30 dias", "all": "Geral"}[key],
+            "questions": len(rows_for_period),
+            "favorites": sum(1 for row in rows_for_period if row["is_favorite"]),
+            "active_days": len({row["day"] for row in rows_for_period}),
+        }
+
+    selected_start_at = periods[selected_period]
+    rows_for_selected_period = [
+        row for row in normalized_rows if selected_start_at is None or row["created_at"] >= selected_start_at
+    ]
+
+    weekly_buckets = defaultdict(int)
+    for row in rows_for_selected_period:
+        week_start = row["day"] - timedelta(days=row["day"].weekday())
+        weekly_buckets[week_start] += 1
+
+    weekly_points = []
+    if selected_period == "7d":
+        number_of_weeks = 2
+    elif selected_period == "30d":
+        number_of_weeks = 6
+    else:
+        number_of_weeks = 12
+
+    current_week_start = now.date() - timedelta(days=now.date().weekday())
+    week_starts = [current_week_start - timedelta(days=7 * offset) for offset in range(number_of_weeks - 1, -1, -1)]
+    for week_start in week_starts:
+        weekly_points.append(
+            {
+                "week_start": week_start.isoformat(),
+                "label": week_start.strftime("%d/%m"),
+                "questions": weekly_buckets.get(week_start, 0),
+            }
+        )
+
+    current_streak = 0
+    best_streak = 0
+    sorted_days = sorted(unique_days)
+    previous_day = None
+    streak = 0
+    for day in sorted_days:
+        if previous_day and day == previous_day + timedelta(days=1):
+            streak += 1
+        else:
+            streak = 1
+        best_streak = max(best_streak, streak)
+        previous_day = day
+
+    if sorted_days:
+        latest_day = sorted_days[-1]
+        if latest_day in {now.date(), now.date() - timedelta(days=1)}:
+            current_streak = 1
+            pointer = latest_day
+            unique_days_lookup = set(sorted_days)
+            while pointer - timedelta(days=1) in unique_days_lookup:
+                current_streak += 1
+                pointer -= timedelta(days=1)
+
+    subject_counter = Counter(row["subject"] for row in rows_for_selected_period)
+    category_counter = Counter(row["category"] for row in rows_for_selected_period if row["category"])
+
+    recent_activity = [
+        {
+            "day": row["day"].isoformat(),
+            "subject": row["subject"],
+            "favorite": row["is_favorite"],
+            "category": row["category"],
+        }
+        for row in reversed(rows_for_selected_period[-5:])
+    ]
+
+    return {
+        "selected_period": selected_period,
+        "usage_by_period": usage_by_period,
+        "weekly_evolution": weekly_points,
+        "study_streak": {
+            "current": current_streak,
+            "best": best_streak,
+        },
+        "summary": {
+            "questions": len(rows_for_selected_period),
+            "favorites": sum(1 for row in rows_for_selected_period if row["is_favorite"]),
+            "active_days": len({row["day"] for row in rows_for_selected_period}),
+            "top_subject": subject_counter.most_common(1)[0][0] if subject_counter else None,
+            "top_category": category_counter.most_common(1)[0][0] if category_counter else None,
+        },
+        "recent_activity": recent_activity,
+    }
 
 
 def extract_question():

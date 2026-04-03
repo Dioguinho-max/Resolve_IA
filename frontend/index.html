@@ -150,6 +150,68 @@
     </section>
 
     <section class="grid lower-grid">
+      <section class="panel dashboard-panel">
+        <div class="panel-header dashboard-header">
+          <div>
+            <p class="section-tag">Dashboard</p>
+            <h2>Seu ritmo de estudo</h2>
+          </div>
+          <div class="dashboard-periods" aria-label="Filtro de periodo do dashboard">
+            <button id="dashboardPeriod7d" class="period-chip" type="button" data-period="7d">7 dias</button>
+            <button id="dashboardPeriod30d" class="period-chip active" type="button" data-period="30d">30 dias</button>
+            <button id="dashboardPeriodAll" class="period-chip" type="button" data-period="all">Geral</button>
+          </div>
+        </div>
+        <div class="dashboard-cards">
+          <article class="dashboard-card">
+            <p class="section-tag">Questoes no periodo</p>
+            <strong id="dashboardQuestions" class="dashboard-number">0</strong>
+            <p id="dashboardQuestionsMeta" class="tiny">Sem atividade ainda.</p>
+          </article>
+          <article class="dashboard-card">
+            <p class="section-tag">Dias ativos</p>
+            <strong id="dashboardActiveDays" class="dashboard-number">0</strong>
+            <p class="tiny">Dias com pelo menos uma atividade.</p>
+          </article>
+          <article class="dashboard-card">
+            <p class="section-tag">Sequencia atual</p>
+            <strong id="dashboardCurrentStreak" class="dashboard-number">0</strong>
+            <p id="dashboardBestStreak" class="tiny">Melhor sequencia: 0 dias.</p>
+          </article>
+          <article class="dashboard-card">
+            <p class="section-tag">Materia em destaque</p>
+            <strong id="dashboardTopSubject" class="dashboard-number dashboard-label">Sem dados</strong>
+            <p id="dashboardTopCategory" class="tiny">Categoria favorita: sem dados.</p>
+          </article>
+        </div>
+        <div class="dashboard-grid">
+          <section class="dashboard-surface">
+            <div class="panel-header">
+              <div>
+                <p class="section-tag">Uso por periodo</p>
+                <h3>Comparativo rapido</h3>
+              </div>
+            </div>
+            <div id="dashboardUsagePeriods" class="usage-periods">
+              <p class="empty-state">Entre na sua conta para ver os numeros.</p>
+            </div>
+          </section>
+          <section class="dashboard-surface">
+            <div class="panel-header">
+              <div>
+                <p class="section-tag">Evolucao semanal</p>
+                <h3>Questoes por semana</h3>
+              </div>
+            </div>
+            <div id="dashboardWeeklyChart" class="weekly-chart">
+              <p class="empty-state">Ainda nao ha dados para montar o grafico.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </section>
+
+    <section class="grid lower-grid">
       <section class="panel chart-panel">
         <div class="panel-header">
           <div>

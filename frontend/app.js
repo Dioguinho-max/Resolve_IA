@@ -30,10 +30,20 @@ const saveCategoryBtn = document.getElementById("saveCategoryBtn");
 const solveLoading = document.getElementById("solveLoading");
 const generalNotice = document.getElementById("generalNotice");
 const modeChips = document.querySelectorAll(".mode-chip");
+const dashboardPeriodChips = document.querySelectorAll(".period-chip");
 const subjectBadge = document.getElementById("subjectBadge");
 const resultTitle = document.getElementById("resultTitle");
 const resultAnswer = document.getElementById("resultAnswer");
 const stepsList = document.getElementById("stepsList");
+const dashboardQuestions = document.getElementById("dashboardQuestions");
+const dashboardQuestionsMeta = document.getElementById("dashboardQuestionsMeta");
+const dashboardActiveDays = document.getElementById("dashboardActiveDays");
+const dashboardCurrentStreak = document.getElementById("dashboardCurrentStreak");
+const dashboardBestStreak = document.getElementById("dashboardBestStreak");
+const dashboardTopSubject = document.getElementById("dashboardTopSubject");
+const dashboardTopCategory = document.getElementById("dashboardTopCategory");
+const dashboardUsagePeriods = document.getElementById("dashboardUsagePeriods");
+const dashboardWeeklyChart = document.getElementById("dashboardWeeklyChart");
 const historyList = document.getElementById("historyList");
 const historySearch = document.getElementById("historySearch");
 const historyCategoryFilter = document.getElementById("historyCategoryFilter");
@@ -64,6 +74,7 @@ let csrfToken = "";
 let answerAnimationToken = 0;
 let currentTheme = "light";
 let lastAutoScrollAt = 0;
+let dashboardPeriod = "30d";
 
 const authModeContent = {
   login: {
@@ -187,6 +198,15 @@ function subjectLabel(subject) {
     geral: "Geral",
   };
   return labels[subject] || "Aguardando";
+}
+
+function dashboardPeriodLabel(period) {
+  const labels = {
+    "7d": "ultimos 7 dias",
+    "30d": "ultimos 30 dias",
+    all: "geral",
+  };
+  return labels[period] || "periodo selecionado";
 }
 
 function apiPathForMode(mode) {
@@ -484,6 +504,88 @@ async function loadHistory() {
   return data;
 }
 
+function resetDashboard() {
+  dashboardQuestions.textContent = "0";
+  dashboardQuestionsMeta.textContent = "Entre na sua conta para acompanhar seu ritmo.";
+  dashboardActiveDays.textContent = "0";
+  dashboardCurrentStreak.textContent = "0d";
+  dashboardBestStreak.textContent = "Melhor sequencia: 0 dias.";
+  dashboardTopSubject.textContent = "Sem dados";
+  dashboardTopCategory.textContent = "Categoria favorita: sem dados.";
+  dashboardUsagePeriods.innerHTML = '<p class="empty-state">Entre na sua conta para ver os numeros.</p>';
+  dashboardWeeklyChart.innerHTML = '<p class="empty-state">Ainda nao ha dados para montar o grafico.</p>';
+}
+
+function renderDashboard(data) {
+  const summary = data.summary || {};
+  const streak = data.study_streak || {};
+  const usageByPeriod = data.usage_by_period || {};
+  const weeklyEvolution = data.weekly_evolution || [];
+
+  dashboardQuestions.textContent = String(summary.questions || 0);
+  dashboardQuestionsMeta.textContent = `${summary.favorites || 0} favoritos em ${dashboardPeriodLabel(data.selected_period)}.`;
+  dashboardActiveDays.textContent = String(summary.active_days || 0);
+  dashboardCurrentStreak.textContent = `${streak.current || 0}d`;
+  dashboardBestStreak.textContent = `Melhor sequencia: ${streak.best || 0} dias.`;
+  dashboardTopSubject.textContent = summary.top_subject ? subjectLabel(summary.top_subject) : "Sem dados";
+  dashboardTopCategory.textContent = summary.top_category
+    ? `Categoria favorita: ${summary.top_category}.`
+    : "Categoria favorita: sem dados.";
+
+  dashboardUsagePeriods.innerHTML = "";
+  ["7d", "30d", "all"].forEach((periodKey) => {
+    const periodData = usageByPeriod[periodKey];
+    if (!periodData) {
+      return;
+    }
+    const card = document.createElement("article");
+    card.className = `usage-period-card${periodKey === data.selected_period ? " active" : ""}`;
+    card.innerHTML = `
+      <p class="section-tag">${periodData.label}</p>
+      <strong>${periodData.questions}</strong>
+      <span>${periodData.active_days} dias ativos</span>
+    `;
+    dashboardUsagePeriods.appendChild(card);
+  });
+
+  dashboardWeeklyChart.innerHTML = "";
+  if (!weeklyEvolution.length) {
+    dashboardWeeklyChart.innerHTML = '<p class="empty-state">Ainda nao ha dados para montar o grafico.</p>';
+    return;
+  }
+
+  const maxValue = Math.max(...weeklyEvolution.map((point) => point.questions), 1);
+  weeklyEvolution.forEach((point) => {
+    const bar = document.createElement("article");
+    bar.className = "weekly-bar-card";
+
+    const value = document.createElement("strong");
+    value.className = "weekly-bar-value";
+    value.textContent = String(point.questions);
+
+    const meter = document.createElement("div");
+    meter.className = "weekly-bar-meter";
+
+    const fill = document.createElement("span");
+    fill.className = "weekly-bar-fill";
+    fill.style.height = `${Math.max(8, (point.questions / maxValue) * 100)}%`;
+
+    const label = document.createElement("span");
+    label.className = "weekly-bar-label";
+    label.textContent = point.label;
+
+    meter.appendChild(fill);
+    bar.append(value, meter, label);
+    dashboardWeeklyChart.appendChild(bar);
+  });
+}
+
+async function loadDashboard() {
+  const data = await apiFetch(`/api/dashboard?period=${dashboardPeriod}`, { method: "GET" });
+  renderDashboard(data);
+  return data;
+}
+
 async function deleteHistoryItem(historyId) {
   await apiFetch(`/api/history/${historyId}`, { method: "DELETE" });
   if (currentResult?.id === historyId || currentResult?.history_id === historyId) {
@@ -494,6 +596,7 @@ async function deleteHistoryItem(historyId) {
     historyQuery.page = maxPageAfterDelete;
   }
   await loadHistory();
+  await loadDashboard();
 }
 
 async function updateHistoryItem(historyId, payload) {
@@ -621,6 +724,7 @@ function setLoggedOutState() {
   resultCategoryInput.value = "";
   currentResult = null;
   drawEmptyChart("Faca login para usar o grafico.");
+  resetDashboard();
 }
 
 function resetWorkspaceAfterClear() {
@@ -814,6 +918,7 @@ async function bootstrapAuth() {
     }
     setLoggedInState(user, user.csrf_token);
     const historyData = await loadHistory();
+    await loadDashboard();
     if (historyData.items.length) {
       showIdleWorkspace();
     } else {
@@ -872,6 +977,7 @@ loginForm.addEventListener("submit", async (event) => {
     setLoggedInState(data.user, data.csrf_token);
     setMessage("Login realizado com sucesso.", false);
     const historyData = await loadHistory();
+    await loadDashboard();
     if (historyData.items.length) {
       showIdleWorkspace();
     } else {
@@ -896,6 +1002,7 @@ registerForm.addEventListener("submit", async (event) => {
     setMessage("Conta criada com sucesso.", false);
     historyQuery.page = 1;
     await loadHistory();
+    await loadDashboard();
     showIdleWorkspace("Conta pronta. Faca sua primeira pergunta para gerar uma resposta.");
   } catch (error) {
     setMessage(error.message, true);
@@ -1007,6 +1114,7 @@ solveBtn.addEventListener("click", async () => {
     renderResult(data);
     historyQuery.page = 1;
     await loadHistory();
+    await loadDashboard();
   } catch (error) {
     resultTitle.textContent = "Erro";
     resultAnswer.textContent = error.message;
@@ -1032,6 +1140,7 @@ favoriteResultBtn.addEventListener("click", async () => {
   });
   currentResult = { ...currentResult, ...updated, history_id: updated.id };
   favoriteResultBtn.textContent = updated.is_favorite ? "Desfavoritar" : "Favoritar";
+  await loadDashboard();
 });
 
 saveCategoryBtn.addEventListener("click", async () => {
@@ -1043,6 +1152,7 @@ saveCategoryBtn.addEventListener("click", async () => {
     category: resultCategoryInput.value.trim(),
   });
   currentResult = { ...currentResult, ...updated, history_id: updated.id };
+  await loadDashboard();
 });
 
 exportPdfBtn.addEventListener("click", () => {
@@ -1070,6 +1180,19 @@ historyFilter.addEventListener("change", async () => {
   historyQuery.subject = historyFilter.value;
   historyQuery.page = 1;
   await loadHistory();
+});
+
+dashboardPeriodChips.forEach((chip) => {
+  chip.addEventListener("click", async () => {
+    if (dashboardPeriod === chip.dataset.period) {
+      return;
+    }
+    dashboardPeriod = chip.dataset.period;
+    dashboardPeriodChips.forEach((item) => item.classList.toggle("active", item === chip));
+    if (isAuthenticated) {
+      await loadDashboard();
+    }
+  });
 });
 
 historyFavoritesOnly.addEventListener("change", async () => {
@@ -1127,6 +1250,7 @@ clearHistoryBtn.addEventListener("click", async () => {
         await apiFetch("/api/history", { method: "DELETE" });
         historyQuery.page = 1;
         await loadHistory();
+        await loadDashboard();
         await releaseHistoryHeightLock();
         resetWorkspaceAfterClear();
         restoreHistoryViewportAnchor(viewportAnchor);
@@ -1153,5 +1277,6 @@ chartCanvas.addEventListener("wheel", (event) => {
 });
 
 drawEmptyChart("Faca login para usar o grafico.");
+resetDashboard();
 initializeTheme();
 bootstrapAuth();
