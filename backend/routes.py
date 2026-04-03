@@ -560,16 +560,22 @@ def run_solve(mode: str):
     if question == "__too_long__":
         return {"error": "Questao muito grande. Reduza o texto e tente novamente."}, 400
 
+    normalized_mode = {
+        "matematica": "math",
+        "fisica": "physics",
+        "geral": "general",
+    }.get(mode, mode)
+
     user = get_current_user()
     limit = int(os.getenv("SOLVE_RATE_LIMIT_COUNT", "12"))
     window = int(os.getenv("SOLVE_RATE_LIMIT_WINDOW", "60"))
-    allowed, retry_after = rate_limiter.allow(f"{user.id}:{mode}", limit, window)
+    allowed, retry_after = rate_limiter.allow(f"{user.id}:{normalized_mode}", limit, window)
     if not allowed:
         return {"error": f"Voce fez muitas consultas. Tente novamente em {retry_after}s."}, 429
 
-    if mode == "math":
+    if normalized_mode == "math":
         result = solve_math(question)
-    elif mode == "physics":
+    elif normalized_mode == "physics":
         result = solve_physics(question)
     else:
         result = solve_general(question)
