@@ -129,6 +129,13 @@ label {
   gap: 14px;
 }
 
+.activity-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
 .dashboard-header {
   align-items: center;
 }
@@ -269,13 +276,14 @@ label {
 
 .activity-weekdays {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
   color: var(--muted);
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  text-align: center;
 }
 
 .activity-calendar-grid {
@@ -286,12 +294,16 @@ label {
 
 .activity-cell {
   aspect-ratio: 1;
-  min-height: 26px;
+  min-height: 34px;
   padding: 0;
-  border-radius: 10px;
-  background: rgba(24, 32, 28, 0.08);
-  border: 1px solid rgba(24, 32, 28, 0.06);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
   box-shadow: none;
+  color: var(--text);
+  font-weight: 600;
 }
 
 .activity-cell:hover {
@@ -300,14 +312,57 @@ label {
 }
 
 .activity-cell.level-0 {
-  background: rgba(24, 32, 28, 0.05);
+  background: transparent;
 }
 
 .activity-cell.level-1,
 .activity-cell.level-2,
 .activity-cell.level-3,
 .activity-cell.level-4 {
-  background: linear-gradient(135deg, rgba(104, 179, 148, 0.45), rgba(241, 138, 69, 0.7));
+  background: #a6c63b;
+  color: #fff;
+}
+
+.activity-cell.is-outside {
+  color: rgba(91, 100, 93, 0.55);
+}
+
+.activity-cell.is-today {
+  border-color: rgba(241, 138, 69, 0.95);
+}
+
+.activity-cell.is-active.is-today {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 2px rgba(241, 138, 69, 0.95);
+}
+
+.activity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.activity-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.legend-dot.active {
+  background: #a6c63b;
+}
+
+.legend-dot.today {
+  border: 1.5px solid rgba(241, 138, 69, 0.95);
 }
 
 .panel {
@@ -352,7 +407,19 @@ body[data-theme="dark"] .activity-cell.level-1,
 body[data-theme="dark"] .activity-cell.level-2,
 body[data-theme="dark"] .activity-cell.level-3,
 body[data-theme="dark"] .activity-cell.level-4 {
-  background: linear-gradient(135deg, rgba(104, 179, 148, 0.4), rgba(241, 138, 69, 0.78));
+  background: #a6c63b;
+}
+
+body[data-theme="dark"] .activity-cell.is-outside {
+  color: rgba(181, 190, 180, 0.45);
+}
+
+body[data-theme="dark"] .activity-cell.is-today {
+  border-color: rgba(255, 154, 102, 0.98);
+}
+
+body[data-theme="dark"] .legend-dot.today {
+  border-color: rgba(255, 154, 102, 0.98);
 }
 
 .tab,

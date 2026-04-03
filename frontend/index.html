@@ -86,23 +86,29 @@
         </section>
 
         <section class="panel activity-panel">
-          <div class="panel-header">
+          <div class="activity-header">
             <div>
               <p class="section-tag">Calendario</p>
-              <h2>Atividade recente</h2>
+              <h2 id="activityCalendarMonth">Abr 2026</h2>
             </div>
             <span id="activityCalendarSummary" class="tiny">Sem atividade recente.</span>
           </div>
           <div id="activityCalendarWeekdays" class="activity-weekdays" aria-hidden="true">
             <span>Seg</span>
+            <span>Ter</span>
             <span>Qua</span>
+            <span>Qui</span>
             <span>Sex</span>
+            <span>Sab</span>
             <span>Dom</span>
           </div>
           <div id="activityCalendarGrid" class="activity-calendar-grid">
             <p class="empty-state">Entre na sua conta para ver seu calendario.</p>
           </div>
-          <p class="tiny">Cada bloco mostra um dia. Quanto mais forte a cor, maior a atividade.</p>
+          <div class="activity-legend">
+            <span><i class="legend-dot active"></i> Atividade registrada</span>
+            <span><i class="legend-dot today"></i> Hoje</span>
+          </div>
         </section>
       </aside>
 

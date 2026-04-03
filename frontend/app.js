@@ -45,6 +45,7 @@ const dashboardUsagePeriods = document.getElementById("dashboardUsagePeriods");
 const dashboardWeeklyChart = document.getElementById("dashboardWeeklyChart");
 const activityCalendarGrid = document.getElementById("activityCalendarGrid");
 const activityCalendarSummary = document.getElementById("activityCalendarSummary");
+const activityCalendarMonth = document.getElementById("activityCalendarMonth");
 const historyList = document.getElementById("historyList");
 const historySearch = document.getElementById("historySearch");
 const historyCategoryFilter = document.getElementById("historyCategoryFilter");
@@ -499,8 +500,43 @@ function resetDashboard() {
   dashboardTopCategory.textContent = "Categoria favorita: sem dados.";
   dashboardUsagePeriods.innerHTML = '<p class="empty-state">Entre na sua conta para ver os numeros.</p>';
   dashboardWeeklyChart.innerHTML = '<p class="empty-state">Ainda nao ha dados para montar o grafico.</p>';
+  activityCalendarMonth.textContent = "Calendario de atividade";
   activityCalendarSummary.textContent = "Sem atividade recente.";
   activityCalendarGrid.innerHTML = '<p class="empty-state">Entre na sua conta para ver seu calendario.</p>';
+}
+
+function formatMonthLabel(date) {
+  return date.toLocaleDateString("pt-BR", { month: "short", year: "numeric" }).replace(".", "");
+}
+
+function buildMonthlyCalendarEntries(activityCalendar) {
+  const today = new Date();
+  const activityMap = new Map(activityCalendar.map((entry) => [entry.day, entry.count]));
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const startOffset = (monthStart.getDay() + 6) % 7;
+  const gridStart = new Date(monthStart);
+  gridStart.setDate(monthStart.getDate() - startOffset);
+
+  const endOffset = 6 - ((monthEnd.getDay() + 6) % 7);
+  const gridEnd = new Date(monthEnd);
+  gridEnd.setDate(monthEnd.getDate() + endOffset);
+
+  const days = [];
+  const pointer = new Date(gridStart);
+  while (pointer <= gridEnd) {
+    const isoDay = `${pointer.getFullYear()}-${String(pointer.getMonth() + 1).padStart(2, "0")}-${String(pointer.getDate()).padStart(2, "0")}`;
+    days.push({
+      day: isoDay,
+      dayNumber: pointer.getDate(),
+      count: activityMap.get(isoDay) || 0,
+      isCurrentMonth: pointer.getMonth() === today.getMonth(),
+      isToday: isoDay === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`,
+    });
+    pointer.setDate(pointer.getDate() + 1);
+  }
+
+  return { monthLabel: formatMonthLabel(today), days };
 }
 
 function renderDashboard(data) {
@@ -521,16 +557,19 @@ function renderDashboard(data) {
 
   const activityCalendar = data.activity_calendar || [];
   const maxActivity = Math.max(...activityCalendar.map((entry) => entry.count), 0);
+  const monthlyCalendar = buildMonthlyCalendarEntries(activityCalendar);
+  activityCalendarMonth.textContent = monthlyCalendar.monthLabel;
   activityCalendarGrid.innerHTML = "";
-  if (!activityCalendar.length) {
+  if (!monthlyCalendar.days.length) {
     activityCalendarGrid.innerHTML = '<p class="empty-state">Ainda nao ha dados para o calendario.</p>';
   } else {
-    activityCalendar.forEach((entry) => {
+    monthlyCalendar.days.forEach((entry) => {
       const cell = document.createElement("button");
       cell.type = "button";
-      cell.className = `activity-cell level-${Math.min(entry.count, 4)}`;
+      cell.className = `activity-cell level-${Math.min(entry.count, 4)}${entry.isCurrentMonth ? "" : " is-outside"}${entry.isToday ? " is-today" : ""}${entry.count > 0 ? " is-active" : ""}`;
       cell.dataset.count = String(entry.count);
-      if (maxActivity > 0) {
+      cell.textContent = String(entry.dayNumber);
+      if (entry.count > 0 && maxActivity > 0) {
         cell.style.opacity = `${0.22 + (entry.count / maxActivity) * 0.78}`;
       }
       cell.title = `${entry.day} • ${entry.count} atividade(s)`;
