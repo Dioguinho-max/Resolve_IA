@@ -432,6 +432,8 @@ def solve_math(question: str) -> dict:
             equation = Eq(left_expr, right_expr)
             reduced = simplify(left_expr - right_expr)
             solution = solve(equation, x)
+            reduced_expression = str(reduced)
+            graph = build_graph_data(reduced_expression)
             answer = ", ".join(str(item) for item in solution) if solution else "Sem solucao real simples"
             steps = [
                 f"Identifiquei a equacao original: {left.strip()} = {right.strip()}",
@@ -440,6 +442,8 @@ def solve_math(question: str) -> dict:
                 f"Cheguei ao conjunto de solucoes: x = {answer}",
             ]
             steps.extend(describe_math_features(normalized))
+            if graph:
+                steps.append(f"Tambem gerei o grafico da expressao equivalente y = {reduced_expression}.")
             ai_explanation = request_huggingface_explanation(question, "matematica", answer, steps)
             if ai_explanation:
                 steps.append(ai_explanation)
@@ -447,7 +451,7 @@ def solve_math(question: str) -> dict:
                 "title": "Resolucao de equacao",
                 "steps": steps,
                 "answer": answer,
-                "graph": None,
+                "graph": graph,
                 "subject": "matematica",
                 "mode": "math",
             }
