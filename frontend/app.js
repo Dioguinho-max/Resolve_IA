@@ -43,6 +43,8 @@ const dashboardTopSubject = document.getElementById("dashboardTopSubject");
 const dashboardTopCategory = document.getElementById("dashboardTopCategory");
 const dashboardUsagePeriods = document.getElementById("dashboardUsagePeriods");
 const dashboardWeeklyChart = document.getElementById("dashboardWeeklyChart");
+const activityCalendarGrid = document.getElementById("activityCalendarGrid");
+const activityCalendarSummary = document.getElementById("activityCalendarSummary");
 const historyList = document.getElementById("historyList");
 const historySearch = document.getElementById("historySearch");
 const historyCategoryFilter = document.getElementById("historyCategoryFilter");
@@ -497,6 +499,8 @@ function resetDashboard() {
   dashboardTopCategory.textContent = "Categoria favorita: sem dados.";
   dashboardUsagePeriods.innerHTML = '<p class="empty-state">Entre na sua conta para ver os numeros.</p>';
   dashboardWeeklyChart.innerHTML = '<p class="empty-state">Ainda nao ha dados para montar o grafico.</p>';
+  activityCalendarSummary.textContent = "Sem atividade recente.";
+  activityCalendarGrid.innerHTML = '<p class="empty-state">Entre na sua conta para ver seu calendario.</p>';
 }
 
 function renderDashboard(data) {
@@ -514,6 +518,27 @@ function renderDashboard(data) {
   dashboardTopCategory.textContent = summary.top_category
     ? `Categoria favorita: ${summary.top_category}.`
     : "Categoria favorita: sem dados.";
+
+  const activityCalendar = data.activity_calendar || [];
+  const maxActivity = Math.max(...activityCalendar.map((entry) => entry.count), 0);
+  activityCalendarGrid.innerHTML = "";
+  if (!activityCalendar.length) {
+    activityCalendarGrid.innerHTML = '<p class="empty-state">Ainda nao ha dados para o calendario.</p>';
+  } else {
+    activityCalendar.forEach((entry) => {
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = `activity-cell level-${Math.min(entry.count, 4)}`;
+      cell.dataset.count = String(entry.count);
+      if (maxActivity > 0) {
+        cell.style.opacity = `${0.22 + (entry.count / maxActivity) * 0.78}`;
+      }
+      cell.title = `${entry.day} • ${entry.count} atividade(s)`;
+      activityCalendarGrid.appendChild(cell);
+    });
+  }
+  const activeDays = activityCalendar.filter((entry) => entry.count > 0).length;
+  activityCalendarSummary.textContent = `${activeDays} dias ativos nos ultimos 42 dias.`;
 
   dashboardUsagePeriods.innerHTML = "";
   ["7d", "30d", "all"].forEach((periodKey) => {

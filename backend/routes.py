@@ -483,6 +483,19 @@ def build_dashboard_payload(history_rows, selected_period: str):
 
     subject_counter = Counter(row["subject"] for row in rows_for_selected_period)
     category_counter = Counter(row["category"] for row in rows_for_selected_period if row["category"])
+    daily_activity_counter = Counter(row["day"] for row in normalized_rows)
+
+    activity_calendar = []
+    calendar_start = now.date() - timedelta(days=41)
+    for offset in range(42):
+        day = calendar_start + timedelta(days=offset)
+        activity_calendar.append(
+            {
+                "day": day.isoformat(),
+                "weekday": day.weekday(),
+                "count": daily_activity_counter.get(day, 0),
+            }
+        )
 
     recent_activity = [
         {
@@ -502,6 +515,7 @@ def build_dashboard_payload(history_rows, selected_period: str):
             "current": current_streak,
             "best": best_streak,
         },
+        "activity_calendar": activity_calendar,
         "summary": {
             "questions": len(rows_for_selected_period),
             "favorites": sum(1 for row in rows_for_selected_period if row["is_favorite"]),

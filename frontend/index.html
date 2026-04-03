@@ -24,64 +24,86 @@
     </section>
 
     <section class="grid">
-      <aside class="panel auth-panel">
-        <div class="auth-intro">
-          <p id="authEyebrow" class="section-tag">Acesso</p>
-          <h2 id="authTitle" class="auth-title">Entrar na sua conta</h2>
-          <p id="authSubtitle" class="auth-subtitle">Use seu email e senha para abrir o painel e continuar seus estudos.</p>
-        </div>
-        <div class="tabs">
-          <button class="tab active" data-tab="login">Entrar</button>
-          <button class="tab" data-tab="register">Criar conta</button>
-          <button class="tab" data-tab="recover">Recuperar</button>
-        </div>
+      <aside class="left-rail">
+        <section class="panel auth-panel">
+          <div class="auth-intro">
+            <p id="authEyebrow" class="section-tag">Acesso</p>
+            <h2 id="authTitle" class="auth-title">Entrar na sua conta</h2>
+            <p id="authSubtitle" class="auth-subtitle">Use seu email e senha para abrir o painel e continuar seus estudos.</p>
+          </div>
+          <div class="tabs">
+            <button class="tab active" data-tab="login">Entrar</button>
+            <button class="tab" data-tab="register">Criar conta</button>
+            <button class="tab" data-tab="recover">Recuperar</button>
+          </div>
 
-        <form id="loginForm" class="auth-form active-form">
-          <label for="loginEmail">Email</label>
-          <input id="loginEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
-          <label for="loginPassword">Senha</label>
-          <input id="loginPassword" type="password" placeholder="Sua senha" autocomplete="current-password" required>
-          <button type="submit">Entrar</button>
-          <p class="legal-copy">
-            Ao se registrar e fazer login, voce concorda com os
-            <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
-            e com a
-            <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>.
-          </p>
-        </form>
+          <form id="loginForm" class="auth-form active-form">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
+            <label for="loginPassword">Senha</label>
+            <input id="loginPassword" type="password" placeholder="Sua senha" autocomplete="current-password" required>
+            <button type="submit">Entrar</button>
+            <p class="legal-copy">
+              Ao se registrar e fazer login, voce concorda com os
+              <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
+              e com a
+              <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>.
+            </p>
+          </form>
 
-        <form id="registerForm" class="auth-form hidden">
-          <label for="registerEmail">Email</label>
-          <input id="registerEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
-          <label for="registerPassword">Senha</label>
-          <input id="registerPassword" type="password" placeholder="Minimo 6 caracteres" autocomplete="new-password" required>
-          <button type="submit">Criar conta</button>
-          <p class="legal-copy">
-            Ao se registrar e fazer login, voce concorda com os
-            <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
-            e com a
-            <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>.
-          </p>
-        </form>
+          <form id="registerForm" class="auth-form hidden">
+            <label for="registerEmail">Email</label>
+            <input id="registerEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
+            <label for="registerPassword">Senha</label>
+            <input id="registerPassword" type="password" placeholder="Minimo 6 caracteres" autocomplete="new-password" required>
+            <button type="submit">Criar conta</button>
+            <p class="legal-copy">
+              Ao se registrar e fazer login, voce concorda com os
+              <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
+              e com a
+              <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>.
+            </p>
+          </form>
 
-        <section id="recoverForm" class="auth-form hidden">
-          <label for="recoverEmail">Email da conta</label>
-          <input id="recoverEmail" type="email" placeholder="voce@email.com" autocomplete="email">
-          <button id="forgotPasswordBtn" type="button">Gerar codigo de recuperacao</button>
+          <section id="recoverForm" class="auth-form hidden">
+            <label for="recoverEmail">Email da conta</label>
+            <input id="recoverEmail" type="email" placeholder="voce@email.com" autocomplete="email">
+            <button id="forgotPasswordBtn" type="button">Gerar codigo de recuperacao</button>
 
-          <label for="resetToken">Codigo de recuperacao</label>
-          <input id="resetToken" type="text" placeholder="Cole o codigo recebido">
-          <label for="resetPassword">Nova senha</label>
-          <input id="resetPassword" type="password" placeholder="Minimo 6 caracteres" autocomplete="new-password">
-          <button id="resetPasswordBtn" class="secondary" type="button">Redefinir senha</button>
+            <label for="resetToken">Codigo de recuperacao</label>
+            <input id="resetToken" type="text" placeholder="Cole o codigo recebido">
+            <label for="resetPassword">Nova senha</label>
+            <input id="resetPassword" type="password" placeholder="Minimo 6 caracteres" autocomplete="new-password">
+            <button id="resetPasswordBtn" class="secondary" type="button">Redefinir senha</button>
+          </section>
+
+          <div id="userBox" class="user-box hidden">
+            <p id="userEmail"></p>
+            <button id="logoutBtn" class="secondary">Sair</button>
+          </div>
+
+          <p id="authMessage" class="message"></p>
         </section>
 
-        <div id="userBox" class="user-box hidden">
-          <p id="userEmail"></p>
-          <button id="logoutBtn" class="secondary">Sair</button>
-        </div>
-
-        <p id="authMessage" class="message"></p>
+        <section class="panel activity-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-tag">Calendario</p>
+              <h2>Atividade recente</h2>
+            </div>
+            <span id="activityCalendarSummary" class="tiny">Sem atividade recente.</span>
+          </div>
+          <div id="activityCalendarWeekdays" class="activity-weekdays" aria-hidden="true">
+            <span>Seg</span>
+            <span>Qua</span>
+            <span>Sex</span>
+            <span>Dom</span>
+          </div>
+          <div id="activityCalendarGrid" class="activity-calendar-grid">
+            <p class="empty-state">Entre na sua conta para ver seu calendario.</p>
+          </div>
+          <p class="tiny">Cada bloco mostra um dia. Quanto mais forte a cor, maior a atividade.</p>
+        </section>
       </aside>
 
       <section class="panel workspace-panel">

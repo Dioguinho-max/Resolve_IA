@@ -101,11 +101,18 @@ label {
   display: grid;
   grid-template-columns: 320px 1fr;
   gap: 18px;
+  align-items: start;
 }
 
 .lower-grid {
   margin-top: 18px;
   grid-template-columns: 1.1fr 0.9fr;
+}
+
+.left-rail {
+  display: grid;
+  gap: 18px;
+  align-content: start;
 }
 
 .dashboard-row {
@@ -115,6 +122,11 @@ label {
 .dashboard-panel {
   display: grid;
   gap: 18px;
+}
+
+.activity-panel {
+  display: grid;
+  gap: 14px;
 }
 
 .dashboard-header {
@@ -255,6 +267,49 @@ label {
   font-size: 0.78rem;
 }
 
+.activity-weekdays {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.activity-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.activity-cell {
+  aspect-ratio: 1;
+  min-height: 26px;
+  padding: 0;
+  border-radius: 10px;
+  background: rgba(24, 32, 28, 0.08);
+  border: 1px solid rgba(24, 32, 28, 0.06);
+  box-shadow: none;
+}
+
+.activity-cell:hover {
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+.activity-cell.level-0 {
+  background: rgba(24, 32, 28, 0.05);
+}
+
+.activity-cell.level-1,
+.activity-cell.level-2,
+.activity-cell.level-3,
+.activity-cell.level-4 {
+  background: linear-gradient(135deg, rgba(104, 179, 148, 0.45), rgba(241, 138, 69, 0.7));
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -287,9 +342,17 @@ body[data-theme="dark"] #chartCanvas {
 body[data-theme="dark"] .dashboard-card,
 body[data-theme="dark"] .dashboard-surface,
 body[data-theme="dark"] .usage-period-card,
-body[data-theme="dark"] .weekly-bar-meter {
+body[data-theme="dark"] .weekly-bar-meter,
+body[data-theme="dark"] .activity-cell {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="dark"] .activity-cell.level-1,
+body[data-theme="dark"] .activity-cell.level-2,
+body[data-theme="dark"] .activity-cell.level-3,
+body[data-theme="dark"] .activity-cell.level-4 {
+  background: linear-gradient(135deg, rgba(104, 179, 148, 0.4), rgba(241, 138, 69, 0.78));
 }
 
 .tab,
