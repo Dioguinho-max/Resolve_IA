@@ -22,7 +22,7 @@ from sqlalchemy import text
 
 from extensions import bcrypt, db
 from models import AIHistory, User
-from services.ai_service import solve_general, solve_math, solve_physics
+from services.ai_service import detect_subject, solve_general, solve_math, solve_physics
 from services.rate_limit import rate_limiter
 
 
@@ -366,6 +366,17 @@ def solve_physics_route():
 @jwt_required()
 def solve_general_route():
     return save_history(run_solve("general"))
+
+
+@api.post("/api/solve")
+@jwt_required()
+def solve_auto_route():
+    question = extract_question()
+    if not question:
+        return jsonify({"error": "Envie uma questao para resolver."}), 400
+    if question == "__too_long__":
+        return jsonify({"error": "Questao muito grande. Reduza o texto e tente novamente."}), 400
+    return save_history(run_solve(detect_subject(question)))
 
 
 def get_current_user():

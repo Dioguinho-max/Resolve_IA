@@ -1147,7 +1147,7 @@ solveBtn.addEventListener("click", async () => {
   setLoading(true);
   try {
     await ensureAuthenticatedSession();
-    const data = await apiFetch("/api/solve/general", {
+    const data = await apiFetch("/api/solve", {
       method: "POST",
       body: JSON.stringify({ question }),
     });
