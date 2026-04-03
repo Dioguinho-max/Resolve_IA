@@ -360,6 +360,8 @@ body[data-theme="dark"] .period-chip {
 .auth-panel {
   position: relative;
   overflow: hidden;
+  align-self: start;
+  height: fit-content;
 }
 
 .auth-panel::before {
