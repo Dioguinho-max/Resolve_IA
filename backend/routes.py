@@ -365,7 +365,12 @@ def solve_physics_route():
 @api.post("/api/solve/general")
 @jwt_required()
 def solve_general_route():
-    return save_history(run_solve("general"))
+    question = extract_question()
+    if not question:
+        return jsonify({"error": "Envie uma questao para resolver."}), 400
+    if question == "__too_long__":
+        return jsonify({"error": "Questao muito grande. Reduza o texto e tente novamente."}), 400
+    return save_history(run_solve(detect_subject(question)))
 
 
 @api.post("/api/solve")
