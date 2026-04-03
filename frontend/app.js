@@ -29,7 +29,6 @@ const resultCategoryInput = document.getElementById("resultCategoryInput");
 const saveCategoryBtn = document.getElementById("saveCategoryBtn");
 const solveLoading = document.getElementById("solveLoading");
 const generalNotice = document.getElementById("generalNotice");
-const modeChips = document.querySelectorAll(".mode-chip");
 const dashboardPeriodChips = document.querySelectorAll(".period-chip");
 const subjectBadge = document.getElementById("subjectBadge");
 const resultTitle = document.getElementById("resultTitle");
@@ -47,7 +46,6 @@ const dashboardWeeklyChart = document.getElementById("dashboardWeeklyChart");
 const historyList = document.getElementById("historyList");
 const historySearch = document.getElementById("historySearch");
 const historyCategoryFilter = document.getElementById("historyCategoryFilter");
-const historyFilter = document.getElementById("historyFilter");
 const historyFavoritesOnly = document.getElementById("historyFavoritesOnly");
 const historyPrevBtn = document.getElementById("historyPrevBtn");
 const historyNextBtn = document.getElementById("historyNextBtn");
@@ -63,7 +61,6 @@ const chartCanvas = document.getElementById("chartCanvas");
 const historyPanel = document.querySelector(".history-panel");
 const ctx = chartCanvas.getContext("2d");
 
-let selectedMode = "math";
 let currentResult = null;
 let historyQuery = { page: 1, pageSize: 8, subject: "", q: "", category: "", favorites: false };
 let historyPagination = { page: 1, total_pages: 1 };
@@ -192,12 +189,7 @@ async function apiFetch(path, options = {}) {
 }
 
 function subjectLabel(subject) {
-  const labels = {
-    matematica: "Matematica",
-    fisica: "Fisica",
-    geral: "Geral",
-  };
-  return labels[subject] || "Aguardando";
+  return "Estudos";
 }
 
 function dashboardPeriodLabel(period) {
@@ -207,15 +199,6 @@ function dashboardPeriodLabel(period) {
     all: "geral",
   };
   return labels[period] || "periodo selecionado";
-}
-
-function apiPathForMode(mode) {
-  const paths = {
-    math: "/api/solve/math",
-    physics: "/api/solve/physics",
-    general: "/api/solve/general",
-  };
-  return paths[mode] || "/api/solve/math";
 }
 
 function setLoading(isLoading) {
@@ -449,8 +432,8 @@ function renderResult(data) {
     is_favorite: Boolean(data.is_favorite),
     category: data.category || "",
   };
-  subjectBadge.textContent = subjectLabel(data.subject);
-  resultTitle.textContent = data.title || `Resposta ${subjectLabel(data.subject).toLowerCase()}`;
+  subjectBadge.textContent = "Chat de estudos";
+  resultTitle.textContent = data.title || "Resposta da IA";
   const answerText = `Resposta final: ${data.answer || "Sem resposta disponivel."}`;
   resultAnswer.textContent = "";
   generalNotice.classList.toggle("hidden", data.subject !== "geral");
@@ -633,7 +616,7 @@ function renderHistory(items) {
     top.className = "history-top";
 
     const title = document.createElement("h3");
-    title.textContent = subjectLabel(item.subject);
+    title.textContent = item.category || "Consulta salva";
 
     const actions = document.createElement("div");
     actions.className = "history-actions";
@@ -708,7 +691,7 @@ function setLoggedOutState() {
   csrfToken = "";
   userBox.classList.add("hidden");
   setAuthMode("login");
-  subjectBadge.textContent = "Aguardando";
+  subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "A resposta aparece aqui";
   resultAnswer.textContent = "Entre com sua conta para comecar.";
   stepsList.innerHTML = "";
@@ -728,7 +711,7 @@ function setLoggedOutState() {
 }
 
 function resetWorkspaceAfterClear() {
-  subjectBadge.textContent = "Aguardando";
+  subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "Historico limpo";
   resultAnswer.textContent = "Seu historico foi apagado. Faca uma nova pergunta para gerar uma resposta.";
   stepsList.innerHTML = "";
@@ -748,7 +731,7 @@ function resetWorkspaceAfterClear() {
 function showIdleWorkspace(message = "Escolha uma consulta no historico ou faca uma nova pergunta para gerar uma resposta.") {
   answerAnimationToken += 1;
   currentResult = null;
-  subjectBadge.textContent = "Aguardando";
+  subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "A resposta aparece aqui";
   resultAnswer.textContent = message;
   stepsList.innerHTML = "";
@@ -957,13 +940,6 @@ themeToggleBtn?.addEventListener("click", () => {
   window.localStorage.setItem("resolveai-theme", nextTheme);
 });
 
-modeChips.forEach((chip) => {
-  chip.addEventListener("click", () => {
-    selectedMode = chip.dataset.mode;
-    modeChips.forEach((item) => item.classList.toggle("active", item === chip));
-  });
-});
-
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const email = document.getElementById("loginEmail").value.trim();
@@ -1107,7 +1083,7 @@ solveBtn.addEventListener("click", async () => {
   setLoading(true);
   try {
     await ensureAuthenticatedSession();
-    const data = await apiFetch(apiPathForMode(selectedMode), {
+    const data = await apiFetch("/api/solve/general", {
       method: "POST",
       body: JSON.stringify({ question }),
     });
@@ -1174,12 +1150,6 @@ copyAnswerBtn.addEventListener("click", async () => {
   setTimeout(() => {
     copyAnswerBtn.textContent = "Copiar resposta";
   }, 1400);
-});
-
-historyFilter.addEventListener("change", async () => {
-  historyQuery.subject = historyFilter.value;
-  historyQuery.page = 1;
-  await loadHistory();
 });
 
 dashboardPeriodChips.forEach((chip) => {

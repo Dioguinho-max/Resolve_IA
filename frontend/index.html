@@ -88,18 +88,13 @@
         <div class="panel-header">
           <div>
             <p class="section-tag">Agente de IA</p>
-            <h2>Pergunte qualquer exercicio</h2>
+            <h2>Converse sobre exercicios, revisoes e planos de estudo</h2>
           </div>
-          <span id="subjectBadge" class="badge">Aguardando</span>
+          <span id="subjectBadge" class="badge">Chat de estudos</span>
         </div>
 
         <label for="questionInput">Questao</label>
-        <div class="mode-switch" aria-label="Modo de resposta">
-          <button type="button" class="mode-chip active" data-mode="math">Matematica</button>
-          <button type="button" class="mode-chip" data-mode="physics">Fisica</button>
-          <button type="button" class="mode-chip" data-mode="general">Geral</button>
-        </div>
-        <textarea id="questionInput" placeholder="Exemplo: 2*x + 3 = 11"></textarea>
+        <textarea id="questionInput" placeholder="Ex.: Monte um plano de estudos para algebra, revise funcao do 2 grau ou resolva 2*x + 3 = 11"></textarea>
         <div class="action-row">
           <button id="solveBtn">Resolver com IA</button>
           <button id="newQuestionBtn" class="secondary" type="button">Nova pergunta</button>
@@ -149,7 +144,7 @@
       </section>
     </section>
 
-    <section class="grid lower-grid">
+    <section class="dashboard-row">
       <section class="panel dashboard-panel">
         <div class="panel-header dashboard-header">
           <div>
@@ -179,7 +174,7 @@
             <p id="dashboardBestStreak" class="tiny">Melhor sequencia: 0 dias.</p>
           </article>
           <article class="dashboard-card">
-            <p class="section-tag">Materia em destaque</p>
+            <p class="section-tag">Foco em destaque</p>
             <strong id="dashboardTopSubject" class="dashboard-number dashboard-label">Sem dados</strong>
             <p id="dashboardTopCategory" class="tiny">Categoria favorita: sem dados.</p>
           </article>
@@ -234,12 +229,6 @@
         <div class="history-toolbar">
           <input id="historySearch" type="search" placeholder="Buscar no historico">
           <input id="historyCategoryFilter" type="search" placeholder="Filtrar por categoria">
-          <select id="historyFilter">
-            <option value="">Todos</option>
-            <option value="matematica">Matematica</option>
-            <option value="fisica">Fisica</option>
-            <option value="geral">Geral</option>
-          </select>
           <label class="history-favorites-toggle" for="historyFavoritesOnly">
             <input id="historyFavoritesOnly" type="checkbox">
             <span>So favoritos</span>
