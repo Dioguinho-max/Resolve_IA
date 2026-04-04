@@ -344,6 +344,43 @@ def request_huggingface_explanation(question: str, subject: str, local_answer: s
     return request_huggingface_response(prompt, max_tokens=160)
 
 
+def polish_math_explanation(explanation: str | None, existing_steps: list[str]) -> str | None:
+    if not explanation:
+        return None
+
+    cleaned = re.sub(r"\*\*+", "", explanation)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    lowered = cleaned.lower()
+
+    duplicate_markers = [
+        "vamos resolver",
+        "passo 1",
+        "passo 2",
+        "passo 3",
+        "passo 4",
+        "formula quadratica",
+    ]
+    if any(marker in lowered for marker in duplicate_markers):
+        return None
+
+    existing_text = " ".join(existing_steps).lower()
+    if cleaned.lower() in existing_text:
+        return None
+
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", cleaned) if part.strip()]
+    if not sentences:
+        return None
+
+    summary = " ".join(sentences[:2]).strip()
+    if len(summary) > 180:
+        summary = f"{summary[:177].rstrip()}..."
+
+    if len(summary) < 25:
+        return None
+
+    return f"Resumo: {summary}"
+
+
 def request_huggingface_general_answer(question: str) -> str | None:
     prompt = (
         "Voce e um assistente util, direto e amigavel.\n"
@@ -444,7 +481,10 @@ def solve_math(question: str) -> dict:
             steps.extend(describe_math_features(normalized))
             if graph:
                 steps.append(f"Tambem gerei o grafico da expressao equivalente y = {reduced_expression}.")
-            ai_explanation = request_huggingface_explanation(question, "matematica", answer, steps)
+            ai_explanation = polish_math_explanation(
+                request_huggingface_explanation(question, "matematica", answer, steps),
+                steps,
+            )
             if ai_explanation:
                 steps.append(ai_explanation)
             return {
