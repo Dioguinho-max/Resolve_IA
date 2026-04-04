@@ -65,7 +65,7 @@ const historyPanel = document.querySelector(".history-panel");
 const ctx = chartCanvas.getContext("2d");
 
 let currentResult = null;
-let historyQuery = { page: 1, pageSize: 8, subject: "", q: "", category: "", favorites: false };
+let historyQuery = { page: 1, pageSize: 2, subject: "", q: "", category: "", favorites: false };
 let historyPagination = { page: 1, total_pages: 1 };
 let graphState = { zoom: 1 };
 let confirmModalAction = null;
