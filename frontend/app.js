@@ -310,9 +310,16 @@ function drawGraph(graph) {
   const axisStroke = currentTheme === "dark" ? "rgba(255, 255, 255, 0.18)" : "rgba(24, 32, 28, 0.22)";
   const graphStroke = currentTheme === "dark" ? "#f18a45" : "#d75f39";
   const graphFill = currentTheme === "dark" ? "#68b394" : "#2f6c54";
+  const labelFill = currentTheme === "dark" ? "rgba(244, 247, 244, 0.74)" : "rgba(24, 32, 28, 0.68)";
 
   const projectX = (value) => padding + ((value - visibleMinX) / (visibleMaxX - visibleMinX || 1)) * (width - padding * 2);
   const projectY = (value) => height - padding - ((value - visibleMinY) / (visibleMaxY - visibleMinY || 1)) * (height - padding * 2);
+  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+  const formatTick = (value) => {
+    const normalized = Math.abs(value) < 0.0001 ? 0 : value;
+    const decimals = Number.isInteger(normalized) ? 0 : 1;
+    return normalized.toFixed(decimals);
+  };
 
   ctx.strokeStyle = gridStroke;
   ctx.lineWidth = 1;
@@ -327,12 +334,32 @@ function drawGraph(graph) {
     ctx.stroke();
   }
 
+  ctx.fillStyle = labelFill;
+  ctx.font = "12px 'IBM Plex Mono'";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  for (let i = 0; i <= 4; i += 1) {
+    const tickValue = visibleMinX + ((visibleMaxX - visibleMinX) / 4) * i;
+    const xPos = padding + ((width - padding * 2) / 4) * i;
+    ctx.fillText(formatTick(tickValue), xPos, height - padding + 12);
+  }
+
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let i = 0; i <= 4; i += 1) {
+    const tickValue = visibleMaxY - ((visibleMaxY - visibleMinY) / 4) * i;
+    const yPos = padding + ((height - padding * 2) / 4) * i;
+    ctx.fillText(formatTick(tickValue), padding - 10, yPos);
+  }
+
   ctx.strokeStyle = axisStroke;
   ctx.beginPath();
-  ctx.moveTo(projectX(0), padding);
-  ctx.lineTo(projectX(0), height - padding);
-  ctx.moveTo(padding, projectY(0));
-  ctx.lineTo(width - padding, projectY(0));
+  const axisX = clamp(projectX(0), padding, width - padding);
+  const axisY = clamp(projectY(0), padding, height - padding);
+  ctx.moveTo(axisX, padding);
+  ctx.lineTo(axisX, height - padding);
+  ctx.moveTo(padding, axisY);
+  ctx.lineTo(width - padding, axisY);
   ctx.stroke();
 
   ctx.strokeStyle = graphStroke;
