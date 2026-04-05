@@ -27,6 +27,7 @@ from services.rate_limit import rate_limiter
 
 
 api = Blueprint("api", __name__)
+APP_VERSION = "1.0.8"
 
 EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 MAX_EMAIL_LENGTH = 255
@@ -55,14 +56,14 @@ def build_auth_response(user: User, status_code: int = 200):
 
 @api.get("/")
 def index():
-    return jsonify({"status": "online", "service": "ResolveAI API"})
+    return jsonify({"status": "online", "service": "ResolveAI API", "version": APP_VERSION})
 
 
 @api.get("/api/health")
 def health_check():
     from datetime import datetime, timezone
 
-    return jsonify({"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()})
+    return jsonify({"status": "ok", "version": APP_VERSION, "timestamp": datetime.now(timezone.utc).isoformat()})
 
 
 @api.post("/api/auth/register")
@@ -640,3 +641,4 @@ def enforce_rate_limit(key: str, limit: int, window_seconds: int):
     if allowed:
         return None
     return jsonify({"error": f"Muitas tentativas. Tente novamente em {retry_after}s."}), 429
+

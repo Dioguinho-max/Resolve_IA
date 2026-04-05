@@ -1,70 +1,59 @@
-# 🌟 ResolveAI
+# ResolveAI
 
-![ResolveAI](https://img.shields.io/badge/Plataforma-Estudos-blue)
-![Frontend](https://img.shields.io/badge/Frontend-Web-green)
-![Backend](https://img.shields.io/badge/Backend-Flask-orange)
-![Banco](https://img.shields.io/badge/Banco-PostgreSQL-blueviolet)
+Versao atual: `1.0.8`
 
-**ResolveAI** é uma plataforma online que ajuda estudantes a **resolver exercícios**, **entender respostas** e **acompanhar seu aprendizado** de forma simples, prática e organizada.
+ResolveAI e uma plataforma de estudos com IA focada em exercicios, revisoes e organizacao do aprendizado. O projeto combina chat de estudos, historico salvo por usuario, graficos matematicos e recursos de acompanhamento de uso.
 
----
+## Release 1.0.8
 
-## 🎯 Principais Funcionalidades
+A versao `1.0.8` consolida a base atual do produto com melhorias importantes na experiencia de estudo:
 
-- 🔹 Criar conta e fazer login com segurança  
-- 🔹 Enviar perguntas de **Matemática, Física** ou assuntos gerais  
-- 🔹 Receber respostas detalhadas com **explicações passo a passo**  
-- 🔹 Visualizar **gráficos em questões matemáticas**  
-- 🔹 Salvar, buscar e organizar seu **histórico de respostas**  
-- 🔹 Redefinir a senha com **código de segurança**  
+- chat unico para exercicios, revisoes e planos de estudo
+- deteccao automatica de perguntas matematicas no fluxo principal
+- grafico de funcoes com eixos numerados
+- historico com favoritos, categorias e paginacao reduzida
+- dashboard com ritmo de estudo, evolucao semanal e calendario de atividade
+- exportacao da resposta em PDF e imagem
+- modo escuro
+- autenticacao, recuperacao de senha e historico protegido por usuario
 
----
+## Funcionalidades principais
 
-## ⚡ Como Funciona
+- criar conta, entrar e sair com seguranca
+- recuperar senha com codigo temporario
+- enviar perguntas no chat de estudos
+- receber respostas explicadas com animacao de escrita
+- visualizar graficos quando a pergunta envolver funcao matematica
+- salvar consultas no historico
+- favoritar respostas importantes
+- organizar consultas com categorias pessoais
+- buscar, filtrar e apagar itens do historico
+- acompanhar uso no dashboard e no calendario de atividade
 
-- **Matemática:** resolve equações, derivadas, integrais, frações, logaritmos, trigonometria e mais.  
-- **Física e Geral:** respostas detalhadas usando inteligência artificial.  
-- **Histórico:** todas as perguntas e respostas ficam salvas para você consultar quando quiser.  
+## Stack
 
----
+- Frontend: HTML, CSS e JavaScript
+- Backend: Python e Flask
+- Banco de dados: PostgreSQL
+- Autenticacao: JWT e bcrypt
+- IA matematica: SymPy
+- IA geral: Hugging Face
 
-## ✨ Recursos Extras
+## Privacidade e seguranca
 
-- 📝 Envio de novas perguntas e **cópia de respostas**  
-- 📚 Histórico com **busca, filtro, exclusão individual e limpeza total**  
-- 📈 Gráficos matemáticos com **zoom**  
+- historico separado por usuario
+- cookies autenticados com protecao CSRF
+- limitacao de taxa nas rotas de IA
+- bloqueio de envio de dados sensiveis para IA externa
+- RLS aplicada no historico do usuario
 
----
+## Endpoints de status
 
-## 🔒 Segurança
+A API principal agora informa a versao atual nos endpoints:
 
-- Senhas protegidas  
-- Histórico separado por usuário  
-- Limite de uso nas rotas de IA para proteger a plataforma  
+- `GET /`
+- `GET /api/health`
 
----
+## Proxima linha de evolucao
 
-## 🚀 Tecnologias
-
-- **Frontend:** HTML, CSS, JavaScript  
-- **Backend:** Python, Flask  
-- **Banco de Dados:** PostgreSQL  
-- **Autenticação:** JWT, bcrypt  
-- **IA Matemática:** SymPy  
-- **IA Geral:** Hugging Face  
-
-## Privacidade
-
-- Evite enviar emails, telefones, CPF, numeros de cartao ou outros dados pessoais nas perguntas.
-- Quando a pergunta aparenta conter dados sensiveis, o backend bloqueia o envio para a IA externa.
-- Perguntas gerais e de fisica podem usar a Hugging Face quando a integracao estiver ativa.
-
----
-
-## 💡 Ideal Para
-
-Estudantes que querem estudar de forma **rápida, prática e confiável**, com o auxílio de inteligência artificial para **resolver exercícios e entender conceitos** de maneira clara.
-
----
-
-![Study](https://img.shields.io/badge/Study-Smart-brightgreen)
+A base do projeto esta estavel na `1.0.8`. A partir daqui, as proximas atualizacoes podem focar em refinamentos de produto, experiencia e inteligencia da plataforma.
