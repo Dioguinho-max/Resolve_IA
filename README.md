@@ -1,8 +1,8 @@
-﻿# ResolveAI v1.0.8
+﻿# ResolveAI v1.0.9
 
 <p align="center">
   <img src="https://img.shields.io/badge/Plataforma-Estudos-2f6c54?style=for-the-badge" alt="Plataforma Estudos">
-  <img src="https://img.shields.io/badge/Versão-1.0.8-d75f39?style=for-the-badge" alt="Versão 1.0.8">
+  <img src="https://img.shields.io/badge/Versão-1.0.9-d75f39?style=for-the-badge" alt="Versão 1.0.9">
   <img src="https://img.shields.io/badge/Frontend-Web-4c956c?style=for-the-badge" alt="Frontend Web">
   <img src="https://img.shields.io/badge/Backend-Flask-f4a261?style=for-the-badge" alt="Backend Flask">
   <img src="https://img.shields.io/badge/Banco-PostgreSQL-577590?style=for-the-badge" alt="Banco PostgreSQL">
@@ -23,7 +23,7 @@
 
 ---
 
-## Release 1.0.8
+## Release 1.0.9
 
 <p>
   <img src="https://img.shields.io/badge/Chat%20único-Ativo-264653?style=flat-square" alt="Chat único">
@@ -34,13 +34,18 @@
   <img src="https://img.shields.io/badge/Histórico-Favoritos%20%7C%20Categorias-5a189a?style=flat-square" alt="Histórico">
 </p>
 
-A versão **1.0.8** consolida a base atual do produto com uma experiência mais completa de estudo, organização e visualização de respostas.
+A versao **1.0.9** refina a experiencia do produto com uma pagina publica de entrada separada da area interna de estudos, deixando a navegacao mais clara e o acesso ao painel mais profissional.
 
 ---
 
 ## Visão Geral
 
-O **ResolveAI** reúne em um único ambiente:
+O **ResolveAI** agora organiza a experiencia em duas camadas bem definidas:
+
+- pagina publica de entrada com apresentacao do produto e autenticacao
+- area interna dedicada ao painel de estudos, chat, dashboard, historico e grafico
+
+Dentro dessa estrutura, o produto oferece:
 
 - chat de estudos para exercícios, revisões e planos de estudo
 - respostas com explicações passo a passo
@@ -56,28 +61,28 @@ O **ResolveAI** reúne em um único ambiente:
 
 | Área | Funcionalidade | Status |
 |---|---|---|
-| Conta | Cadastro e login | ✅ |
-| Conta | Recuperação de senha por código | ✅ |
-| Chat | Chat único de estudos | ✅ |
-| Respostas | Animação de escrita da IA | ✅ |
-| Matemática | Resolução de expressões e equações | ✅ |
-| Matemática | Geração de gráfico | ✅ |
-| Matemática | Eixos numerados no gráfico | ✅ |
-| Histórico | Salvamento automático | ✅ |
-| Histórico | Busca e filtros | ✅ |
-| Histórico | Favoritos | ✅ |
-| Histórico | Categorias pessoais | ✅ |
-| Histórico | Exclusão individual e limpeza total | ✅ |
-| Dashboard | Uso por período | ✅ |
-| Dashboard | Evolução semanal | ✅ |
-| Dashboard | Sequência de estudo | ✅ |
-| Dashboard | Calendário de atividade | ✅ |
-| Exportação | Copiar resposta | ✅ |
-| Exportação | PDF | ✅ |
-| Exportação | Imagem | ✅ |
-| Interface | Modo escuro | ✅ |
-| Segurança | JWT + bcrypt + CSRF | ✅ |
-| Banco | Histórico protegido por RLS | ✅ |
+| Conta | Cadastro, login e pagina publica dedicada | OK |
+| Conta | Recuperação de senha por código | OK |
+| Chat | Chat único de estudos | OK |
+| Respostas | Animação de escrita da IA | OK |
+| Matemática | Resolução de expressões e equações | OK |
+| Matemática | Geração de gráfico | OK |
+| Matemática | Eixos numerados no gráfico | OK |
+| Histórico | Salvamento automático | OK |
+| Histórico | Busca e filtros | OK |
+| Histórico | Favoritos | OK |
+| Histórico | Categorias pessoais | OK |
+| Histórico | Exclusão individual e limpeza total | OK |
+| Dashboard | Uso por período | OK |
+| Dashboard | Evolução semanal | OK |
+| Dashboard | Sequência de estudo | OK |
+| Dashboard | Calendário de atividade | OK |
+| Exportação | Copiar resposta | OK |
+| Exportação | PDF | OK |
+| Exportação | Imagem | OK |
+| Interface | Modo escuro | OK |
+| Segurança | JWT + bcrypt + CSRF | OK |
+| Banco | Histórico protegido por RLS | OK |
 
 ---
 
@@ -194,14 +199,18 @@ A API informa a versão atual nos endpoints:
 
 <p>
   <img src="https://img.shields.io/badge/Status-Estável-2a9d8f?style=for-the-badge" alt="Status estável">
-  <img src="https://img.shields.io/badge/Release-v1.0.8-e76f51?style=for-the-badge" alt="Release v1.0.8">
+  <img src="https://img.shields.io/badge/Release-v1.0.9-e76f51?style=for-the-badge" alt="Release v1.0.9">
 </p>
 
-A base do projeto está estável na **v1.0.8**, pronta para receber novas evoluções de produto, experiência e inteligência.
+A base do projeto esta estavel na **v1.0.9**, com entrada publica separada, area interna mais limpa e pronta para novas evolucoes de produto, experiencia e inteligencia.
 
 ---
 
 <p align="center">
-  <strong>ResolveAI 1.0.8</strong><br>
+  <strong>ResolveAI 1.0.9</strong><br>
   Estudo com IA, organização pessoal e evolução contínua em um só lugar.
 </p>
+
+
+
+

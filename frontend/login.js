@@ -7,7 +7,6 @@ const authEyebrow = document.getElementById("authEyebrow");
 const authTitle = document.getElementById("authTitle");
 const authSubtitle = document.getElementById("authSubtitle");
 const authMessage = document.getElementById("authMessage");
-const themeToggleBtn = document.getElementById("themeToggleBtn");
 const tabs = document.querySelectorAll(".tab");
 const recoverEmail = document.getElementById("recoverEmail");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
@@ -16,8 +15,6 @@ const resetPasswordInput = document.getElementById("resetPassword");
 const resetPasswordBtn = document.getElementById("resetPasswordBtn");
 
 let csrfToken = "";
-let currentTheme = "light";
-
 const authModeContent = {
   login: {
     eyebrow: "Acesso",
@@ -36,23 +33,8 @@ const authModeContent = {
   },
 };
 
-function applyTheme(theme) {
-  currentTheme = theme === "dark" ? "dark" : "light";
-  document.body.dataset.theme = currentTheme;
-  if (themeToggleBtn) {
-    themeToggleBtn.textContent = currentTheme === "dark" ? "Modo claro" : "Modo escuro";
-  }
-}
-
 function initializeTheme() {
-  const storedTheme = window.localStorage.getItem("resolveai-theme");
-  if (storedTheme === "dark" || storedTheme === "light") {
-    applyTheme(storedTheme);
-    return;
-  }
-
-  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  applyTheme(prefersDark ? "dark" : "light");
+  document.body.dataset.theme = "dark";
 }
 
 function setAuthMode(mode) {
@@ -112,12 +94,6 @@ async function bootstrapAuth() {
 
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => setAuthMode(tab.dataset.tab));
-});
-
-themeToggleBtn?.addEventListener("click", () => {
-  const nextTheme = currentTheme === "dark" ? "light" : "dark";
-  applyTheme(nextTheme);
-  window.localStorage.setItem("resolveai-theme", nextTheme);
 });
 
 loginForm.addEventListener("submit", async (event) => {
