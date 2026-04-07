@@ -1,16 +1,6 @@
 const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || "http://127.0.0.1:5000";
 
-const loginForm = document.getElementById("loginForm");
-const registerForm = document.getElementById("registerForm");
-const recoverForm = document.getElementById("recoverForm");
-const authEyebrow = document.getElementById("authEyebrow");
-const authTitle = document.getElementById("authTitle");
-const authSubtitle = document.getElementById("authSubtitle");
-const authMessage = document.getElementById("authMessage");
 const themeToggleBtn = document.getElementById("themeToggleBtn");
-const publicShell = document.getElementById("publicShell");
-const appShell = document.getElementById("appShell");
-const tabs = document.querySelectorAll(".tab");
 const userBox = document.getElementById("userBox");
 const userEmail = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
@@ -56,11 +46,6 @@ const historyPrevBtn = document.getElementById("historyPrevBtn");
 const historyNextBtn = document.getElementById("historyNextBtn");
 const historyPageInfo = document.getElementById("historyPageInfo");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
-const recoverEmail = document.getElementById("recoverEmail");
-const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
-const resetTokenInput = document.getElementById("resetToken");
-const resetPasswordInput = document.getElementById("resetPassword");
-const resetPasswordBtn = document.getElementById("resetPasswordBtn");
 const chartTitle = document.getElementById("chartTitle");
 const chartCanvas = document.getElementById("chartCanvas");
 const historyPanel = document.querySelector(".history-panel");
@@ -77,24 +62,6 @@ let answerAnimationToken = 0;
 let currentTheme = "light";
 let lastAutoScrollAt = 0;
 let dashboardPeriod = "30d";
-
-const authModeContent = {
-  login: {
-    eyebrow: "Acesso",
-    title: "Entrar na sua conta",
-    subtitle: "Use seu email e senha para abrir o painel e continuar seus estudos.",
-  },
-  register: {
-    eyebrow: "Cadastro",
-    title: "Criar uma conta nova",
-    subtitle: "Abra sua conta para salvar historico, organizar perguntas e acompanhar respostas da IA.",
-  },
-  recover: {
-    eyebrow: "Recuperacao",
-    title: "Redefinir sua senha",
-    subtitle: "Gere um codigo, confirme sua identidade e escolha uma nova senha sem sair do app.",
-  },
-};
 
 function applyTheme(theme) {
   currentTheme = theme === "dark" ? "dark" : "light";
@@ -138,32 +105,6 @@ function closeConfirmModal(returnFocusElement = null) {
   confirmModal.classList.add("hidden");
   confirmModal.setAttribute("aria-hidden", "true");
   confirmModalAction = null;
-}
-
-function setAuthMode(mode) {
-  if (isAuthenticated) {
-    tabs.forEach((tab) => tab.classList.remove("active"));
-    authMessage.textContent = "";
-    return;
-  }
-
-  tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === mode));
-  loginForm.classList.toggle("hidden", mode !== "login");
-  registerForm.classList.toggle("hidden", mode !== "register");
-  recoverForm.classList.toggle("hidden", mode !== "recover");
-  loginForm.classList.toggle("active-form", mode === "login");
-  registerForm.classList.toggle("active-form", mode === "register");
-  recoverForm.classList.toggle("active-form", mode === "recover");
-  const content = authModeContent[mode] || authModeContent.login;
-  authEyebrow.textContent = content.eyebrow;
-  authTitle.textContent = content.title;
-  authSubtitle.textContent = content.subtitle;
-  authMessage.textContent = "";
-}
-
-function setMessage(message, isError = true) {
-  authMessage.textContent = message;
-  authMessage.style.color = isError ? "#b33e2d" : "#2f6c54";
 }
 
 async function apiFetch(path, options = {}) {
@@ -769,29 +710,20 @@ function renderHistory(items) {
   });
 }
 
-function syncShellVisibility() {
-  publicShell?.classList.toggle("hidden", isAuthenticated);
-  appShell?.classList.toggle("hidden", !isAuthenticated);
-}
-
 function setLoggedInState(user, nextCsrfToken = "") {
   isAuthenticated = true;
   csrfToken = nextCsrfToken || user.csrf_token || csrfToken;
   userBox.classList.remove("hidden");
   userEmail.textContent = user.email;
-  loginForm.classList.add("hidden");
-  registerForm.classList.add("hidden");
-  recoverForm.classList.add("hidden");
-  authMessage.textContent = "";
-  syncShellVisibility();
+  userBox.classList.remove("hidden");
 }
 
 function setLoggedOutState() {
   isAuthenticated = false;
   csrfToken = "";
   userBox.classList.add("hidden");
-  syncShellVisibility();
-  setAuthMode("login");
+  window.location.replace("./");
+  return;
   subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "A resposta aparece aqui";
   resultAnswer.textContent = "Entre com sua conta para comecar.";
@@ -1031,102 +963,10 @@ function debounce(fn, delay = 350) {
   };
 }
 
-tabs.forEach((tab) => {
-  tab.addEventListener("click", () => setAuthMode(tab.dataset.tab));
-});
-
 themeToggleBtn?.addEventListener("click", () => {
   const nextTheme = currentTheme === "dark" ? "light" : "dark";
   applyTheme(nextTheme);
   window.localStorage.setItem("resolveai-theme", nextTheme);
-});
-
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
-
-  try {
-    const data = await apiFetch("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
-    setLoggedInState(data.user, data.csrf_token);
-    setMessage("Login realizado com sucesso.", false);
-    const historyData = await loadHistory();
-    await loadDashboard();
-    if (historyData.items.length) {
-      showIdleWorkspace();
-    } else {
-      drawEmptyChart("Resolva uma funcao para ver o grafico.");
-    }
-  } catch (error) {
-    setMessage(error.message, true);
-  }
-});
-
-registerForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const email = document.getElementById("registerEmail").value.trim();
-  const password = document.getElementById("registerPassword").value;
-
-  try {
-    const data = await apiFetch("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
-    setLoggedInState(data.user, data.csrf_token);
-    setMessage("Conta criada com sucesso.", false);
-    historyQuery.page = 1;
-    await loadHistory();
-    await loadDashboard();
-    showIdleWorkspace("Conta pronta. Faca sua primeira pergunta para gerar uma resposta.");
-  } catch (error) {
-    setMessage(error.message, true);
-  }
-});
-
-forgotPasswordBtn.addEventListener("click", async () => {
-  const email = recoverEmail.value.trim();
-  if (!email) {
-    setMessage("Informe o email da conta para gerar o codigo.", true);
-    return;
-  }
-
-  try {
-    const data = await apiFetch("/api/auth/forgot-password", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
-    setMessage(data.message || "Codigo gerado com sucesso.", false);
-    if (data.reset_token) {
-      resetTokenInput.value = data.reset_token;
-    }
-  } catch (error) {
-    setMessage(error.message, true);
-  }
-});
-
-resetPasswordBtn.addEventListener("click", async () => {
-  const token = resetTokenInput.value.trim();
-  const password = resetPasswordInput.value;
-  if (!token || !password) {
-    setMessage("Preencha o codigo e a nova senha.", true);
-    return;
-  }
-
-  try {
-    const data = await apiFetch("/api/auth/reset-password", {
-      method: "POST",
-      body: JSON.stringify({ token, password }),
-    });
-    setMessage(data.message || "Senha redefinida com sucesso.", false);
-    resetTokenInput.value = "";
-    resetPasswordInput.value = "";
-    setAuthMode("login");
-  } catch (error) {
-    setMessage(error.message, true);
-  }
 });
 
 logoutBtn.addEventListener("click", () => {
@@ -1351,3 +1191,4 @@ drawEmptyChart("Faca login para usar o grafico.");
 resetDashboard();
 initializeTheme();
 bootstrapAuth();
+
