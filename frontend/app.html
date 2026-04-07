@@ -10,22 +10,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
+<body data-theme="dark">
   <main class="shell shell-split">
     <header class="site-frame-header">
       <p class="eyebrow">ResolveAI</p>
-      <button id="themeToggleBtn" class="theme-toggle secondary" type="button" aria-label="Alternar tema">Modo escuro</button>
     </header>
 
     <section class="app-shell">
       <section class="panel app-shell-header">
         <div class="app-shell-copy">
-          <p class="section-tag">Painel de estudos</p>
-          <h1 class="app-shell-title">Estude com IA, organize seu historico e acompanhe sua evolucao.</h1>
-          <p class="subtitle">Use o chat, salve consultas importantes e acompanhe sua rotina em um painel feito para estudo continuo.</p>
+          <div class="app-shell-brand">
+            <span id="appUserInitialsBadge" class="app-shell-initials">RA</span>
+            <div class="app-shell-heading">
+              <p class="section-tag">Organizador de estudos</p>
+              <h1 class="app-shell-title">Painel de evolucao</h1>
+            </div>
+          </div>
+          <p class="subtitle">Acompanhe seu ritmo, organize consultas e mantenha seu espaco de estudo com uma cara mais pessoal.</p>
         </div>
         <div id="userBox" class="user-box hidden">
-          <p id="userEmail"></p>
+          <div class="profile-chip">
+            <label for="profileImageInput" class="profile-avatar-button" aria-label="Trocar foto de perfil">
+              <img id="profileAvatarImage" class="profile-avatar-image hidden" alt="Foto de perfil">
+              <span id="profileAvatarFallback" class="profile-avatar-fallback">RA</span>
+            </label>
+            <div class="profile-copy">
+              <p id="profileName" class="profile-name">Usuario</p>
+              <p id="userEmail" class="profile-email"></p>
+              <label for="profileImageInput" class="profile-photo-link">Trocar foto</label>
+              <p id="profileStatus" class="profile-status tiny"></p>
+            </div>
+          </div>
+          <input id="profileImageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden">
           <button id="logoutBtn" class="secondary">Sair</button>
         </div>
       </section>
@@ -57,6 +73,28 @@
               <span><i class="legend-dot today"></i> Hoje</span>
             </div>
           </section>
+          <section class="panel study-guide-panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-tag">Guia rapido</p>
+                <h2>Use melhor cada resposta</h2>
+              </div>
+            </div>
+            <div class="guide-points">
+              <article class="guide-point">
+                <span class="guide-point-index">01</span>
+                <p>Peca resolucao completa, revisao teorica ou um plano curto por topico.</p>
+              </article>
+              <article class="guide-point">
+                <span class="guide-point-index">02</span>
+                <p>Salve categorias como prova, revisao ou duvida recorrente para encontrar depois.</p>
+              </article>
+              <article class="guide-point">
+                <span class="guide-point-index">03</span>
+                <p>Use o grafico e o historico juntos quando estiver estudando funcoes e exercicios parecidos.</p>
+              </article>
+            </div>
+          </section>
         </aside>
 
         <section class="panel workspace-panel">
@@ -66,6 +104,14 @@
               <h2>Converse sobre exercicios, revisoes e planos de estudo</h2>
             </div>
             <span id="subjectBadge" class="badge">Chat de estudos</span>
+          </div>
+          <div class="workspace-intro">
+            <p class="tiny">Perguntas mais objetivas costumam gerar respostas mais organizadas.</p>
+            <div class="workspace-tags" aria-label="Sugestoes de pedidos">
+              <span class="workspace-tag">Plano de estudos</span>
+              <span class="workspace-tag">Resolucao passo a passo</span>
+              <span class="workspace-tag">Revisao rapida</span>
+            </div>
           </div>
 
           <label for="questionInput">Questao</label>

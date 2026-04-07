@@ -2,6 +2,12 @@ const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || "http://127.0.0.1:5000";
 
 const userBox = document.getElementById("userBox");
 const userEmail = document.getElementById("userEmail");
+const profileName = document.getElementById("profileName");
+const profileStatus = document.getElementById("profileStatus");
+const profileImageInput = document.getElementById("profileImageInput");
+const profileAvatarImage = document.getElementById("profileAvatarImage");
+const profileAvatarFallback = document.getElementById("profileAvatarFallback");
+const appUserInitialsBadge = document.getElementById("appUserInitialsBadge");
 const logoutBtn = document.getElementById("logoutBtn");
 const confirmModal = document.getElementById("confirmModal");
 const confirmModalTag = document.getElementById("confirmModalTag");
@@ -61,6 +67,7 @@ let answerAnimationToken = 0;
 let lastAutoScrollAt = 0;
 let dashboardPeriod = "30d";
 let currentTheme = "dark";
+let currentUser = null;
 
 function applyTheme() {
   currentTheme = "dark";
@@ -74,6 +81,70 @@ function applyTheme() {
 
 function initializeTheme() {
   applyTheme();
+}
+
+function getUserDisplayName(user) {
+  if (!user?.email) {
+    return "Usuario";
+  }
+
+  const baseName = user.email.split("@")[0] || "Usuario";
+  return baseName
+    .replace(/[._-]+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function getUserInitials(user) {
+  const displayName = getUserDisplayName(user);
+  const parts = displayName.split(" ").filter(Boolean);
+  return (parts.slice(0, 2).map((part) => part.charAt(0)).join("") || "RA").toUpperCase();
+}
+
+function getProfileImageStorageKey(user) {
+  return user?.id ? `resolveai-profile-image:${user.id}` : `resolveai-profile-image:${user?.email || "guest"}`;
+}
+
+function setProfileStatus(message = "") {
+  if (profileStatus) {
+    profileStatus.textContent = message;
+  }
+}
+
+function renderProfileAvatar(photoDataUrl = "") {
+  if (!profileAvatarImage || !profileAvatarFallback) {
+    return;
+  }
+
+  const hasPhoto = Boolean(photoDataUrl);
+  profileAvatarImage.src = hasPhoto ? photoDataUrl : "";
+  profileAvatarImage.classList.toggle("hidden", !hasPhoto);
+  profileAvatarFallback.classList.toggle("hidden", hasPhoto);
+}
+
+function loadStoredProfilePhoto(user) {
+  try {
+    return window.localStorage.getItem(getProfileImageStorageKey(user)) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function persistProfilePhoto(user, photoDataUrl) {
+  try {
+    const storageKey = getProfileImageStorageKey(user);
+    if (photoDataUrl) {
+      window.localStorage.setItem(storageKey, photoDataUrl);
+    } else {
+      window.localStorage.removeItem(storageKey);
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 function openConfirmModal({ tag = "Confirmacao", title, copy, actionLabel = "Confirmar", onConfirm }) {
@@ -701,14 +772,28 @@ function renderHistory(items) {
 
 function setLoggedInState(user, nextCsrfToken = "") {
   isAuthenticated = true;
+  currentUser = user;
   csrfToken = nextCsrfToken || user.csrf_token || csrfToken;
   userBox.classList.remove("hidden");
+  const displayName = getUserDisplayName(user);
+  const initials = getUserInitials(user);
+  if (profileName) {
+    profileName.textContent = displayName;
+  }
   userEmail.textContent = user.email;
-  userBox.classList.remove("hidden");
+  if (profileAvatarFallback) {
+    profileAvatarFallback.textContent = initials;
+  }
+  if (appUserInitialsBadge) {
+    appUserInitialsBadge.textContent = initials;
+  }
+  renderProfileAvatar(loadStoredProfilePhoto(user));
+  setProfileStatus("");
 }
 
 function setLoggedOutState() {
   isAuthenticated = false;
+  currentUser = null;
   csrfToken = "";
   userBox.classList.add("hidden");
   window.location.replace("./");
@@ -951,6 +1036,39 @@ function debounce(fn, delay = 350) {
     timer = setTimeout(() => fn(...args), delay);
   };
 }
+
+profileImageInput?.addEventListener("change", () => {
+  const file = profileImageInput.files?.[0];
+  if (!file || !currentUser) {
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    setProfileStatus("Escolha uma imagem valida.");
+    profileImageInput.value = "";
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    setProfileStatus("A imagem deve ter ate 2 MB.");
+    profileImageInput.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = typeof reader.result === "string" ? reader.result : "";
+    renderProfileAvatar(result);
+    const persisted = persistProfilePhoto(currentUser, result);
+    setProfileStatus(persisted ? "Foto atualizada neste navegador." : "Nao foi possivel salvar a foto.");
+    profileImageInput.value = "";
+  };
+  reader.onerror = () => {
+    setProfileStatus("Nao foi possivel carregar a imagem.");
+    profileImageInput.value = "";
+  };
+  reader.readAsDataURL(file);
+});
 
 logoutBtn.addEventListener("click", () => {
   openConfirmModal({
