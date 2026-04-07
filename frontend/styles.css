@@ -1342,3 +1342,136 @@ body[data-theme="dark"] button:disabled {
     transform: translateY(-12px) scale(0.98);
   }
 }
+
+.shell-split {
+  width: min(1320px, calc(100% - 32px));
+}
+
+.site-frame-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.public-shell,
+.app-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.public-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.9fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.marketing-panel {
+  min-height: 100%;
+  display: grid;
+  align-content: space-between;
+  gap: 24px;
+}
+
+.marketing-copy {
+  max-width: 18ch;
+}
+
+.marketing-title {
+  margin: 6px 0 14px;
+  font-size: clamp(3.2rem, 7vw, 5.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.07em;
+}
+
+.marketing-subtitle {
+  max-width: 54ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.marketing-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.marketing-card {
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(24, 32, 28, 0.08);
+  min-height: 150px;
+}
+
+.marketing-card strong {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.55;
+}
+
+.auth-panel-landing {
+  display: grid;
+  align-content: start;
+  min-height: 100%;
+}
+
+.app-shell-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.app-shell-title {
+  margin: 6px 0 10px;
+  max-width: 16ch;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+}
+
+.app-shell-copy .subtitle {
+  max-width: 68ch;
+}
+
+.app-main-grid {
+  grid-template-columns: 320px 1fr;
+}
+
+.app-shell .user-box {
+  min-width: 280px;
+  margin-top: 0;
+}
+
+.app-shell .user-box button {
+  margin-top: 4px;
+}
+
+@media (max-width: 1080px) {
+  .public-grid,
+  .app-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-copy {
+    max-width: 100%;
+  }
+
+  .marketing-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-shell .user-box {
+    min-width: 0;
+  }
+}

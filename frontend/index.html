@@ -11,21 +11,40 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <main class="shell">
-    <section class="hero">
-      <div class="hero-topbar">
-        <p class="eyebrow">ResolveAI</p>
-        <button id="themeToggleBtn" class="theme-toggle secondary" type="button" aria-label="Alternar tema">Modo escuro</button>
-      </div>
-      <h1>Estude com IA, organize seu historico e acompanhe sua evolucao.</h1>
-      <p class="subtitle">
-        Estude com IA, respostas explicadas e historico salvo na sua conta.
-      </p>
-    </section>
+  <main class="shell shell-split">
+    <header class="site-frame-header">
+      <p class="eyebrow">ResolveAI</p>
+      <button id="themeToggleBtn" class="theme-toggle secondary" type="button" aria-label="Alternar tema">Modo escuro</button>
+    </header>
 
-    <section class="grid">
-      <aside class="left-rail">
-        <section class="panel auth-panel">
+    <section id="publicShell" class="public-shell">
+      <div class="public-grid">
+        <section class="panel marketing-panel">
+          <div class="marketing-copy">
+            <p class="section-tag">Chat de estudos com IA</p>
+            <h1 class="marketing-title">Estude com clareza, constancia e historico organizado em um so lugar.</h1>
+            <p class="marketing-subtitle">
+              Resolva exercicios, revise conteudos e acompanhe sua evolucao com uma experiencia mais limpa,
+              segura e feita para estudo continuo.
+            </p>
+          </div>
+          <div class="marketing-cards">
+            <article class="marketing-card">
+              <p class="section-tag">Planejamento</p>
+              <strong>Organize perguntas, categorias e favoritos sem bagunca.</strong>
+            </article>
+            <article class="marketing-card">
+              <p class="section-tag">Desempenho</p>
+              <strong>Acompanhe ritmo de estudo, calendario e dashboard de atividade.</strong>
+            </article>
+            <article class="marketing-card">
+              <p class="section-tag">Assistente IA</p>
+              <strong>Receba resolucoes, explicacoes e graficos em um unico fluxo.</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel auth-panel auth-panel-landing">
           <div class="auth-intro">
             <p id="authEyebrow" class="section-tag">Acesso</p>
             <h2 id="authTitle" class="auth-title">Entrar na sua conta</h2>
@@ -77,199 +96,212 @@
             <button id="resetPasswordBtn" class="secondary" type="button">Redefinir senha</button>
           </section>
 
-          <div id="userBox" class="user-box hidden">
-            <p id="userEmail"></p>
-            <button id="logoutBtn" class="secondary">Sair</button>
-          </div>
-
           <p id="authMessage" class="message"></p>
         </section>
+      </div>
+    </section>
 
-        <section class="panel activity-panel">
-          <div class="activity-header">
-            <div>
-              <p class="section-tag">Calendario</p>
-              <h2 id="activityCalendarMonth">Abr 2026</h2>
+    <section id="appShell" class="app-shell hidden">
+      <section class="panel app-shell-header">
+        <div class="app-shell-copy">
+          <p class="section-tag">Painel de estudos</p>
+          <h1 class="app-shell-title">Estude com IA, organize seu historico e acompanhe sua evolucao.</h1>
+          <p class="subtitle">Use o chat, salve consultas importantes e acompanhe sua rotina em um painel feito para estudo continuo.</p>
+        </div>
+        <div id="userBox" class="user-box hidden">
+          <p id="userEmail"></p>
+          <button id="logoutBtn" class="secondary">Sair</button>
+        </div>
+      </section>
+
+      <section class="grid app-main-grid">
+        <aside class="left-rail">
+          <section class="panel activity-panel">
+            <div class="activity-header">
+              <div>
+                <p class="section-tag">Calendario</p>
+                <h2 id="activityCalendarMonth">Abr 2026</h2>
+              </div>
+              <span id="activityCalendarSummary" class="tiny">Sem atividade recente.</span>
             </div>
-            <span id="activityCalendarSummary" class="tiny">Sem atividade recente.</span>
+            <div id="activityCalendarWeekdays" class="activity-weekdays" aria-hidden="true">
+              <span>Seg</span>
+              <span>Ter</span>
+              <span>Qua</span>
+              <span>Qui</span>
+              <span>Sex</span>
+              <span>Sab</span>
+              <span>Dom</span>
+            </div>
+            <div id="activityCalendarGrid" class="activity-calendar-grid">
+              <p class="empty-state">Entre na sua conta para ver seu calendario.</p>
+            </div>
+            <div class="activity-legend">
+              <span><i class="legend-dot active"></i> Atividade registrada</span>
+              <span><i class="legend-dot today"></i> Hoje</span>
+            </div>
+          </section>
+        </aside>
+
+        <section class="panel workspace-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-tag">Agente de IA</p>
+              <h2>Converse sobre exercicios, revisoes e planos de estudo</h2>
+            </div>
+            <span id="subjectBadge" class="badge">Chat de estudos</span>
           </div>
-          <div id="activityCalendarWeekdays" class="activity-weekdays" aria-hidden="true">
-            <span>Seg</span>
-            <span>Ter</span>
-            <span>Qua</span>
-            <span>Qui</span>
-            <span>Sex</span>
-            <span>Sab</span>
-            <span>Dom</span>
+
+          <label for="questionInput">Questao</label>
+          <textarea id="questionInput" placeholder="Ex.: Monte um plano de estudos para algebra, revise funcao do 2 grau ou resolva 2*x + 3 = 11"></textarea>
+          <div class="action-row">
+            <button id="solveBtn">Resolver com IA</button>
+            <button id="newQuestionBtn" class="secondary" type="button">Nova pergunta</button>
           </div>
-          <div id="activityCalendarGrid" class="activity-calendar-grid">
-            <p class="empty-state">Entre na sua conta para ver seu calendario.</p>
+          <div id="solveLoading" class="loading-box hidden">
+            <span class="loading-dot"></span>
+            <span>Analisando sua pergunta e montando a resposta...</span>
           </div>
-          <div class="activity-legend">
-            <span><i class="legend-dot active"></i> Atividade registrada</span>
-            <span><i class="legend-dot today"></i> Hoje</span>
+
+          <div class="result-box">
+            <section class="response-stage" aria-label="Area da resposta da IA">
+              <div class="result-header">
+                <div class="response-stage-header">
+                  <p class="section-tag">Area da resposta</p>
+                  <h3 id="resultTitle">A resposta aparece aqui</h3>
+                </div>
+              </div>
+              <p id="generalNotice" class="notice hidden">
+                Respostas gerais podem conter imprecisoes factuais. Vale conferir datas, nomes e eventos importantes.
+              </p>
+              <p class="notice subtle-notice">
+                Nao envie dados pessoais sensiveis nas perguntas. Emails, telefones, CPF e numeros de cartao podem ser bloqueados por privacidade.
+              </p>
+              <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
+              <ol id="stepsList" class="steps"></ol>
+            </section>
+            <section class="response-tools" aria-label="Ferramentas da resposta">
+              <div class="response-tools-header">
+                <p class="section-tag">Ferramentas</p>
+                <p class="tiny">Organize, exporte e salve esta resposta.</p>
+              </div>
+              <div class="result-actions">
+                <button id="favoriteResultBtn" class="secondary" type="button" disabled>Favoritar</button>
+                <button id="exportImageBtn" class="secondary" type="button" disabled>Baixar imagem</button>
+                <button id="exportPdfBtn" class="secondary" type="button" disabled>Exportar PDF</button>
+                <button id="copyAnswerBtn" class="secondary" type="button" disabled>Copiar resposta</button>
+              </div>
+              <div class="result-meta-row">
+                <label for="resultCategoryInput">Categoria</label>
+                <div class="result-meta-actions">
+                  <input id="resultCategoryInput" type="text" placeholder="Ex.: Prova 1, Revisao, Funcoes" disabled>
+                  <button id="saveCategoryBtn" class="secondary" type="button" disabled>Salvar categoria</button>
+                </div>
+              </div>
+            </section>
           </div>
         </section>
-      </aside>
-
-      <section class="panel workspace-panel">
-        <div class="panel-header">
-          <div>
-            <p class="section-tag">Agente de IA</p>
-            <h2>Converse sobre exercicios, revisoes e planos de estudo</h2>
-          </div>
-          <span id="subjectBadge" class="badge">Chat de estudos</span>
-        </div>
-
-        <label for="questionInput">Questao</label>
-        <textarea id="questionInput" placeholder="Ex.: Monte um plano de estudos para algebra, revise funcao do 2 grau ou resolva 2*x + 3 = 11"></textarea>
-        <div class="action-row">
-          <button id="solveBtn">Resolver com IA</button>
-          <button id="newQuestionBtn" class="secondary" type="button">Nova pergunta</button>
-        </div>
-        <div id="solveLoading" class="loading-box hidden">
-          <span class="loading-dot"></span>
-          <span>Analisando sua pergunta e montando a resposta...</span>
-        </div>
-
-        <div class="result-box">
-          <section class="response-stage" aria-label="Area da resposta da IA">
-            <div class="result-header">
-              <div class="response-stage-header">
-                <p class="section-tag">Area da resposta</p>
-                <h3 id="resultTitle">A resposta aparece aqui</h3>
-              </div>
-            </div>
-            <p id="generalNotice" class="notice hidden">
-              Respostas gerais podem conter imprecisoes factuais. Vale conferir datas, nomes e eventos importantes.
-            </p>
-            <p class="notice subtle-notice">
-              Nao envie dados pessoais sensiveis nas perguntas. Emails, telefones, CPF e numeros de cartao podem ser bloqueados por privacidade.
-            </p>
-            <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
-            <ol id="stepsList" class="steps"></ol>
-          </section>
-          <section class="response-tools" aria-label="Ferramentas da resposta">
-            <div class="response-tools-header">
-              <p class="section-tag">Ferramentas</p>
-              <p class="tiny">Organize, exporte e salve esta resposta.</p>
-            </div>
-            <div class="result-actions">
-              <button id="favoriteResultBtn" class="secondary" type="button" disabled>Favoritar</button>
-              <button id="exportImageBtn" class="secondary" type="button" disabled>Baixar imagem</button>
-              <button id="exportPdfBtn" class="secondary" type="button" disabled>Exportar PDF</button>
-              <button id="copyAnswerBtn" class="secondary" type="button" disabled>Copiar resposta</button>
-            </div>
-            <div class="result-meta-row">
-              <label for="resultCategoryInput">Categoria</label>
-              <div class="result-meta-actions">
-                <input id="resultCategoryInput" type="text" placeholder="Ex.: Prova 1, Revisao, Funcoes" disabled>
-                <button id="saveCategoryBtn" class="secondary" type="button" disabled>Salvar categoria</button>
-              </div>
-            </div>
-          </section>
-        </div>
-      </section>
-    </section>
-
-    <section class="dashboard-row">
-      <section class="panel dashboard-panel">
-        <div class="panel-header dashboard-header">
-          <div>
-            <p class="section-tag">Dashboard</p>
-            <h2>Seu ritmo de estudo</h2>
-          </div>
-          <div class="dashboard-periods" aria-label="Filtro de periodo do dashboard">
-            <button id="dashboardPeriod7d" class="period-chip" type="button" data-period="7d">7 dias</button>
-            <button id="dashboardPeriod30d" class="period-chip active" type="button" data-period="30d">30 dias</button>
-            <button id="dashboardPeriodAll" class="period-chip" type="button" data-period="all">Geral</button>
-          </div>
-        </div>
-        <div class="dashboard-cards">
-          <article class="dashboard-card">
-            <p class="section-tag">Questoes no periodo</p>
-            <strong id="dashboardQuestions" class="dashboard-number">0</strong>
-            <p id="dashboardQuestionsMeta" class="tiny">Sem atividade ainda.</p>
-          </article>
-          <article class="dashboard-card">
-            <p class="section-tag">Dias ativos</p>
-            <strong id="dashboardActiveDays" class="dashboard-number">0</strong>
-            <p class="tiny">Dias com pelo menos uma atividade.</p>
-          </article>
-          <article class="dashboard-card">
-            <p class="section-tag">Sequencia atual</p>
-            <strong id="dashboardCurrentStreak" class="dashboard-number">0</strong>
-            <p id="dashboardBestStreak" class="tiny">Melhor sequencia: 0 dias.</p>
-          </article>
-          <article class="dashboard-card">
-            <p class="section-tag">Foco em destaque</p>
-            <strong id="dashboardTopSubject" class="dashboard-number dashboard-label">Sem dados</strong>
-            <p id="dashboardTopCategory" class="tiny">Categoria favorita: sem dados.</p>
-          </article>
-        </div>
-        <div class="dashboard-grid">
-          <section class="dashboard-surface">
-            <div class="panel-header">
-              <div>
-                <p class="section-tag">Uso por periodo</p>
-                <h3>Comparativo rapido</h3>
-              </div>
-            </div>
-            <div id="dashboardUsagePeriods" class="usage-periods">
-              <p class="empty-state">Entre na sua conta para ver os numeros.</p>
-            </div>
-          </section>
-          <section class="dashboard-surface">
-            <div class="panel-header">
-              <div>
-                <p class="section-tag">Evolucao semanal</p>
-                <h3>Questoes por semana</h3>
-              </div>
-            </div>
-            <div id="dashboardWeeklyChart" class="weekly-chart">
-              <p class="empty-state">Ainda nao ha dados para montar o grafico.</p>
-            </div>
-          </section>
-        </div>
-      </section>
-    </section>
-
-    <section class="grid lower-grid">
-      <section class="panel chart-panel">
-        <div class="panel-header">
-          <div>
-            <p class="section-tag">Visual</p>
-            <h2>Grafico da funcao</h2>
-          </div>
-          <p id="chartTitle" class="tiny">Sem funcao detectada ainda.</p>
-        </div>
-        <canvas id="chartCanvas" width="900" height="420"></canvas>
       </section>
 
-      <section class="panel history-panel">
-        <div class="panel-header">
-          <div>
-            <p class="section-tag">Historico</p>
-            <h2>Ultimas consultas</h2>
+      <section class="dashboard-row">
+        <section class="panel dashboard-panel">
+          <div class="panel-header dashboard-header">
+            <div>
+              <p class="section-tag">Dashboard</p>
+              <h2>Seu ritmo de estudo</h2>
+            </div>
+            <div class="dashboard-periods" aria-label="Filtro de periodo do dashboard">
+              <button id="dashboardPeriod7d" class="period-chip" type="button" data-period="7d">7 dias</button>
+              <button id="dashboardPeriod30d" class="period-chip active" type="button" data-period="30d">30 dias</button>
+              <button id="dashboardPeriodAll" class="period-chip" type="button" data-period="all">Geral</button>
+            </div>
           </div>
-          <button id="clearHistoryBtn" class="secondary" type="button">Apagar historico</button>
-        </div>
-        <div class="history-toolbar">
-          <input id="historySearch" type="search" placeholder="Buscar no historico">
-          <input id="historyCategoryFilter" type="search" placeholder="Filtrar por categoria">
-          <label class="history-favorites-toggle" for="historyFavoritesOnly">
-            <input id="historyFavoritesOnly" type="checkbox">
-            <span>So favoritos</span>
-          </label>
-        </div>
-        <div id="historyList" class="history-list">
-          <p class="empty-state">Seu historico salvo vai aparecer aqui.</p>
-        </div>
-        <div class="history-pagination">
-          <button id="historyPrevBtn" class="secondary" type="button">Anterior</button>
-          <p id="historyPageInfo" class="tiny">Pagina 1 de 1</p>
-          <button id="historyNextBtn" class="secondary" type="button">Proxima</button>
-        </div>
+          <div class="dashboard-cards">
+            <article class="dashboard-card">
+              <p class="section-tag">Questoes no periodo</p>
+              <strong id="dashboardQuestions" class="dashboard-number">0</strong>
+              <p id="dashboardQuestionsMeta" class="tiny">Sem atividade ainda.</p>
+            </article>
+            <article class="dashboard-card">
+              <p class="section-tag">Dias ativos</p>
+              <strong id="dashboardActiveDays" class="dashboard-number">0</strong>
+              <p class="tiny">Dias com pelo menos uma atividade.</p>
+            </article>
+            <article class="dashboard-card">
+              <p class="section-tag">Sequencia atual</p>
+              <strong id="dashboardCurrentStreak" class="dashboard-number">0</strong>
+              <p id="dashboardBestStreak" class="tiny">Melhor sequencia: 0 dias.</p>
+            </article>
+            <article class="dashboard-card">
+              <p class="section-tag">Foco em destaque</p>
+              <strong id="dashboardTopSubject" class="dashboard-number dashboard-label">Sem dados</strong>
+              <p id="dashboardTopCategory" class="tiny">Categoria favorita: sem dados.</p>
+            </article>
+          </div>
+          <div class="dashboard-grid">
+            <section class="dashboard-surface">
+              <div class="panel-header">
+                <div>
+                  <p class="section-tag">Uso por periodo</p>
+                  <h3>Comparativo rapido</h3>
+                </div>
+              </div>
+              <div id="dashboardUsagePeriods" class="usage-periods">
+                <p class="empty-state">Entre na sua conta para ver os numeros.</p>
+              </div>
+            </section>
+            <section class="dashboard-surface">
+              <div class="panel-header">
+                <div>
+                  <p class="section-tag">Evolucao semanal</p>
+                  <h3>Questoes por semana</h3>
+                </div>
+              </div>
+              <div id="dashboardWeeklyChart" class="weekly-chart">
+                <p class="empty-state">Ainda nao ha dados para montar o grafico.</p>
+              </div>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section class="grid lower-grid">
+        <section class="panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-tag">Visual</p>
+              <h2>Grafico da funcao</h2>
+            </div>
+            <p id="chartTitle" class="tiny">Sem funcao detectada ainda.</p>
+          </div>
+          <canvas id="chartCanvas" width="900" height="420"></canvas>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-tag">Historico</p>
+              <h2>Ultimas consultas</h2>
+            </div>
+            <button id="clearHistoryBtn" class="secondary" type="button">Apagar historico</button>
+          </div>
+          <div class="history-toolbar">
+            <input id="historySearch" type="search" placeholder="Buscar no historico">
+            <input id="historyCategoryFilter" type="search" placeholder="Filtrar por categoria">
+            <label class="history-favorites-toggle" for="historyFavoritesOnly">
+              <input id="historyFavoritesOnly" type="checkbox">
+              <span>So favoritos</span>
+            </label>
+          </div>
+          <div id="historyList" class="history-list">
+            <p class="empty-state">Seu historico salvo vai aparecer aqui.</p>
+          </div>
+          <div class="history-pagination">
+            <button id="historyPrevBtn" class="secondary" type="button">Anterior</button>
+            <p id="historyPageInfo" class="tiny">Pagina 1 de 1</p>
+            <button id="historyNextBtn" class="secondary" type="button">Proxima</button>
+          </div>
+        </section>
       </section>
     </section>
 

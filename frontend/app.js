@@ -8,6 +8,8 @@ const authTitle = document.getElementById("authTitle");
 const authSubtitle = document.getElementById("authSubtitle");
 const authMessage = document.getElementById("authMessage");
 const themeToggleBtn = document.getElementById("themeToggleBtn");
+const publicShell = document.getElementById("publicShell");
+const appShell = document.getElementById("appShell");
 const tabs = document.querySelectorAll(".tab");
 const userBox = document.getElementById("userBox");
 const userEmail = document.getElementById("userEmail");
@@ -767,6 +769,11 @@ function renderHistory(items) {
   });
 }
 
+function syncShellVisibility() {
+  publicShell?.classList.toggle("hidden", isAuthenticated);
+  appShell?.classList.toggle("hidden", !isAuthenticated);
+}
+
 function setLoggedInState(user, nextCsrfToken = "") {
   isAuthenticated = true;
   csrfToken = nextCsrfToken || user.csrf_token || csrfToken;
@@ -775,12 +782,15 @@ function setLoggedInState(user, nextCsrfToken = "") {
   loginForm.classList.add("hidden");
   registerForm.classList.add("hidden");
   recoverForm.classList.add("hidden");
+  authMessage.textContent = "";
+  syncShellVisibility();
 }
 
 function setLoggedOutState() {
   isAuthenticated = false;
   csrfToken = "";
   userBox.classList.add("hidden");
+  syncShellVisibility();
   setAuthMode("login");
   subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "A resposta aparece aqui";
