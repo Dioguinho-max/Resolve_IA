@@ -1,6 +1,5 @@
 const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || "http://127.0.0.1:5000";
 
-const themeToggleBtn = document.getElementById("themeToggleBtn");
 const userBox = document.getElementById("userBox");
 const userEmail = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
@@ -59,16 +58,13 @@ let confirmModalAction = null;
 let isAuthenticated = false;
 let csrfToken = "";
 let answerAnimationToken = 0;
-let currentTheme = "light";
 let lastAutoScrollAt = 0;
 let dashboardPeriod = "30d";
+let currentTheme = "dark";
 
-function applyTheme(theme) {
-  currentTheme = theme === "dark" ? "dark" : "light";
+function applyTheme() {
+  currentTheme = "dark";
   document.body.dataset.theme = currentTheme;
-  if (themeToggleBtn) {
-    themeToggleBtn.textContent = currentTheme === "dark" ? "Modo claro" : "Modo escuro";
-  }
   if (currentResult?.graph) {
     drawGraph(currentResult.graph);
   } else {
@@ -77,14 +73,7 @@ function applyTheme(theme) {
 }
 
 function initializeTheme() {
-  const storedTheme = window.localStorage.getItem("resolveai-theme");
-  if (storedTheme === "dark" || storedTheme === "light") {
-    applyTheme(storedTheme);
-    return;
-  }
-
-  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  applyTheme(prefersDark ? "dark" : "light");
+  applyTheme();
 }
 
 function openConfirmModal({ tag = "Confirmacao", title, copy, actionLabel = "Confirmar", onConfirm }) {
@@ -962,12 +951,6 @@ function debounce(fn, delay = 350) {
     timer = setTimeout(() => fn(...args), delay);
   };
 }
-
-themeToggleBtn?.addEventListener("click", () => {
-  const nextTheme = currentTheme === "dark" ? "light" : "dark";
-  applyTheme(nextTheme);
-  window.localStorage.setItem("resolveai-theme", nextTheme);
-});
 
 logoutBtn.addEventListener("click", () => {
   openConfirmModal({
