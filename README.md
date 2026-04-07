@@ -1,216 +1,129 @@
-﻿# ResolveAI v1.0.9
+# 🚀 ResolveAI v1.0.9
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Plataforma-Estudos-2f6c54?style=for-the-badge" alt="Plataforma Estudos">
-  <img src="https://img.shields.io/badge/Versão-1.0.9-d75f39?style=for-the-badge" alt="Versão 1.0.9">
-  <img src="https://img.shields.io/badge/Frontend-Web-4c956c?style=for-the-badge" alt="Frontend Web">
-  <img src="https://img.shields.io/badge/Backend-Flask-f4a261?style=for-the-badge" alt="Backend Flask">
-  <img src="https://img.shields.io/badge/Banco-PostgreSQL-577590?style=for-the-badge" alt="Banco PostgreSQL">
+  <strong>
+    Resolva exercícios, entenda conteúdos e evolua nos estudos com ajuda de IA.
+  </strong>
 </p>
 
 <p align="center">
-  Plataforma de estudos com inteligência artificial para resolver exercícios, revisar conteúdos,
-  organizar consultas e acompanhar a evolução do usuário de forma prática, moderna e segura.
+  Uma plataforma completa que combina inteligência artificial, organização pessoal e análise de desempenho para acelerar seu aprendizado.
 </p>
 
 ---
 
-## Links do Projeto
+## 🎯 O que você pode fazer com o ResolveAI
 
-- **Frontend:** `https://resolve-ia.vercel.app`
-- **Backend:** `https://resolve-ia-hdx7.onrender.com`
-- **Repositório:** `https://github.com/Dioguinho-max/Resolve_IA`
-
----
-
-## Release 1.0.9
-
-<p>
-  <img src="https://img.shields.io/badge/Chat%20único-Ativo-264653?style=flat-square" alt="Chat único">
-  <img src="https://img.shields.io/badge/Modo%20escuro-Ativo-1d3557?style=flat-square" alt="Modo escuro">
-  <img src="https://img.shields.io/badge/Gráfico%20matemático-Ativo-6a994e?style=flat-square" alt="Gráfico matemático">
-  <img src="https://img.shields.io/badge/Dashboard-Ativo-b56576?style=flat-square" alt="Dashboard">
-  <img src="https://img.shields.io/badge/Exportação-PDF%20%7C%20Imagem-e76f51?style=flat-square" alt="Exportação">
-  <img src="https://img.shields.io/badge/Histórico-Favoritos%20%7C%20Categorias-5a189a?style=flat-square" alt="Histórico">
-</p>
-
-A versao **1.0.9** refina a experiencia do produto com uma pagina publica de entrada separada da area interna de estudos, deixando a navegacao mais clara e o acesso ao painel mais profissional.
+- ✍️ Resolver exercícios com **explicação passo a passo**
+- 📘 Revisar conteúdos de forma clara e organizada
+- 📊 Acompanhar sua evolução com **dashboard inteligente**
+- ⭐ Salvar respostas importantes e organizar por categorias
+- 📈 Visualizar gráficos matemáticos automaticamente
+- 📄 Exportar respostas em PDF ou imagem
 
 ---
 
-## Visão Geral
+## ⚡ Por que usar o ResolveAI?
 
-O **ResolveAI** agora organiza a experiencia em duas camadas bem definidas:
+Diferente de ferramentas genéricas, o ResolveAI foi pensado para estudo:
 
-- pagina publica de entrada com apresentacao do produto e autenticacao
-- area interna dedicada ao painel de estudos, chat, dashboard, historico e grafico
-
-Dentro dessa estrutura, o produto oferece:
-
-- chat de estudos para exercícios, revisões e planos de estudo
-- respostas com explicações passo a passo
-- gráfico para funções matemáticas
-- histórico salvo por usuário
-- favoritos e categorias pessoais
-- dashboard com métricas e calendário de atividade
-- exportação da resposta em PDF e imagem
+- 🧠 Respostas mais didáticas e estruturadas  
+- 🎯 Foco em aprendizado (não só resposta rápida)  
+- 📊 Acompanhamento do seu progresso  
+- 📚 Organização do histórico de estudos  
+- 📉 Visualização de gráficos integrada  
 
 ---
 
-## Tabela de Funcionalidades
+## 🌐 Acesse o projeto
 
-| Área | Funcionalidade | Status |
-|---|---|---|
-| Conta | Cadastro, login e pagina publica dedicada | OK |
-| Conta | Recuperação de senha por código | OK |
-| Chat | Chat único de estudos | OK |
-| Respostas | Animação de escrita da IA | OK |
-| Matemática | Resolução de expressões e equações | OK |
-| Matemática | Geração de gráfico | OK |
-| Matemática | Eixos numerados no gráfico | OK |
-| Histórico | Salvamento automático | OK |
-| Histórico | Busca e filtros | OK |
-| Histórico | Favoritos | OK |
-| Histórico | Categorias pessoais | OK |
-| Histórico | Exclusão individual e limpeza total | OK |
-| Dashboard | Uso por período | OK |
-| Dashboard | Evolução semanal | OK |
-| Dashboard | Sequência de estudo | OK |
-| Dashboard | Calendário de atividade | OK |
-| Exportação | Copiar resposta | OK |
-| Exportação | PDF | OK |
-| Exportação | Imagem | OK |
-| Interface | Modo escuro | OK |
-| Segurança | JWT + bcrypt + CSRF | OK |
-| Banco | Histórico protegido por RLS | OK |
+- Frontend: https://resolve-ia.vercel.app  
+- Backend: https://resolve-ia-hdx7.onrender.com  
+- Repositório: https://github.com/Dioguinho-max/Resolve_IA  
 
 ---
 
-## Blocos do Produto
+## 🧩 Como o produto funciona
 
-### Autenticação
-<p>
-  <img src="https://img.shields.io/badge/JWT-Sessão%20segura-0a9396?style=flat-square" alt="JWT">
-  <img src="https://img.shields.io/badge/CSRF-Protegido-005f73?style=flat-square" alt="CSRF">
-  <img src="https://img.shields.io/badge/bcrypt-Hash%20de%20senha-94d2bd?style=flat-square" alt="bcrypt">
-</p>
+O ResolveAI é dividido em duas partes principais:
 
-- Criar conta com segurança
-- Entrar e sair da plataforma
-- Recuperar senha com código temporário
-- Sessão protegida por autenticação baseada em cookies
+### 🔓 Área pública
+- Apresentação da plataforma  
+- Cadastro e login  
+- Acesso inicial ao sistema  
 
-### Chat de Estudos
-<p>
-  <img src="https://img.shields.io/badge/UX-Chat%20único-3a5a40?style=flat-square" alt="Chat único">
-  <img src="https://img.shields.io/badge/IA-Resposta%20guiada-588157?style=flat-square" alt="Resposta guiada">
-  <img src="https://img.shields.io/badge/Animação-Escrita%20progressiva-a3b18a?style=flat-square" alt="Animação">
-</p>
+### 🔐 Área interna (plataforma de estudos)
 
-- Um único fluxo para exercícios, revisões e planos de estudo
-- Respostas explicadas de forma mais organizada
-- Feedback visual durante a geração da resposta
-
-### Matemática e Visualização
-<p>
-  <img src="https://img.shields.io/badge/SymPy-Motor%20matemático-283618?style=flat-square" alt="SymPy">
-  <img src="https://img.shields.io/badge/Canvas-Gráfico%20ativo-bf6f2f?style=flat-square" alt="Canvas">
-  <img src="https://img.shields.io/badge/Zoom-Habilitado-dd8b3d?style=flat-square" alt="Zoom">
-</p>
-
-- Detecção automática de perguntas matemáticas
-- Geração de gráfico para funções e expressões compatíveis
-- Eixos com numeração para facilitar leitura
-- Zoom para melhorar visualização
-
-### Histórico e Organização
-<p>
-  <img src="https://img.shields.io/badge/Histórico-Salvo-6d597a?style=flat-square" alt="Histórico">
-  <img src="https://img.shields.io/badge/Favoritos-Ativo-b56576?style=flat-square" alt="Favoritos">
-  <img src="https://img.shields.io/badge/Categorias-Pessoais-e56b6f?style=flat-square" alt="Categorias">
-</p>
-
-- Histórico por usuário
-- Busca de consultas antigas
-- Filtro por categoria
-- Favoritar respostas importantes
-- Limpeza individual ou total
-
-### Dashboard
-<p>
-  <img src="https://img.shields.io/badge/Uso%20por%20período-7d%20%7C%2030d%20%7C%20Geral-355070?style=flat-square" alt="Uso por período">
-  <img src="https://img.shields.io/badge/Evolução-Semanal-6d597a?style=flat-square" alt="Evolução semanal">
-  <img src="https://img.shields.io/badge/Calendário-Atividade-e56b6f?style=flat-square" alt="Calendário">
-</p>
-
-- Questões no período
-- Dias ativos
-- Sequência atual e melhor sequência
-- Evolução semanal
-- Calendário de atividade recente
-
-### Exportação
-<p>
-  <img src="https://img.shields.io/badge/PDF-Exportar-c1121f?style=flat-square" alt="PDF">
-  <img src="https://img.shields.io/badge/Imagem-Baixar-f77f00?style=flat-square" alt="Imagem">
-  <img src="https://img.shields.io/badge/Copiar-Resposta-fcbf49?style=flat-square" alt="Copiar resposta">
-</p>
-
-- Exportação da resolução atual em PDF
-- Download da resposta como imagem
-- Cópia rápida da resposta
+- 💬 Chat inteligente para exercícios e dúvidas  
+- 📊 Dashboard com métricas de uso  
+- 🗂️ Histórico com busca, filtros e favoritos  
+- 📈 Gráficos matemáticos interativos  
+- 📄 Exportação de respostas  
 
 ---
 
-## Stack
+## 🧠 Principais funcionalidades
+
+### 💬 Chat de Estudos
+- Respostas com explicação passo a passo  
+- Suporte a exercícios e revisão teórica  
+- Animação de escrita da IA  
+
+### 📊 Dashboard
+- Uso por período  
+- Evolução semanal  
+- Sequência de estudos  
+- Calendário de atividade  
+
+### 📈 Matemática
+- Resolução de expressões e equações  
+- Geração automática de gráficos  
+- Eixos numerados e zoom  
+
+### 🗂️ Organização
+- Histórico por usuário  
+- Favoritos  
+- Categorias personalizadas  
+- Filtros e busca  
+
+### 📄 Exportação
+- PDF  
+- Imagem  
+- Copiar resposta  
+
+---
+
+## 🛠️ Tecnologias utilizadas
 
 | Camada | Tecnologia |
 |---|---|
 | Frontend | HTML, CSS, JavaScript |
-| Backend | Python, Flask |
+| Backend | Python + Flask |
 | Banco de Dados | PostgreSQL |
-| Autenticação | JWT, bcrypt |
+| IA | Hugging Face |
 | Matemática | SymPy |
-| IA geral | Hugging Face |
+| Segurança | JWT, bcrypt, CSRF |
 
 ---
 
-## Segurança e Privacidade
+## 🔐 Segurança
 
-- Histórico separado por usuário
-- Proteção por JWT com cookies
-- Proteção CSRF
-- Rate limit nas rotas de IA
-- RLS no histórico do usuário
-- Bloqueio de envio de dados sensíveis para IA externa
-
----
-
-## Endpoints de Status
-
-A API informa a versão atual nos endpoints:
-
-- `GET /`
-- `GET /api/health`
+- Autenticação segura com JWT  
+- Senhas protegidas com bcrypt  
+- Proteção contra CSRF  
+- Rate limit nas rotas de IA  
+- Isolamento de dados por usuário (RLS)  
 
 ---
 
-## Status da Plataforma
+## 📌 Status do projeto
 
-<p>
-  <img src="https://img.shields.io/badge/Status-Estável-2a9d8f?style=for-the-badge" alt="Status estável">
-  <img src="https://img.shields.io/badge/Release-v1.0.9-e76f51?style=for-the-badge" alt="Release v1.0.9">
-</p>
+🟢 Estável — versão 1.0.9  
 
-A base do projeto esta estavel na **v1.0.9**, com entrada publica separada, area interna mais limpa e pronta para novas evolucoes de produto, experiencia e inteligencia.
+O sistema já possui uma base sólida e está pronto para evoluções em experiência do usuário, inteligência e novas funcionalidades.
 
 ---
 
-<p align="center">
-  <strong>ResolveAI 1.0.9</strong><br>
-  Estudo com IA, organização pessoal e evolução contínua em um só lugar.
-</p>
+## 💡 Visão
 
-
-
-
+O objetivo do ResolveAI é se tornar uma plataforma completa de estudos com IA, onde o usuário não apenas resolve exercícios, mas realmente **aprende, acompanha sua evolução e melhora continuamente**.
