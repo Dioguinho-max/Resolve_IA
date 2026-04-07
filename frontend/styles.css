@@ -2458,3 +2458,168 @@ body[data-theme="dark"] .subtle-notice {
     min-height: 48px;
   }
 }
+
+@media (max-width: 640px) {
+  .shell,
+  .shell-split {
+    width: min(100%, calc(100% - 16px));
+    padding: 16px 0 24px;
+  }
+
+  .site-frame-header {
+    margin-bottom: 12px;
+  }
+
+  .public-shell,
+  .app-shell {
+    gap: 14px;
+  }
+
+  .public-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .marketing-panel,
+  .auth-panel-landing {
+    position: relative;
+    z-index: 0;
+    min-height: 0;
+    height: auto;
+    align-self: stretch;
+  }
+
+  .auth-panel-landing {
+    margin-top: 0;
+  }
+
+  .panel,
+  .marketing-panel,
+  .auth-panel,
+  .auth-panel-landing,
+  .workspace-panel,
+  .dashboard-panel,
+  .chart-panel,
+  .history-panel,
+  .app-shell-header {
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .marketing-panel {
+    gap: 14px;
+  }
+
+  .marketing-highlights,
+  .preview-metrics,
+  .marketing-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-copy,
+  .marketing-subtitle,
+  .auth-panel-landing .auth-subtitle {
+    max-width: 100%;
+  }
+
+  .marketing-title {
+    max-width: 11ch;
+    font-size: clamp(1.8rem, 10vw, 2.45rem);
+    line-height: 0.96;
+  }
+
+  .preview-head h2,
+  .auth-title {
+    font-size: 1.15rem;
+  }
+
+  .preview-badge,
+  .app-shell-pill,
+  .workspace-tag,
+  .footer-version,
+  .badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabs {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .tab,
+  button,
+  .secondary {
+    min-height: 46px;
+  }
+
+  .auth-form {
+    padding: 14px;
+    gap: 8px;
+  }
+
+  .auth-panel-landing .tabs,
+  .auth-panel-landing .auth-form,
+  .auth-compact-note,
+  #authMessage {
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-compact-note {
+    padding: 12px;
+  }
+
+  input,
+  textarea,
+  select,
+  .history-toolbar input,
+  .history-toolbar select {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  .site-footer {
+    padding: 10px 4px 0;
+    gap: 12px;
+    font-size: 0.88rem;
+  }
+
+  .footer-links {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .eyebrow {
+    padding: 8px 12px;
+    font-size: 0.74rem;
+  }
+
+  .marketing-title {
+    max-width: 10ch;
+    font-size: clamp(1.65rem, 9vw, 2.1rem);
+  }
+
+  .marketing-highlight,
+  .preview-metric,
+  .marketing-card,
+  .guide-point,
+  .dashboard-card,
+  .dashboard-surface,
+  .response-stage,
+  .response-tools,
+  .history-item,
+  .auth-form {
+    border-radius: 18px;
+  }
+
+  .legal-copy {
+    font-size: 0.72rem;
+  }
+
+  .message {
+    font-size: 0.76rem;
+  }
+}

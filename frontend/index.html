@@ -10,11 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
+<body data-theme="dark">
   <main class="shell shell-split">
     <header class="site-frame-header">
       <p class="eyebrow">ResolveAI</p>
-      <button id="themeToggleBtn" class="theme-toggle secondary" type="button" aria-label="Alternar tema">Modo escuro</button>
     </header>
 
     <section class="public-shell">
@@ -22,12 +21,47 @@
         <section class="panel marketing-panel">
           <div class="marketing-copy">
             <p class="section-tag">Chat de estudos com IA</p>
-            <h1 class="marketing-title">Estude com clareza, constancia e historico organizado em um so lugar.</h1>
+            <h1 class="marketing-title">Estudar com clareza fica mais facil quando o seu painel inspira constancia.</h1>
             <p class="marketing-subtitle">
-              Resolva exercicios, revise conteudos e acompanhe sua evolucao com uma experiencia mais limpa,
-              segura e feita para estudo continuo.
+              Centralize perguntas, acompanhe sua evolucao e mantenha seu historico organizado em um unico fluxo.
             </p>
           </div>
+          <div class="marketing-highlights" aria-label="Destaques da plataforma">
+            <article class="marketing-highlight">
+              <p class="section-tag">Fluxo unico</p>
+              <strong>Login, respostas, historico e dashboard conectados sem trocar de tela.</strong>
+            </article>
+            <article class="marketing-highlight">
+              <p class="section-tag">Tema revisado</p>
+              <strong>Contraste melhor, menos areas vazias e leitura mais confortavel no modo escuro.</strong>
+            </article>
+          </div>
+          <section class="marketing-preview" aria-label="Resumo visual da experiencia">
+            <div class="preview-head">
+              <div>
+                <p class="section-tag">Visao geral</p>
+                <h2>Uma rotina de estudo com mais ritmo visual</h2>
+              </div>
+              <span class="preview-badge">Interface mais viva</span>
+            </div>
+            <div class="preview-metrics">
+              <article class="preview-metric">
+                <span class="tiny">Historico</span>
+                <strong>Consultas salvas</strong>
+                <p>Organize revisoes, provas e explicacoes importantes sem perder contexto.</p>
+              </article>
+              <article class="preview-metric">
+                <span class="tiny">Dashboard</span>
+                <strong>Ritmo visivel</strong>
+                <p>Veja frequencia, sequencia e foco principal em um painel com leitura rapida.</p>
+              </article>
+              <article class="preview-metric">
+                <span class="tiny">Resolucao</span>
+                <strong>Resposta guiada</strong>
+                <p>Entenda o resultado final e os passos da solucao no mesmo bloco.</p>
+              </article>
+            </div>
+          </section>
           <div class="marketing-cards">
             <article class="marketing-card">
               <p class="section-tag">Planejamento</p>
@@ -49,6 +83,10 @@
             <p id="authEyebrow" class="section-tag">Acesso</p>
             <h2 id="authTitle" class="auth-title">Entrar na sua conta</h2>
             <p id="authSubtitle" class="auth-subtitle">Use seu email e senha para abrir o painel e continuar seus estudos.</p>
+          </div>
+          <div class="auth-compact-note">
+            <span class="tiny">Acesso rapido</span>
+            <strong>Entre para continuar de onde parou e manter seu historico sincronizado.</strong>
           </div>
           <div class="tabs">
             <button class="tab active" data-tab="login">Entrar</button>
