@@ -27,7 +27,7 @@ from services.rate_limit import rate_limiter
 
 
 api = Blueprint("api", __name__)
-APP_VERSION = "1.0.8"
+APP_VERSION = "1.1.0"
 
 EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 MAX_EMAIL_LENGTH = 255
@@ -641,4 +641,5 @@ def enforce_rate_limit(key: str, limit: int, window_seconds: int):
     if allowed:
         return None
     return jsonify({"error": f"Muitas tentativas. Tente novamente em {retry_after}s."}), 429
+
 
