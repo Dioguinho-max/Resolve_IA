@@ -2637,3 +2637,22 @@ body[data-theme="dark"] .subtle-notice {
     font-size: 0.76rem;
   }
 }
+
+.chart-meta {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  text-align: right;
+}
+
+.chart-meta .tiny {
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .chart-meta {
+    justify-items: start;
+    text-align: left;
+  }
+}
+

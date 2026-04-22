@@ -264,12 +264,57 @@ def describe_math_features(expression: str) -> list[str]:
     return features
 
 
+def to_numeric_float(value):
+    try:
+        evaluated = complex(value.evalf())
+    except Exception:
+        return None
+
+    if abs(evaluated.imag) > 1e-9:
+        return None
+
+    numeric = float(evaluated.real)
+    if not math.isfinite(numeric):
+        return None
+    return numeric
+
+
+def format_numeric_value(value: float, digits: int = 4) -> str:
+    rounded = round(value, digits)
+    if abs(rounded) < 10 ** (-digits):
+        rounded = 0.0
+    if float(rounded).is_integer():
+        return str(int(rounded))
+    return f"{rounded:.{digits}f}".rstrip("0").rstrip(".")
+
+
+def build_graph_summary(highlights: dict) -> str | None:
+    parts = []
+    roots = highlights.get("roots") or []
+    if roots:
+        parts.append("Raizes: " + ", ".join(root["display"] for root in roots))
+
+    vertex = highlights.get("vertex")
+    if vertex:
+        parts.append(f"Vertice: ({vertex['display_x']}, {vertex['display_y']})")
+
+    y_intercept = highlights.get("y_intercept")
+    if y_intercept:
+        parts.append(f"Intercepto em y: {y_intercept['display_y']}")
+
+    axis_of_symmetry = highlights.get("axis_of_symmetry")
+    if axis_of_symmetry:
+        parts.append(f"Eixo de simetria: x = {axis_of_symmetry['display']}")
+
+    return " | ".join(parts) if parts else None
+
+
 def build_graph_data(expression: str) -> dict | None:
     if "x" not in expression or "=" in expression:
         return None
 
     try:
-        expr = parse_math_expression(expression)
+        expr = simplify(parse_math_expression(expression))
     except Exception:
         return None
 
@@ -285,7 +330,72 @@ def build_graph_data(expression: str) -> dict | None:
 
     if len(points) < 2:
         return None
-    return {"title": f"Grafico de y = {expression}", "points": points}
+
+    highlights = {"roots": []}
+    try:
+        roots = solve(Eq(expr, 0), x)
+    except Exception:
+        roots = []
+
+    seen_roots = set()
+    for root in roots:
+        numeric_root = to_numeric_float(root)
+        if numeric_root is None:
+            continue
+        rounded_key = round(numeric_root, 6)
+        if rounded_key in seen_roots:
+            continue
+        seen_roots.add(rounded_key)
+        highlights["roots"].append(
+            {
+                "x": round(numeric_root, 4),
+                "y": 0.0,
+                "label": "Raiz",
+                "display": format_numeric_value(numeric_root),
+            }
+        )
+
+    try:
+        y_intercept = to_numeric_float(expr.subs(x, 0))
+        if y_intercept is not None:
+            highlights["y_intercept"] = {
+                "x": 0.0,
+                "y": round(y_intercept, 4),
+                "label": "Intercepto em y",
+                "display_y": format_numeric_value(y_intercept),
+            }
+    except Exception:
+        pass
+
+    try:
+        poly = expr.as_poly(x)
+        if poly and poly.degree() == 2:
+            a, b, _c = poly.all_coeffs()
+            vertex_x_expr = simplify(-b / (2 * a))
+            vertex_y_expr = simplify(expr.subs(x, vertex_x_expr))
+            vertex_x = to_numeric_float(vertex_x_expr)
+            vertex_y = to_numeric_float(vertex_y_expr)
+            if vertex_x is not None and vertex_y is not None:
+                highlights["vertex"] = {
+                    "x": round(vertex_x, 4),
+                    "y": round(vertex_y, 4),
+                    "label": "Vertice",
+                    "display_x": format_numeric_value(vertex_x),
+                    "display_y": format_numeric_value(vertex_y),
+                }
+                highlights["axis_of_symmetry"] = {
+                    "x": round(vertex_x, 4),
+                    "display": format_numeric_value(vertex_x),
+                }
+    except Exception:
+        pass
+
+    return {
+        "title": f"Grafico de y = {expression}",
+        "summary": build_graph_summary(highlights),
+        "points": points,
+        "highlights": highlights,
+    }
 
 
 def request_huggingface_response(prompt: str, max_tokens: int = 220) -> str | None:
@@ -452,7 +562,7 @@ def solve_math(question: str) -> dict:
             "title": "Nao consegui identificar a expressao",
             "steps": [
                 "Verifique se a questao contem uma expressao matematica clara.",
-                "Exemplos validos: 2*x + 3 = 7, f(x)=x^2-4x+3, x² + 4x + 4, derivada de x^3, sqrt(16), log(100), sin(x).",
+                "Exemplos validos: 2*x + 3 = 7, f(x)=x^2-4*x+3, x^2 + 4*x + 4, derivada de x^3, sqrt(16), log(100), sin(x).",
             ],
             "answer": "Tente reescrever a questao com a conta ou a funcao explicitamente.",
             "graph": None,
@@ -461,6 +571,11 @@ def solve_math(question: str) -> dict:
         }
 
     normalized = normalize_expression(expression)
+
+    def append_graph_step(steps: list[str], graph: dict | None) -> None:
+        if graph and graph.get("summary"):
+            steps.append(f"No grafico, destaquei os pontos principais: {graph['summary']}.")
+
     try:
         if "=" in normalized:
             left, right = normalized.split("=", 1)
@@ -475,12 +590,36 @@ def solve_math(question: str) -> dict:
             steps = [
                 f"Identifiquei a equacao original: {left.strip()} = {right.strip()}",
                 f"Levei tudo para um lado e obtive: {reduced} = 0",
-                "Resolvi a equacao simbolicamente em relacao a x.",
-                f"Cheguei ao conjunto de solucoes: x = {answer}",
             ]
+
+            poly = reduced.as_poly(x)
+            if poly and poly.degree() == 2:
+                a, b, c = poly.all_coeffs()
+                delta = simplify(b**2 - 4 * a * c)
+                steps.append(f"Observei a forma ax^2 + bx + c, com a={a}, b={b} e c={c}.")
+                steps.append(f"Calculei o discriminante: Delta = b^2 - 4ac = {delta}.")
+                delta_value = to_numeric_float(delta)
+                if delta_value is not None:
+                    if abs(delta_value) < 1e-9:
+                        steps.append("Como Delta = 0, a parabola toca o eixo x em uma raiz real dupla.")
+                    elif delta_value > 0:
+                        steps.append("Como Delta > 0, existem duas raizes reais distintas.")
+                    else:
+                        steps.append("Como Delta < 0, nao existem raizes reais no plano cartesiano.")
+
+            steps.append("Resolvi a equacao simbolicamente em relacao a x.")
+            steps.append(f"Cheguei ao conjunto de solucoes exatas: x = {answer}")
+
+            numeric_solutions = []
+            for item in solution:
+                numeric_item = to_numeric_float(item)
+                if numeric_item is not None:
+                    numeric_solutions.append(format_numeric_value(numeric_item))
+            if numeric_solutions:
+                steps.append(f"Em aproximacao decimal: x ~= {', '.join(numeric_solutions)}")
+
             steps.extend(describe_math_features(normalized))
-            if graph:
-                steps.append(f"Tambem gerei o grafico da expressao equivalente y = {reduced_expression}.")
+            append_graph_step(steps, graph)
             ai_explanation = polish_math_explanation(
                 request_huggingface_explanation(question, "matematica", answer, steps),
                 steps,
@@ -501,34 +640,38 @@ def solve_math(question: str) -> dict:
 
         if "deriv" in lowered:
             result = diff(expr, x)
+            graph = build_graph_data(normalized)
             steps = [
                 f"Considerei a funcao {normalized}.",
                 "Identifiquei que o pedido era de derivada em relacao a x.",
                 f"Derivei termo a termo e obtive: {result}",
             ]
             steps.extend(describe_math_features(normalized))
+            append_graph_step(steps, graph)
             return {
                 "title": "Derivada calculada",
                 "steps": steps,
                 "answer": str(result),
-                "graph": build_graph_data(normalized),
+                "graph": graph,
                 "subject": "matematica",
                 "mode": "math",
             }
 
         if "integr" in lowered:
             result = integrate(expr, x)
+            graph = build_graph_data(normalized)
             steps = [
                 f"Considerei a expressao {normalized}.",
                 "Identifiquei que o pedido era de integral indefinida.",
                 f"Integrei simbolicamente em relacao a x: {result} + C",
             ]
             steps.extend(describe_math_features(normalized))
+            append_graph_step(steps, graph)
             return {
                 "title": "Integral calculada",
                 "steps": steps,
                 "answer": f"{result} + C",
-                "graph": build_graph_data(normalized),
+                "graph": graph,
                 "subject": "matematica",
                 "mode": "math",
             }
@@ -540,7 +683,7 @@ def solve_math(question: str) -> dict:
 
         steps = [
             f"Interpretei a expressao como: {normalized}",
-            "Converti a conta para uma forma simbolica compativel com operacoes algébricas.",
+            "Converti a conta para uma forma simbolica compativel com operacoes algebricas.",
         ]
         steps.extend(describe_math_features(normalized))
 
@@ -552,8 +695,7 @@ def solve_math(question: str) -> dict:
             steps.append("A expressao ja estava em uma forma simplificada adequada.")
         if str(factored) not in {str(expr), str(simplified)}:
             steps.append(f"Tambem observei a forma fatorada equivalente: {factored}")
-        if graph:
-            steps.append("Como a expressao depende de x, gerei um grafico para ajudar na visualizacao.")
+        append_graph_step(steps, graph)
 
         return {
             "title": "Analise matematica",

@@ -52,6 +52,7 @@ const historyNextBtn = document.getElementById("historyNextBtn");
 const historyPageInfo = document.getElementById("historyPageInfo");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 const chartTitle = document.getElementById("chartTitle");
+const chartInsights = document.getElementById("chartInsights");
 const chartCanvas = document.getElementById("chartCanvas");
 const historyPanel = document.querySelector(".history-panel");
 const ctx = chartCanvas.getContext("2d");
@@ -276,6 +277,10 @@ async function animateHistoryClear() {
 }
 
 function drawEmptyChart(message) {
+  chartTitle.textContent = "Sem funcao detectada ainda.";
+  if (chartInsights) {
+    chartInsights.textContent = message;
+  }
   ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
   ctx.fillStyle = currentTheme === "dark" ? "#c0c8bf" : "#74695f";
   ctx.font = "20px IBM Plex Mono";
@@ -284,12 +289,14 @@ function drawEmptyChart(message) {
 
 function drawGraph(graph) {
   if (!graph || !graph.points || graph.points.length < 2) {
-    chartTitle.textContent = "Sem funcao detectada ainda.";
     drawEmptyChart("Sem grafico para esta resposta.");
     return;
   }
 
   chartTitle.textContent = graph.title;
+  if (chartInsights) {
+    chartInsights.textContent = graph.summary || "Grafico pronto com destaques visuais.";
+  }
   ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
 
   const width = chartCanvas.width;
@@ -314,6 +321,12 @@ function drawGraph(graph) {
   const graphStroke = currentTheme === "dark" ? "#f18a45" : "#d75f39";
   const graphFill = currentTheme === "dark" ? "#68b394" : "#2f6c54";
   const labelFill = currentTheme === "dark" ? "rgba(244, 247, 244, 0.74)" : "rgba(24, 32, 28, 0.68)";
+  const symmetryStroke = currentTheme === "dark" ? "rgba(125, 190, 255, 0.7)" : "rgba(47, 111, 148, 0.65)";
+  const highlightFill = {
+    root: currentTheme === "dark" ? "#ffb454" : "#d75f39",
+    vertex: currentTheme === "dark" ? "#7dd3fc" : "#2f8fb1",
+    intercept: currentTheme === "dark" ? "#8ce99a" : "#2f6c54",
+  };
 
   const projectX = (value) => padding + ((value - visibleMinX) / (visibleMaxX - visibleMinX || 1)) * (width - padding * 2);
   const projectY = (value) => height - padding - ((value - visibleMinY) / (visibleMaxY - visibleMinY || 1)) * (height - padding * 2);
@@ -322,6 +335,41 @@ function drawGraph(graph) {
     const normalized = Math.abs(value) < 0.0001 ? 0 : value;
     const decimals = Number.isInteger(normalized) ? 0 : 1;
     return normalized.toFixed(decimals);
+  };
+  const drawHighlightLabel = (xPos, yPos, text, fillColor) => {
+    ctx.save();
+    ctx.font = "12px 'IBM Plex Mono'";
+    const metrics = ctx.measureText(text);
+    const labelWidth = metrics.width + 16;
+    const labelHeight = 24;
+    const boxX = clamp(xPos - labelWidth / 2, 12, width - labelWidth - 12);
+    const boxY = clamp(yPos - 34, 12, height - labelHeight - 12);
+    ctx.fillStyle = currentTheme === "dark" ? "rgba(12, 16, 19, 0.88)" : "rgba(247, 241, 231, 0.92)";
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, labelWidth, labelHeight, 10);
+    ctx.fill();
+    ctx.strokeStyle = fillColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = labelFill;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, boxX + labelWidth / 2, boxY + labelHeight / 2 + 0.5);
+    ctx.restore();
+  };
+  const drawHighlightPoint = (point, fillColor, text) => {
+    const px = projectX(point.x);
+    const py = projectY(point.y);
+    ctx.save();
+    ctx.fillStyle = fillColor;
+    ctx.strokeStyle = currentTheme === "dark" ? "#0c1013" : "#f7f1e7";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    drawHighlightLabel(px, py, text, fillColor);
   };
 
   ctx.strokeStyle = gridStroke;
@@ -365,6 +413,20 @@ function drawGraph(graph) {
   ctx.lineTo(width - padding, axisY);
   ctx.stroke();
 
+  const axisOfSymmetry = graph.highlights?.axis_of_symmetry;
+  if (axisOfSymmetry) {
+    const symmetryX = projectX(axisOfSymmetry.x);
+    ctx.save();
+    ctx.setLineDash([7, 7]);
+    ctx.strokeStyle = symmetryStroke;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(symmetryX, padding);
+    ctx.lineTo(symmetryX, height - padding);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   ctx.strokeStyle = graphStroke;
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -387,6 +449,19 @@ function drawGraph(graph) {
     ctx.arc(px, py, 3.5, 0, Math.PI * 2);
     ctx.fill();
   });
+
+  (graph.highlights?.roots || []).forEach((rootPoint) => {
+    drawHighlightPoint(rootPoint, highlightFill.root, `Raiz ${rootPoint.display}`);
+  });
+
+  if (graph.highlights?.y_intercept) {
+    drawHighlightPoint(graph.highlights.y_intercept, highlightFill.intercept, `y ${graph.highlights.y_intercept.display_y}`);
+  }
+
+  if (graph.highlights?.vertex) {
+    const vertex = graph.highlights.vertex;
+    drawHighlightPoint(vertex, highlightFill.vertex, `V(${vertex.display_x}, ${vertex.display_y})`);
+  }
 }
 
 function renderSteps(steps) {
@@ -797,24 +872,6 @@ function setLoggedOutState() {
   csrfToken = "";
   userBox.classList.add("hidden");
   window.location.replace("./");
-  return;
-  subjectBadge.textContent = "Chat de estudos";
-  resultTitle.textContent = "A resposta aparece aqui";
-  resultAnswer.textContent = "Entre com sua conta para comecar.";
-  stepsList.innerHTML = "";
-  historyList.innerHTML = '<p class="empty-state">Seu historico salvo vai aparecer aqui.</p>';
-  historyPageInfo.textContent = "Pagina 1 de 1";
-  copyAnswerBtn.disabled = true;
-  exportImageBtn.disabled = true;
-  exportPdfBtn.disabled = true;
-  favoriteResultBtn.disabled = true;
-  saveCategoryBtn.disabled = true;
-  resultCategoryInput.disabled = true;
-  generalNotice.classList.add("hidden");
-  resultCategoryInput.value = "";
-  currentResult = null;
-  drawEmptyChart("Faca login para usar o grafico.");
-  resetDashboard();
 }
 
 function resetWorkspaceAfterClear() {
