@@ -456,7 +456,6 @@ def build_dashboard_payload(history_rows, selected_period: str):
         week_start = row["day"] - timedelta(days=row["day"].weekday())
         weekly_buckets[week_start] += 1
 
-    weekly_points = []
     if selected_period == "7d":
         number_of_weeks = 2
     elif selected_period == "30d":
@@ -466,6 +465,7 @@ def build_dashboard_payload(history_rows, selected_period: str):
 
     current_week_start = now.date() - timedelta(days=now.date().weekday())
     week_starts = [current_week_start - timedelta(days=7 * offset) for offset in range(number_of_weeks - 1, -1, -1)]
+    weekly_points = []
     for week_start in week_starts:
         weekly_points.append(
             {
@@ -488,15 +488,14 @@ def build_dashboard_payload(history_rows, selected_period: str):
         best_streak = max(best_streak, streak)
         previous_day = day
 
-    if sorted_days:
-        latest_day = sorted_days[-1]
-        if latest_day in {now.date(), now.date() - timedelta(days=1)}:
-            current_streak = 1
-            pointer = latest_day
-            unique_days_lookup = set(sorted_days)
-            while pointer - timedelta(days=1) in unique_days_lookup:
-                current_streak += 1
-                pointer -= timedelta(days=1)
+    latest_day = sorted_days[-1] if sorted_days else None
+    if latest_day and latest_day in {now.date(), now.date() - timedelta(days=1)}:
+        current_streak = 1
+        pointer = latest_day
+        unique_days_lookup = set(sorted_days)
+        while pointer - timedelta(days=1) in unique_days_lookup:
+            current_streak += 1
+            pointer -= timedelta(days=1)
 
     subject_counter = Counter(row["subject"] for row in rows_for_selected_period)
     category_counter = Counter(row["category"] for row in rows_for_selected_period if row["category"])
@@ -514,6 +513,112 @@ def build_dashboard_payload(history_rows, selected_period: str):
             }
         )
 
+    current_week_end = current_week_start + timedelta(days=6)
+    current_week_rows = [row for row in normalized_rows if current_week_start <= row["day"] <= current_week_end]
+    weekly_goal_target = 5
+    weekly_goal_completed = len(current_week_rows)
+    weekly_goal_remaining = max(0, weekly_goal_target - weekly_goal_completed)
+    weekly_goal_progress = min(100, round((weekly_goal_completed / weekly_goal_target) * 100)) if weekly_goal_target else 0
+
+    category_progress = []
+    selected_total = len(rows_for_selected_period)
+    if selected_total:
+        selected_category_counter = Counter((row["category"] or "Sem categoria") for row in rows_for_selected_period)
+        for category_name, count in selected_category_counter.most_common(5):
+            favorite_count = sum(
+                1
+                for row in rows_for_selected_period
+                if (row["category"] or "Sem categoria") == category_name and row["is_favorite"]
+            )
+            category_progress.append(
+                {
+                    "category": category_name,
+                    "questions": count,
+                    "favorites": favorite_count,
+                    "share_percent": round((count / selected_total) * 100),
+                }
+            )
+
+    active_days_last_7d = usage_by_period["7d"]["active_days"]
+    days_since_last_activity = (now.date() - latest_day).days if latest_day else None
+    consistency = {
+        "current_streak": current_streak,
+        "best_streak": best_streak,
+        "active_days_last_7d": active_days_last_7d,
+        "last_active_day": latest_day.isoformat() if latest_day else None,
+        "days_since_last_activity": days_since_last_activity,
+    }
+
+    alerts = []
+    if not normalized_rows:
+        alerts.append(
+            {
+                "tone": "info",
+                "title": "Comece sua primeira semana",
+                "message": "Resolva sua primeira atividade para liberar meta semanal, progresso por categoria e alertas de constancia.",
+            }
+        )
+    else:
+        if weekly_goal_completed >= weekly_goal_target:
+            alerts.append(
+                {
+                    "tone": "success",
+                    "title": "Meta semanal concluida",
+                    "message": f"Voce ja bateu {weekly_goal_completed} atividade(s) nesta semana e pode transformar o extra em revisao.",
+                }
+            )
+        elif weekly_goal_remaining <= 2:
+            alerts.append(
+                {
+                    "tone": "info",
+                    "title": "Meta semanal ao alcance",
+                    "message": f"Faltam {weekly_goal_remaining} atividade(s) para fechar a meta desta semana.",
+                }
+            )
+        else:
+            alerts.append(
+                {
+                    "tone": "warn",
+                    "title": "Meta semanal em andamento",
+                    "message": f"Voce concluiu {weekly_goal_completed} de {weekly_goal_target} atividades nesta semana.",
+                }
+            )
+
+        if current_streak >= 3:
+            alerts.append(
+                {
+                    "tone": "success",
+                    "title": "Constancia forte",
+                    "message": f"Sua sequencia atual esta em {current_streak} dias. Continue para manter o ritmo.",
+                }
+            )
+        elif days_since_last_activity is not None and days_since_last_activity >= 3:
+            alerts.append(
+                {
+                    "tone": "warn",
+                    "title": "Ritmo esfriando",
+                    "message": f"Ja sao {days_since_last_activity} dias sem atividade registrada. Uma revisao curta ja recoloca voce no fluxo.",
+                }
+            )
+        else:
+            alerts.append(
+                {
+                    "tone": "info",
+                    "title": "Constancia observada",
+                    "message": f"Voce estudou em {active_days_last_7d} dia(s) nos ultimos 7 dias.",
+                }
+            )
+
+        uncategorized_count = sum(1 for row in rows_for_selected_period if not row["category"])
+        if uncategorized_count >= 2:
+            alerts.append(
+                {
+                    "tone": "info",
+                    "title": "Organize por categoria",
+                    "message": f"{uncategorized_count} consulta(s) ainda estao sem categoria. Nomear esses blocos ajuda a revisar melhor depois.",
+                }
+            )
+
     recent_activity = [
         {
             "day": row["day"].isoformat(),
@@ -528,10 +633,20 @@ def build_dashboard_payload(history_rows, selected_period: str):
         "selected_period": selected_period,
         "usage_by_period": usage_by_period,
         "weekly_evolution": weekly_points,
+        "weekly_goal": {
+            "target": weekly_goal_target,
+            "completed": weekly_goal_completed,
+            "remaining": weekly_goal_remaining,
+            "progress_percent": weekly_goal_progress,
+            "week_label": f"{current_week_start.strftime('%d/%m')} - {current_week_end.strftime('%d/%m')}",
+        },
         "study_streak": {
             "current": current_streak,
             "best": best_streak,
         },
+        "consistency": consistency,
+        "category_progress": category_progress,
+        "alerts": alerts,
         "activity_calendar": activity_calendar,
         "summary": {
             "questions": len(rows_for_selected_period),
@@ -542,7 +657,6 @@ def build_dashboard_payload(history_rows, selected_period: str):
         },
         "recent_activity": recent_activity,
     }
-
 
 def extract_question():
     payload = request.get_json(silent=True) or {}
@@ -641,5 +755,6 @@ def enforce_rate_limit(key: str, limit: int, window_seconds: int):
     if allowed:
         return None
     return jsonify({"error": f"Muitas tentativas. Tente novamente em {retry_after}s."}), 429
+
 
 

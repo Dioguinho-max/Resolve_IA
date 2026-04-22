@@ -2656,3 +2656,113 @@ body[data-theme="dark"] .subtle-notice {
   }
 }
 
+
+.goal-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.goal-summary,
+.consistency-card,
+.dashboard-alert,
+.category-progress-item {
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.goal-summary .dashboard-number {
+  margin-top: 0;
+}
+
+.goal-progress-track {
+  margin-top: 12px;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.goal-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9bb7ff, #5b84ff);
+  transition: width 220ms ease;
+}
+
+.consistency-card strong,
+.dashboard-alert strong,
+.category-progress-top strong {
+  display: block;
+}
+
+.consistency-card .tiny,
+.dashboard-alert p,
+.category-progress-meta span {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.dashboard-alerts,
+.category-progress-list {
+  display: grid;
+  gap: 12px;
+}
+
+.dashboard-alert.success {
+  border-color: rgba(103, 211, 163, 0.28);
+}
+
+.dashboard-alert.warn {
+  border-color: rgba(240, 125, 125, 0.28);
+}
+
+.dashboard-alert.info {
+  border-color: rgba(122, 162, 255, 0.24);
+}
+
+.dashboard-alert p {
+  margin-bottom: 0;
+}
+
+.category-progress-top,
+.category-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.category-progress-top span,
+.category-progress-meta span {
+  font-size: 0.86rem;
+}
+
+.category-progress-bar {
+  margin-top: 10px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.category-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(103, 211, 211, 0.92), rgba(91, 132, 255, 0.96));
+}
+
+@media (max-width: 680px) {
+  .category-progress-top,
+  .category-progress-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

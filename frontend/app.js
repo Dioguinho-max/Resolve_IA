@@ -40,6 +40,14 @@ const dashboardTopSubject = document.getElementById("dashboardTopSubject");
 const dashboardTopCategory = document.getElementById("dashboardTopCategory");
 const dashboardUsagePeriods = document.getElementById("dashboardUsagePeriods");
 const dashboardWeeklyChart = document.getElementById("dashboardWeeklyChart");
+const dashboardGoalValue = document.getElementById("dashboardGoalValue");
+const dashboardGoalMeta = document.getElementById("dashboardGoalMeta");
+const dashboardGoalProgress = document.getElementById("dashboardGoalProgress");
+const dashboardGoalProgressLabel = document.getElementById("dashboardGoalProgressLabel");
+const dashboardConsistencySummary = document.getElementById("dashboardConsistencySummary");
+const dashboardConsistencyMeta = document.getElementById("dashboardConsistencyMeta");
+const dashboardAlerts = document.getElementById("dashboardAlerts");
+const dashboardCategoryProgress = document.getElementById("dashboardCategoryProgress");
 const activityCalendarGrid = document.getElementById("activityCalendarGrid");
 const activityCalendarSummary = document.getElementById("activityCalendarSummary");
 const activityCalendarMonth = document.getElementById("activityCalendarMonth");
@@ -605,6 +613,14 @@ function resetDashboard() {
   dashboardTopCategory.textContent = "Categoria favorita: sem dados.";
   dashboardUsagePeriods.innerHTML = '<p class="empty-state">Entre na sua conta para ver os numeros.</p>';
   dashboardWeeklyChart.innerHTML = '<p class="empty-state">Ainda nao ha dados para montar o grafico.</p>';
+  dashboardGoalValue.textContent = "0/5";
+  dashboardGoalMeta.textContent = "Entre na sua conta para acompanhar sua meta semanal.";
+  dashboardGoalProgress.style.width = "0%";
+  dashboardGoalProgressLabel.textContent = "0% da meta semanal.";
+  dashboardConsistencySummary.textContent = "Sem dados de constancia.";
+  dashboardConsistencyMeta.textContent = "Seu ritmo recente vai aparecer aqui.";
+  dashboardAlerts.innerHTML = '<p class="empty-state">Os alertas de ritmo vao aparecer aqui.</p>';
+  dashboardCategoryProgress.innerHTML = '<p class="empty-state">As categorias vao aparecer aqui quando voce salvar consultas.</p>';
   activityCalendarMonth.textContent = "Calendario de atividade";
   activityCalendarSummary.textContent = "Sem atividade recente.";
   activityCalendarGrid.innerHTML = '<p class="empty-state">Entre na sua conta para ver seu calendario.</p>';
@@ -644,11 +660,24 @@ function buildMonthlyCalendarEntries(activityCalendar) {
   return { monthLabel: formatMonthLabel(today), days };
 }
 
+function formatDashboardDayLabel(isoDay) {
+  if (!isoDay) {
+    return "sem registro recente";
+  }
+
+  const parsedDate = new Date(`${isoDay}T00:00:00`);
+  return parsedDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
 function renderDashboard(data) {
   const summary = data.summary || {};
   const streak = data.study_streak || {};
   const usageByPeriod = data.usage_by_period || {};
   const weeklyEvolution = data.weekly_evolution || [];
+  const weeklyGoal = data.weekly_goal || {};
+  const consistency = data.consistency || {};
+  const alerts = data.alerts || [];
+  const categoryProgress = data.category_progress || [];
 
   dashboardQuestions.textContent = String(summary.questions || 0);
   dashboardQuestionsMeta.textContent = `${summary.favorites || 0} favoritos em ${dashboardPeriodLabel(data.selected_period)}.`;
@@ -659,6 +688,57 @@ function renderDashboard(data) {
   dashboardTopCategory.textContent = summary.top_category
     ? `Categoria favorita: ${summary.top_category}.`
     : "Categoria favorita: sem dados.";
+
+  dashboardGoalValue.textContent = `${weeklyGoal.completed || 0}/${weeklyGoal.target || 0}`;
+  dashboardGoalMeta.textContent = (weeklyGoal.remaining || 0) > 0
+    ? `Faltam ${weeklyGoal.remaining} atividade(s) para fechar a meta desta semana.`
+    : "Meta semanal concluida. Aproveite para revisar ou aprofundar um topico.";
+  dashboardGoalProgress.style.width = `${weeklyGoal.progress_percent || 0}%`;
+  dashboardGoalProgressLabel.textContent = `${weeklyGoal.progress_percent || 0}% da meta em ${weeklyGoal.week_label || "esta semana"}.`;
+
+  dashboardConsistencySummary.textContent = (consistency.current_streak || 0) > 0
+    ? `Sequencia atual: ${consistency.current_streak} dia(s).`
+    : "Constancia ainda em construcao.";
+  dashboardConsistencyMeta.textContent = `Ultima atividade: ${formatDashboardDayLabel(consistency.last_active_day)}. ${consistency.active_days_last_7d || 0} dia(s) ativos nos ultimos 7 dias.`;
+
+  dashboardAlerts.innerHTML = "";
+  if (!alerts.length) {
+    dashboardAlerts.innerHTML = '<p class="empty-state">Os alertas de ritmo vao aparecer aqui.</p>';
+  } else {
+    alerts.forEach((alert) => {
+      const card = document.createElement("article");
+      card.className = `dashboard-alert ${alert.tone || "info"}`;
+      card.innerHTML = `
+        <strong>${alert.title || "Alerta"}</strong>
+        <p>${alert.message || ""}</p>
+      `;
+      dashboardAlerts.appendChild(card);
+    });
+  }
+
+  dashboardCategoryProgress.innerHTML = "";
+  if (!categoryProgress.length) {
+    dashboardCategoryProgress.innerHTML = '<p class="empty-state">As categorias vao aparecer aqui quando voce salvar consultas.</p>';
+  } else {
+    categoryProgress.forEach((entry) => {
+      const item = document.createElement("article");
+      item.className = "category-progress-item";
+      item.innerHTML = `
+        <div class="category-progress-top">
+          <strong>${entry.category}</strong>
+          <span>${entry.questions} consulta(s)</span>
+        </div>
+        <div class="category-progress-bar" aria-hidden="true">
+          <span class="category-progress-fill" style="width: ${entry.share_percent || 0}%;"></span>
+        </div>
+        <div class="category-progress-meta">
+          <span>${entry.share_percent || 0}% do periodo</span>
+          <span>${entry.favorites || 0} favorito(s)</span>
+        </div>
+      `;
+      dashboardCategoryProgress.appendChild(item);
+    });
+  }
 
   const activityCalendar = data.activity_calendar || [];
   const maxActivity = Math.max(...activityCalendar.map((entry) => entry.count), 0);
@@ -677,7 +757,7 @@ function renderDashboard(data) {
       if (entry.count > 0 && maxActivity > 0) {
         cell.style.opacity = `${0.22 + (entry.count / maxActivity) * 0.78}`;
       }
-      cell.title = `${entry.day} • ${entry.count} atividade(s)`;
+      cell.title = `${entry.day} - ${entry.count} atividade(s)`;
       activityCalendarGrid.appendChild(cell);
     });
   }
@@ -731,7 +811,6 @@ function renderDashboard(data) {
     dashboardWeeklyChart.appendChild(bar);
   });
 }
-
 async function loadDashboard() {
   const data = await apiFetch(`/api/dashboard?period=${dashboardPeriod}`, { method: "GET" });
   renderDashboard(data);
@@ -1349,4 +1428,8 @@ drawEmptyChart("Faca login para usar o grafico.");
 resetDashboard();
 initializeTheme();
 bootstrapAuth();
+
+
+
+
 

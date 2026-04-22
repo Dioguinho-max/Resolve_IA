@@ -223,10 +223,45 @@
                 <p class="empty-state">Ainda nao ha dados para montar o grafico.</p>
               </div>
             </section>
+            <section class="dashboard-surface">
+              <div class="panel-header">
+                <div>
+                  <p class="section-tag">Meta e constancia</p>
+                  <h3>Seu alvo da semana</h3>
+                </div>
+              </div>
+              <div class="goal-stack">
+                <article class="goal-summary">
+                  <strong id="dashboardGoalValue" class="dashboard-number">0/5</strong>
+                  <p id="dashboardGoalMeta" class="tiny">Entre na sua conta para acompanhar sua meta semanal.</p>
+                  <div class="goal-progress-track" aria-hidden="true">
+                    <span id="dashboardGoalProgress" class="goal-progress-fill" style="width: 0%;"></span>
+                  </div>
+                  <p id="dashboardGoalProgressLabel" class="tiny">0% da meta semanal.</p>
+                </article>
+                <article class="consistency-card">
+                  <strong id="dashboardConsistencySummary">Sem dados de constancia.</strong>
+                  <p id="dashboardConsistencyMeta" class="tiny">Seu ritmo recente vai aparecer aqui.</p>
+                </article>
+                <div id="dashboardAlerts" class="dashboard-alerts">
+                  <p class="empty-state">Os alertas de ritmo vao aparecer aqui.</p>
+                </div>
+              </div>
+            </section>
+            <section class="dashboard-surface">
+              <div class="panel-header">
+                <div>
+                  <p class="section-tag">Progresso por categoria</p>
+                  <h3>Onde voce mais estuda</h3>
+                </div>
+              </div>
+              <div id="dashboardCategoryProgress" class="category-progress-list">
+                <p class="empty-state">As categorias vao aparecer aqui quando voce salvar consultas.</p>
+              </div>
+            </section>
           </div>
         </section>
       </section>
-
       <section class="grid lower-grid">
         <section class="panel chart-panel">
           <div class="panel-header">
@@ -297,5 +332,7 @@
   <script src="./app.js"></script>
 </body>
 </html>
+
+
 
 
