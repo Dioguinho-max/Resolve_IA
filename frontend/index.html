@@ -152,19 +152,26 @@
 
   <div id="appLoadingOverlay" class="loading-screen hidden" role="status" aria-live="polite" aria-hidden="true">
     <section class="loading-card" aria-label="Carregando ResolveAI">
-      <div class="loading-mark" aria-hidden="true">
-        <span class="loading-orbit"></span>
-        <span class="loading-core">RA</span>
+      <div class="loading-topline">
+        <span class="loading-wordmark">ResolveAI</span>
+        <span class="loading-state">Conectando</span>
       </div>
       <div class="loading-copy">
-        <p class="section-tag">ResolveAI</p>
         <h2 id="loadingTitle">Preparando seu acesso</h2>
         <p id="loadingCopy">Conectando sua conta e abrindo o painel de estudos.</p>
+      </div>
+      <div class="loading-progress" aria-hidden="true">
+        <span></span>
       </div>
       <div id="loadingSteps" class="loading-steps" aria-hidden="true">
         <span>Conta</span>
         <span>Sessao</span>
         <span>Painel</span>
+      </div>
+      <div class="loading-preview" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
     </section>
   </div>
