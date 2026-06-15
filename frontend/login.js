@@ -13,6 +13,10 @@ const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 const resetTokenInput = document.getElementById("resetToken");
 const resetPasswordInput = document.getElementById("resetPassword");
 const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+const appLoadingOverlay = document.getElementById("appLoadingOverlay");
+const loadingTitle = document.getElementById("loadingTitle");
+const loadingCopy = document.getElementById("loadingCopy");
+const loadingSteps = document.getElementById("loadingSteps");
 
 let csrfToken = "";
 const authModeContent = {
@@ -35,6 +39,45 @@ const authModeContent = {
 
 function initializeTheme() {
   document.body.dataset.theme = "dark";
+}
+
+function setPageLoading(isLoading, options = {}) {
+  if (!appLoadingOverlay) {
+    return;
+  }
+
+  const {
+    title = "Preparando seu acesso",
+    copy = "Conectando sua conta e abrindo o painel de estudos.",
+    steps = ["Conta", "Sessao", "Painel"],
+  } = options;
+
+  if (loadingTitle) {
+    loadingTitle.textContent = title;
+  }
+  if (loadingCopy) {
+    loadingCopy.textContent = copy;
+  }
+  if (loadingSteps) {
+    loadingSteps.innerHTML = "";
+    steps.forEach((step) => {
+      const item = document.createElement("span");
+      item.textContent = step;
+      loadingSteps.appendChild(item);
+    });
+  }
+
+  document.body.classList.toggle("is-loading", isLoading);
+  appLoadingOverlay.classList.toggle("hidden", !isLoading);
+  appLoadingOverlay.setAttribute("aria-hidden", String(!isLoading));
+}
+
+function setAuthControlsDisabled(isDisabled) {
+  document
+    .querySelectorAll(".auth-form input, .auth-form button, .tab")
+    .forEach((control) => {
+      control.disabled = isDisabled;
+    });
 }
 
 function setAuthMode(mode) {
@@ -101,6 +144,12 @@ loginForm.addEventListener("submit", async (event) => {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
+  setAuthControlsDisabled(true);
+  setPageLoading(true, {
+    title: "Abrindo seu painel",
+    copy: "Validando sua conta e carregando seu espaco de estudos.",
+    steps: ["Login", "Sessao", "Painel"],
+  });
   try {
     const data = await apiFetch("/api/auth/login", {
       method: "POST",
@@ -109,6 +158,8 @@ loginForm.addEventListener("submit", async (event) => {
     csrfToken = data.csrf_token || "";
     window.location.replace("./app.html");
   } catch (error) {
+    setPageLoading(false);
+    setAuthControlsDisabled(false);
     setMessage(error.message, true);
   }
 });
@@ -118,6 +169,12 @@ registerForm.addEventListener("submit", async (event) => {
   const email = document.getElementById("registerEmail").value.trim();
   const password = document.getElementById("registerPassword").value;
 
+  setAuthControlsDisabled(true);
+  setPageLoading(true, {
+    title: "Criando sua conta",
+    copy: "Preparando seu perfil para salvar historico, categorias e progresso.",
+    steps: ["Cadastro", "Sessao", "Painel"],
+  });
   try {
     const data = await apiFetch("/api/auth/register", {
       method: "POST",
@@ -126,6 +183,8 @@ registerForm.addEventListener("submit", async (event) => {
     csrfToken = data.csrf_token || "";
     window.location.replace("./app.html");
   } catch (error) {
+    setPageLoading(false);
+    setAuthControlsDisabled(false);
     setMessage(error.message, true);
   }
 });
@@ -137,6 +196,12 @@ forgotPasswordBtn.addEventListener("click", async () => {
     return;
   }
 
+  setAuthControlsDisabled(true);
+  setPageLoading(true, {
+    title: "Gerando codigo",
+    copy: "Criando um codigo de recuperacao para voce redefinir a senha.",
+    steps: ["Email", "Codigo", "Senha"],
+  });
   try {
     const data = await apiFetch("/api/auth/forgot-password", {
       method: "POST",
@@ -148,6 +213,9 @@ forgotPasswordBtn.addEventListener("click", async () => {
     }
   } catch (error) {
     setMessage(error.message, true);
+  } finally {
+    setPageLoading(false);
+    setAuthControlsDisabled(false);
   }
 });
 
@@ -159,6 +227,12 @@ resetPasswordBtn.addEventListener("click", async () => {
     return;
   }
 
+  setAuthControlsDisabled(true);
+  setPageLoading(true, {
+    title: "Redefinindo senha",
+    copy: "Confirmando o codigo e atualizando seu acesso.",
+    steps: ["Codigo", "Senha", "Pronto"],
+  });
   try {
     const data = await apiFetch("/api/auth/reset-password", {
       method: "POST",
@@ -170,6 +244,9 @@ resetPasswordBtn.addEventListener("click", async () => {
     setAuthMode("login");
   } catch (error) {
     setMessage(error.message, true);
+  } finally {
+    setPageLoading(false);
+    setAuthControlsDisabled(false);
   }
 });
 

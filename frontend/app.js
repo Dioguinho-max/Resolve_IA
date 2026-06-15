@@ -63,6 +63,10 @@ const chartTitle = document.getElementById("chartTitle");
 const chartInsights = document.getElementById("chartInsights");
 const chartCanvas = document.getElementById("chartCanvas");
 const historyPanel = document.querySelector(".history-panel");
+const appLoadingOverlay = document.getElementById("appLoadingOverlay");
+const loadingTitle = document.getElementById("loadingTitle");
+const loadingCopy = document.getElementById("loadingCopy");
+const loadingSteps = document.getElementById("loadingSteps");
 const ctx = chartCanvas.getContext("2d");
 
 let currentResult = null;
@@ -77,6 +81,37 @@ let lastAutoScrollAt = 0;
 let dashboardPeriod = "30d";
 let currentTheme = "dark";
 let currentUser = null;
+
+function setPageLoading(isLoading, options = {}) {
+  if (!appLoadingOverlay) {
+    return;
+  }
+
+  const {
+    title = "Preparando seu painel",
+    copy = "Organizando seu historico, dashboard e area de estudos.",
+    steps = ["Conta", "Historico", "Dashboard"],
+  } = options;
+
+  if (loadingTitle) {
+    loadingTitle.textContent = title;
+  }
+  if (loadingCopy) {
+    loadingCopy.textContent = copy;
+  }
+  if (loadingSteps) {
+    loadingSteps.innerHTML = "";
+    steps.forEach((step) => {
+      const item = document.createElement("span");
+      item.textContent = step;
+      loadingSteps.appendChild(item);
+    });
+  }
+
+  document.body.classList.toggle("is-loading", isLoading);
+  appLoadingOverlay.classList.toggle("hidden", !isLoading);
+  appLoadingOverlay.setAttribute("aria-hidden", String(!isLoading));
+}
 
 function applyTheme() {
   currentTheme = "dark";
@@ -221,6 +256,11 @@ function setLoading(isLoading) {
   solveBtn.disabled = isLoading;
   newQuestionBtn.disabled = isLoading;
   solveBtn.textContent = isLoading ? "Resolvendo..." : "Resolver com IA";
+  setPageLoading(isLoading, {
+    title: "Construindo sua resposta",
+    copy: "A IA esta lendo a pergunta, separando os passos e atualizando seu painel.",
+    steps: ["Pergunta", "Resolucao", "Historico"],
+  });
 }
 
 function keepResultInView(force = false) {
@@ -1136,6 +1176,11 @@ function exportCurrentResultAsImage() {
 }
 
 async function bootstrapAuth() {
+  setPageLoading(true, {
+    title: "Preparando seu painel",
+    copy: "Buscando sua sessao, historico e indicadores de estudo.",
+    steps: ["Sessao", "Historico", "Dashboard"],
+  });
   try {
     const user = await apiFetch("/api/auth/me", { method: "GET" });
     if (!user.authenticated) {
@@ -1152,6 +1197,10 @@ async function bootstrapAuth() {
     }
   } catch (error) {
     setLoggedOutState();
+  } finally {
+    if (isAuthenticated) {
+      setPageLoading(false);
+    }
   }
 }
 
@@ -1275,7 +1324,9 @@ solveBtn.addEventListener("click", async () => {
     renderSteps([]);
     drawEmptyChart("Nao foi possivel montar o grafico.");
   } finally {
-    setLoading(false);
+    if (isAuthenticated) {
+      setLoading(false);
+    }
   }
 });
 
