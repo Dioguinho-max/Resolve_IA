@@ -46,6 +46,25 @@
         </div>
       </section>
 
+      <nav class="app-section-nav" aria-label="Atalhos do painel">
+        <a href="#workspaceSection">
+          <span>01</span>
+          Perguntar
+        </a>
+        <a href="#dashboardSection">
+          <span>02</span>
+          Evolucao
+        </a>
+        <a href="#chartSection">
+          <span>03</span>
+          Grafico
+        </a>
+        <a href="#historySection">
+          <span>04</span>
+          Historico
+        </a>
+      </nav>
+
       <section class="grid app-main-grid">
         <aside class="left-rail">
           <section class="panel activity-panel">
@@ -101,16 +120,21 @@
           </section>
         </aside>
 
-        <section class="panel workspace-panel">
+        <section id="workspaceSection" class="panel workspace-panel">
           <div class="panel-header">
             <div>
-              <p class="section-tag">Agente de IA</p>
-              <h2>Converse sobre exercicios, revisoes e planos de estudo</h2>
+              <p class="section-tag">Perguntar para IA</p>
+              <h2>Transforme uma duvida em resposta organizada</h2>
             </div>
             <span id="subjectBadge" class="badge">Chat de estudos</span>
           </div>
           <div class="workspace-intro">
             <p class="tiny">Perguntas mais objetivas costumam gerar respostas mais organizadas.</p>
+            <div class="workspace-flow" aria-label="Fluxo de uso">
+              <span>1. Pergunte</span>
+              <span>2. Entenda</span>
+              <span>3. Salve</span>
+            </div>
             <div class="workspace-tags" aria-label="Sugestoes de pedidos">
               <button class="workspace-tag" type="button" data-question-template="Monte um plano de estudos de 7 dias para revisar funcoes do 1 e 2 grau">Plano de estudos</button>
               <button class="workspace-tag" type="button" data-question-template="Resolva 2*x + 3 = 11 passo a passo">Resolucao passo a passo</button>
@@ -170,7 +194,7 @@
       </section>
 
       <section class="dashboard-row">
-        <section class="panel dashboard-panel">
+        <section id="dashboardSection" class="panel dashboard-panel">
           <div class="panel-header dashboard-header">
             <div>
               <p class="section-tag">Dashboard</p>
@@ -283,7 +307,7 @@
         </section>
       </section>
       <section class="grid lower-grid">
-        <section class="panel chart-panel">
+        <section id="chartSection" class="panel chart-panel">
           <div class="panel-header">
             <div>
               <p class="section-tag">Visual</p>
@@ -297,7 +321,7 @@
           <canvas id="chartCanvas" width="900" height="420"></canvas>
         </section>
 
-        <section class="panel history-panel">
+        <section id="historySection" class="panel history-panel">
           <div class="panel-header">
             <div>
               <p class="section-tag">Historico</p>
