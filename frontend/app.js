@@ -276,6 +276,29 @@ function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function buildEmptyStateMarkup({ kicker, title, copy, actionLabel = "", prompt = "" }) {
+  const action = actionLabel && prompt
+    ? `<button class="secondary empty-state-action" type="button" data-question-template="${prompt}">${actionLabel}</button>`
+    : "";
+  return `
+    <article class="empty-state${action ? " empty-state-with-action" : ""}">
+      <span class="empty-state-kicker">${kicker}</span>
+      <strong>${title}</strong>
+      <p>${copy}</p>
+      ${action}
+    </article>
+  `;
+}
+
+function fillQuestionTemplate(prompt) {
+  if (!prompt || !questionInput) {
+    return;
+  }
+  questionInput.value = prompt;
+  questionInput.focus();
+  questionInput.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 function captureHistoryViewportAnchor() {
   return historyPanel ? historyPanel.getBoundingClientRect().top : null;
 }
@@ -330,9 +353,44 @@ function drawEmptyChart(message) {
     chartInsights.textContent = message;
   }
   ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-  ctx.fillStyle = currentTheme === "dark" ? "#c0c8bf" : "#74695f";
-  ctx.font = "20px IBM Plex Mono";
-  ctx.fillText(message, 28, 48);
+  const width = chartCanvas.width;
+  const height = chartCanvas.height;
+  const gridStroke = currentTheme === "dark" ? "rgba(255, 255, 255, 0.06)" : "rgba(24, 32, 28, 0.08)";
+  const lineStroke = currentTheme === "dark" ? "rgba(122, 162, 255, 0.42)" : "rgba(47, 111, 148, 0.34)";
+  const textFill = currentTheme === "dark" ? "#c8d1e4" : "#74695f";
+
+  ctx.save();
+  ctx.strokeStyle = gridStroke;
+  ctx.lineWidth = 1;
+  for (let x = 56; x < width; x += 92) {
+    ctx.beginPath();
+    ctx.moveTo(x, 36);
+    ctx.lineTo(x, height - 36);
+    ctx.stroke();
+  }
+  for (let y = 52; y < height; y += 64) {
+    ctx.beginPath();
+    ctx.moveTo(36, y);
+    ctx.lineTo(width - 36, y);
+    ctx.stroke();
+  }
+
+  ctx.setLineDash([8, 8]);
+  ctx.strokeStyle = lineStroke;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(72, height - 92);
+  ctx.bezierCurveTo(width * 0.32, 72, width * 0.62, height - 72, width - 76, 86);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = textFill;
+  ctx.font = "18px IBM Plex Mono";
+  ctx.fillText(message, 36, 48);
+  ctx.font = "14px IBM Plex Mono";
+  ctx.fillStyle = currentTheme === "dark" ? "rgba(200, 209, 228, 0.62)" : "rgba(116, 105, 95, 0.72)";
+  ctx.fillText("Ex.: resolva f(x) = x^2 - 4 para ver raizes e curva.", 36, 76);
+  ctx.restore();
 }
 
 function drawGraph(graph) {
@@ -645,25 +703,45 @@ async function loadHistory() {
 
 function resetDashboard() {
   dashboardQuestions.textContent = "0";
-  dashboardQuestionsMeta.textContent = "Entre na sua conta para acompanhar seu ritmo.";
+  dashboardQuestionsMeta.textContent = "Faca a primeira pergunta para acompanhar seu ritmo.";
   dashboardActiveDays.textContent = "0";
   dashboardCurrentStreak.textContent = "0d";
   dashboardBestStreak.textContent = "Melhor sequencia: 0 dias.";
   dashboardTopSubject.textContent = "Sem dados";
   dashboardTopCategory.textContent = "Categoria favorita: sem dados.";
-  dashboardUsagePeriods.innerHTML = '<p class="empty-state">Entre na sua conta para ver os numeros.</p>';
-  dashboardWeeklyChart.innerHTML = '<p class="empty-state">Ainda nao ha dados para montar o grafico.</p>';
+  dashboardUsagePeriods.innerHTML = buildEmptyStateMarkup({
+    kicker: "Sem consultas ainda",
+    title: "Os comparativos aparecem quando voce comeca a estudar.",
+    copy: "Faca uma pergunta e volte aqui para comparar 7 dias, 30 dias e geral.",
+  });
+  dashboardWeeklyChart.innerHTML = buildEmptyStateMarkup({
+    kicker: "Evolucao semanal",
+    title: "Seu grafico vai nascer das proximas consultas.",
+    copy: "Cada resposta salva ajuda a mostrar seu ritmo por semana.",
+  });
   dashboardGoalValue.textContent = "0/5";
-  dashboardGoalMeta.textContent = "Entre na sua conta para acompanhar sua meta semanal.";
+  dashboardGoalMeta.textContent = "Faca consultas ao longo da semana para acompanhar sua meta.";
   dashboardGoalProgress.style.width = "0%";
   dashboardGoalProgressLabel.textContent = "0% da meta semanal.";
   dashboardConsistencySummary.textContent = "Sem dados de constancia.";
-  dashboardConsistencyMeta.textContent = "Seu ritmo recente vai aparecer aqui.";
-  dashboardAlerts.innerHTML = '<p class="empty-state">Os alertas de ritmo vao aparecer aqui.</p>';
-  dashboardCategoryProgress.innerHTML = '<p class="empty-state">As categorias vao aparecer aqui quando voce salvar consultas.</p>';
+  dashboardConsistencyMeta.textContent = "Seu ritmo recente aparece depois das primeiras consultas.";
+  dashboardAlerts.innerHTML = buildEmptyStateMarkup({
+    kicker: "Alertas",
+    title: "Nada para avisar por enquanto.",
+    copy: "Quando houver ritmo, pausa ou meta proxima, o painel destaca aqui.",
+  });
+  dashboardCategoryProgress.innerHTML = buildEmptyStateMarkup({
+    kicker: "Categorias",
+    title: "Organize respostas por prova, revisao ou materia.",
+    copy: "Depois de salvar uma categoria, seu progresso por tema aparece aqui.",
+  });
   activityCalendarMonth.textContent = "Calendario de atividade";
-  activityCalendarSummary.textContent = "Sem atividade recente.";
-  activityCalendarGrid.innerHTML = '<p class="empty-state">Entre na sua conta para ver seu calendario.</p>';
+  activityCalendarSummary.textContent = "Aguardando sua primeira consulta.";
+  activityCalendarGrid.innerHTML = buildEmptyStateMarkup({
+    kicker: "Primeiro registro",
+    title: "Seu calendario comeca depois da primeira consulta.",
+    copy: "Resolva uma pergunta para marcar atividade e acompanhar sua constancia.",
+  });
 }
 
 function formatMonthLabel(date) {
@@ -743,7 +821,11 @@ function renderDashboard(data) {
 
   dashboardAlerts.innerHTML = "";
   if (!alerts.length) {
-    dashboardAlerts.innerHTML = '<p class="empty-state">Os alertas de ritmo vao aparecer aqui.</p>';
+    dashboardAlerts.innerHTML = buildEmptyStateMarkup({
+      kicker: "Alertas",
+      title: "Nada para avisar por enquanto.",
+      copy: "Quando houver ritmo, pausa ou meta proxima, o painel destaca aqui.",
+    });
   } else {
     alerts.forEach((alert) => {
       const card = document.createElement("article");
@@ -758,7 +840,11 @@ function renderDashboard(data) {
 
   dashboardCategoryProgress.innerHTML = "";
   if (!categoryProgress.length) {
-    dashboardCategoryProgress.innerHTML = '<p class="empty-state">As categorias vao aparecer aqui quando voce salvar consultas.</p>';
+    dashboardCategoryProgress.innerHTML = buildEmptyStateMarkup({
+      kicker: "Categorias",
+      title: "Organize respostas por prova, revisao ou materia.",
+      copy: "Depois de salvar uma categoria, seu progresso por tema aparece aqui.",
+    });
   } else {
     categoryProgress.forEach((entry) => {
       const item = document.createElement("article");
@@ -786,7 +872,11 @@ function renderDashboard(data) {
   activityCalendarMonth.textContent = monthlyCalendar.monthLabel;
   activityCalendarGrid.innerHTML = "";
   if (!monthlyCalendar.days.length) {
-    activityCalendarGrid.innerHTML = '<p class="empty-state">Ainda nao ha dados para o calendario.</p>';
+    activityCalendarGrid.innerHTML = buildEmptyStateMarkup({
+      kicker: "Calendario",
+      title: "Ainda nao ha dados para montar o calendario.",
+      copy: "Use o agente de IA algumas vezes para criar seu mapa de atividade.",
+    });
   } else {
     monthlyCalendar.days.forEach((entry) => {
       const cell = document.createElement("button");
@@ -822,7 +912,11 @@ function renderDashboard(data) {
 
   dashboardWeeklyChart.innerHTML = "";
   if (!weeklyEvolution.length) {
-    dashboardWeeklyChart.innerHTML = '<p class="empty-state">Ainda nao ha dados para montar o grafico.</p>';
+    dashboardWeeklyChart.innerHTML = buildEmptyStateMarkup({
+      kicker: "Evolucao semanal",
+      title: "Ainda nao ha volume suficiente para o grafico.",
+      copy: "Suas proximas consultas vao preencher este comparativo automaticamente.",
+    });
     return;
   }
 
@@ -889,10 +983,17 @@ async function updateHistoryItem(historyId, payload) {
 function renderHistory(items) {
   historyList.innerHTML = "";
   if (!items.length) {
-    const emptyState = document.createElement("p");
-    emptyState.className = "empty-state";
-    emptyState.textContent = "Nenhum item encontrado para esse filtro.";
-    historyList.appendChild(emptyState);
+    historyList.innerHTML = buildEmptyStateMarkup({
+      kicker: historyQuery.q || historyQuery.category || historyQuery.favorites ? "Nenhum resultado" : "Historico vazio",
+      title: historyQuery.q || historyQuery.category || historyQuery.favorites
+        ? "Nao encontrei consultas com esse filtro."
+        : "Suas consultas salvas vao aparecer aqui.",
+      copy: historyQuery.q || historyQuery.category || historyQuery.favorites
+        ? "Ajuste a busca, remova filtros ou salve novas respostas com categorias."
+        : "Comece por uma pergunta simples e use categoria ou favorito para encontrar depois.",
+      actionLabel: historyQuery.q || historyQuery.category || historyQuery.favorites ? "" : "Usar exemplo",
+      prompt: "Resolva 2*x + 3 = 11 passo a passo",
+    });
     return;
   }
 
@@ -996,7 +1097,7 @@ function setLoggedOutState() {
 function resetWorkspaceAfterClear() {
   subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "Historico limpo";
-  resultAnswer.textContent = "Seu historico foi apagado. Faca uma nova pergunta para gerar uma resposta.";
+  resultAnswer.textContent = "Seu historico foi apagado. Faca uma nova pergunta para gerar uma resposta e reconstruir seu painel.";
   stepsList.innerHTML = "";
   copyAnswerBtn.disabled = true;
   exportImageBtn.disabled = true;
@@ -1011,13 +1112,17 @@ function resetWorkspaceAfterClear() {
   drawEmptyChart("Nenhum grafico salvo no historico.");
 }
 
-function showIdleWorkspace(message = "Escolha uma consulta no historico ou faca uma nova pergunta para gerar uma resposta.") {
+function showIdleWorkspace(message = "Digite uma pergunta ou use uma sugestao acima para gerar sua primeira resposta.") {
   answerAnimationToken += 1;
   currentResult = null;
   subjectBadge.textContent = "Chat de estudos";
-  resultTitle.textContent = "A resposta aparece aqui";
+  resultTitle.textContent = "Comece por uma pergunta";
   resultAnswer.textContent = message;
-  stepsList.innerHTML = "";
+  renderSteps([
+    "Escolha um objetivo: resolver, revisar ou planejar.",
+    "Envie uma pergunta objetiva para a IA.",
+    "Salve categoria ou favorito quando a resposta for util.",
+  ]);
   generalNotice.classList.add("hidden");
   copyAnswerBtn.disabled = true;
   exportImageBtn.disabled = true;
@@ -1028,7 +1133,7 @@ function showIdleWorkspace(message = "Escolha uma consulta no historico ou faca 
   resultCategoryInput.disabled = true;
   resultCategoryInput.value = "";
   graphState.zoom = 1;
-  drawEmptyChart("Selecione um item do historico ou faca uma nova pergunta.");
+  drawEmptyChart("Pergunte sobre uma funcao para gerar um grafico.");
 }
 
 function buildExportTitle() {
@@ -1190,11 +1295,9 @@ async function bootstrapAuth() {
     setLoggedInState(user, user.csrf_token);
     const historyData = await loadHistory();
     await loadDashboard();
-    if (historyData.items.length) {
-      showIdleWorkspace();
-    } else {
-      drawEmptyChart("Resolva uma funcao para ver o grafico.");
-    }
+    showIdleWorkspace(historyData.items.length
+      ? "Escolha uma consulta no historico ou faca uma nova pergunta para gerar uma resposta."
+      : "Use uma sugestao acima ou digite sua primeira pergunta para comecar.");
   } catch (error) {
     setLoggedOutState();
   } finally {
@@ -1287,6 +1390,14 @@ confirmModal.addEventListener("click", (event) => {
   if (event.target === confirmModal) {
     closeConfirmModal();
   }
+});
+
+document.addEventListener("click", (event) => {
+  const templateButton = event.target.closest("[data-question-template]");
+  if (!templateButton) {
+    return;
+  }
+  fillQuestionTemplate(templateButton.dataset.questionTemplate);
 });
 
 solveBtn.addEventListener("click", async () => {

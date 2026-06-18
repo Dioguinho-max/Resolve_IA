@@ -66,7 +66,11 @@
               <span>Dom</span>
             </div>
             <div id="activityCalendarGrid" class="activity-calendar-grid">
-              <p class="empty-state">Entre na sua conta para ver seu calendario.</p>
+              <article class="empty-state">
+                <span class="empty-state-kicker">Primeiro registro</span>
+                <strong>Seu calendario comeca depois da primeira consulta.</strong>
+                <p>Resolva uma pergunta para marcar atividade e acompanhar sua constancia.</p>
+              </article>
             </div>
             <div class="activity-legend">
               <span><i class="legend-dot active"></i> Atividade registrada</span>
@@ -108,9 +112,9 @@
           <div class="workspace-intro">
             <p class="tiny">Perguntas mais objetivas costumam gerar respostas mais organizadas.</p>
             <div class="workspace-tags" aria-label="Sugestoes de pedidos">
-              <span class="workspace-tag">Plano de estudos</span>
-              <span class="workspace-tag">Resolucao passo a passo</span>
-              <span class="workspace-tag">Revisao rapida</span>
+              <button class="workspace-tag" type="button" data-question-template="Monte um plano de estudos de 7 dias para revisar funcoes do 1 e 2 grau">Plano de estudos</button>
+              <button class="workspace-tag" type="button" data-question-template="Resolva 2*x + 3 = 11 passo a passo">Resolucao passo a passo</button>
+              <button class="workspace-tag" type="button" data-question-template="Faca uma revisao rapida sobre funcao do 2 grau com exemplos">Revisao rapida</button>
             </div>
           </div>
 
@@ -209,7 +213,11 @@
                 </div>
               </div>
               <div id="dashboardUsagePeriods" class="usage-periods">
-                <p class="empty-state">Entre na sua conta para ver os numeros.</p>
+                <article class="empty-state">
+                  <span class="empty-state-kicker">Sem consultas ainda</span>
+                  <strong>Os comparativos aparecem quando voce comeca a estudar.</strong>
+                  <p>Faca uma pergunta e volte aqui para comparar 7 dias, 30 dias e geral.</p>
+                </article>
               </div>
             </section>
             <section class="dashboard-surface">
@@ -220,7 +228,11 @@
                 </div>
               </div>
               <div id="dashboardWeeklyChart" class="weekly-chart">
-                <p class="empty-state">Ainda nao ha dados para montar o grafico.</p>
+                <article class="empty-state">
+                  <span class="empty-state-kicker">Evolucao semanal</span>
+                  <strong>Seu grafico vai nascer das proximas consultas.</strong>
+                  <p>Cada resposta salva ajuda a mostrar seu ritmo por semana.</p>
+                </article>
               </div>
             </section>
             <section class="dashboard-surface">
@@ -244,7 +256,11 @@
                   <p id="dashboardConsistencyMeta" class="tiny">Seu ritmo recente vai aparecer aqui.</p>
                 </article>
                 <div id="dashboardAlerts" class="dashboard-alerts">
-                  <p class="empty-state">Os alertas de ritmo vao aparecer aqui.</p>
+                  <article class="empty-state">
+                    <span class="empty-state-kicker">Alertas</span>
+                    <strong>Nada para avisar por enquanto.</strong>
+                    <p>Quando houver ritmo, pausa ou meta proxima, o painel destaca aqui.</p>
+                  </article>
                 </div>
               </div>
             </section>
@@ -256,7 +272,11 @@
                 </div>
               </div>
               <div id="dashboardCategoryProgress" class="category-progress-list">
-                <p class="empty-state">As categorias vao aparecer aqui quando voce salvar consultas.</p>
+                <article class="empty-state">
+                  <span class="empty-state-kicker">Categorias</span>
+                  <strong>Organize respostas por prova, revisao ou materia.</strong>
+                  <p>Depois de salvar uma categoria, seu progresso por tema aparece aqui.</p>
+                </article>
               </div>
             </section>
           </div>
@@ -294,7 +314,12 @@
             </label>
           </div>
           <div id="historyList" class="history-list">
-            <p class="empty-state">Seu historico salvo vai aparecer aqui.</p>
+            <article class="empty-state empty-state-with-action">
+              <span class="empty-state-kicker">Historico vazio</span>
+              <strong>Suas consultas salvas vao aparecer aqui.</strong>
+              <p>Comece por uma pergunta simples e use categoria ou favorito para encontrar depois.</p>
+              <button class="secondary empty-state-action" type="button" data-question-template="Resolva 2*x + 3 = 11 passo a passo">Usar exemplo</button>
+            </article>
           </div>
           <div class="history-pagination">
             <button id="historyPrevBtn" class="secondary" type="button">Anterior</button>
