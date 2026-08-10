@@ -31,6 +31,7 @@ const dashboardPeriodChips = document.querySelectorAll(".period-chip");
 const subjectBadge = document.getElementById("subjectBadge");
 const resultTitle = document.getElementById("resultTitle");
 const resultAnswer = document.getElementById("resultAnswer");
+const resultSummary = document.getElementById("resultSummary");
 const stepsList = document.getElementById("stepsList");
 const dashboardQuestions = document.getElementById("dashboardQuestions");
 const dashboardQuestionsMeta = document.getElementById("dashboardQuestionsMeta");
@@ -564,11 +565,29 @@ function drawGraph(graph) {
 
 function renderSteps(steps) {
   stepsList.innerHTML = "";
-  (steps || []).forEach((step) => {
+  if (!steps?.length) {
+    const li = document.createElement("li");
+    li.textContent = "Os passos aparecem aqui quando a resposta tiver uma resolucao guiada.";
+    li.className = "muted-step";
+    stepsList.appendChild(li);
+    return;
+  }
+  steps.forEach((step) => {
     const li = document.createElement("li");
     li.textContent = step;
     stepsList.appendChild(li);
   });
+}
+
+function buildReviewSummary(data) {
+  const steps = data.steps || [];
+  if (steps.length) {
+    return `Guarde a ideia central: ${steps[0]} Revise o resultado final e tente refazer sem olhar os passos.`;
+  }
+  if (data.answer) {
+    return `Revise este ponto: ${data.answer}`;
+  }
+  return "Quando a resposta chegar, use este bloco como lembrete rapido para revisar depois.";
 }
 
 function animateText(element, text, animationToken) {
@@ -612,6 +631,10 @@ function animateText(element, text, animationToken) {
 
 function animateSteps(steps, animationToken) {
   stepsList.innerHTML = "";
+  if (!steps?.length) {
+    renderSteps([]);
+    return;
+  }
   (steps || []).forEach((step, index) => {
     const li = document.createElement("li");
     li.textContent = step;
@@ -640,8 +663,9 @@ function renderResult(data) {
   };
   subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = data.title || "Resposta da IA";
-  const answerText = `Resposta final: ${data.answer || "Sem resposta disponivel."}`;
+  const answerText = data.answer || "Sem resposta disponivel.";
   resultAnswer.textContent = "";
+  resultSummary.textContent = buildReviewSummary(data);
   generalNotice.classList.toggle("hidden", data.subject !== "geral");
   copyAnswerBtn.disabled = false;
   exportImageBtn.disabled = false;
@@ -1091,6 +1115,7 @@ function resetWorkspaceAfterClear() {
   subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "Historico limpo";
   resultAnswer.textContent = "Seu historico foi apagado. Faca uma nova pergunta para gerar uma resposta e reconstruir seu painel.";
+  resultSummary.textContent = "O resumo para revisao volta quando voce gerar uma nova resposta.";
   stepsList.innerHTML = "";
   copyAnswerBtn.disabled = true;
   exportImageBtn.disabled = true;
@@ -1112,6 +1137,7 @@ function showIdleWorkspace(message = "Digite uma pergunta ou use uma sugestao ac
   subjectBadge.textContent = "Chat de estudos";
   resultTitle.textContent = "Comece por uma pergunta";
   resultAnswer.textContent = message;
+  resultSummary.textContent = "Depois da resposta, este bloco destaca o ponto principal para revisar.";
   renderSteps([
     "Escolha um objetivo: resolver, revisar ou planejar.",
     "Envie uma pergunta objetiva para a IA.",
@@ -1391,6 +1417,7 @@ solveBtn.addEventListener("click", async () => {
   if (!question) {
     resultTitle.textContent = "Digite uma questao primeiro";
     resultAnswer.textContent = "Sem enunciado, nao tem como resolver.";
+    resultSummary.textContent = "Escreva uma pergunta ou use uma sugestao pronta acima.";
     renderSteps([]);
     drawEmptyChart("Aguardando uma funcao.");
     return;
@@ -1399,6 +1426,7 @@ solveBtn.addEventListener("click", async () => {
   if (!isAuthenticated) {
     resultTitle.textContent = "Login necessario";
     resultAnswer.textContent = "Entre na sua conta para usar a IA e salvar o historico.";
+    resultSummary.textContent = "Entre na conta para liberar respostas, historico e progresso.";
     renderSteps([]);
     drawEmptyChart("Faca login para continuar.");
     return;
@@ -1418,6 +1446,7 @@ solveBtn.addEventListener("click", async () => {
   } catch (error) {
     resultTitle.textContent = "Erro";
     resultAnswer.textContent = error.message;
+    resultSummary.textContent = "Tente novamente em instantes ou ajuste a pergunta.";
     renderSteps([]);
     drawEmptyChart("Nao foi possivel montar o grafico.");
   } finally {

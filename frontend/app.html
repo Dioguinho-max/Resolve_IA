@@ -167,8 +167,20 @@
               <p class="notice subtle-notice">
                 Nao envie dados pessoais sensiveis nas perguntas. Emails, telefones, CPF e numeros de cartao podem ser bloqueados por privacidade.
               </p>
-              <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
-              <ol id="stepsList" class="steps"></ol>
+              <div class="answer-layout">
+                <article class="answer-card answer-card-primary">
+                  <p class="section-tag">Resposta final</p>
+                  <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
+                </article>
+                <article class="answer-card">
+                  <p class="section-tag">Passo a passo</p>
+                  <ol id="stepsList" class="steps"></ol>
+                </article>
+                <article class="answer-card answer-summary-card">
+                  <p class="section-tag">Resumo para revisar</p>
+                  <p id="resultSummary" class="answer-summary">Apos a resposta, voce vera um resumo curto para revisar depois.</p>
+                </article>
+              </div>
             </section>
             <section class="response-tools" aria-label="Ferramentas da resposta">
               <div class="response-tools-header">
