@@ -175,6 +175,11 @@
                 <p class="section-tag">Ferramentas</p>
                 <p class="tiny">Organize, exporte e salve esta resposta.</p>
               </div>
+              <article id="responseToolsEmptyState" class="tool-empty-state">
+                <span class="empty-state-kicker">Depois da resposta</span>
+                <strong>As ferramentas ficam prontas quando a IA responder.</strong>
+                <p>Voce podera favoritar, exportar, copiar ou salvar uma categoria para encontrar depois.</p>
+              </article>
               <div class="result-actions">
                 <button id="favoriteResultBtn" class="secondary" type="button" disabled>Favoritar</button>
                 <button id="exportImageBtn" class="secondary" type="button" disabled>Baixar imagem</button>
@@ -375,32 +380,6 @@
         <button id="confirmModalActionBtn" type="button">Confirmar</button>
       </div>
     </div>
-  </div>
-
-  <div id="appLoadingOverlay" class="loading-screen hidden" role="status" aria-live="polite" aria-hidden="true">
-    <section class="loading-card" aria-label="Carregando ResolveAI">
-      <div class="loading-topline">
-        <span class="loading-wordmark">ResolveAI</span>
-        <span class="loading-state">Sincronizando</span>
-      </div>
-      <div class="loading-copy">
-        <h2 id="loadingTitle">Preparando seu painel</h2>
-        <p id="loadingCopy">Organizando seu historico, dashboard e area de estudos.</p>
-      </div>
-      <div class="loading-progress" aria-hidden="true">
-        <span></span>
-      </div>
-      <div id="loadingSteps" class="loading-steps" aria-hidden="true">
-        <span>Conta</span>
-        <span>Historico</span>
-        <span>Dashboard</span>
-      </div>
-      <div class="loading-preview" aria-hidden="true">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </section>
   </div>
 
   <script src="./config.js"></script>

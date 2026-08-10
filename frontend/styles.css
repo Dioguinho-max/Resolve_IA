@@ -1113,6 +1113,32 @@ body[data-theme="dark"] .response-tools {
   margin: 0;
 }
 
+.tool-empty-state {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tool-empty-state strong {
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.tool-empty-state p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 0.9rem;
+}
+
+.tool-empty-state.is-ready {
+  border-color: rgba(122, 162, 255, 0.22);
+  background: rgba(122, 162, 255, 0.06);
+}
+
 body[data-theme="dark"] .loading-box {
   background: rgba(104, 179, 148, 0.08);
   border-color: rgba(104, 179, 148, 0.14);

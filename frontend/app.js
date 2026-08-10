@@ -24,6 +24,7 @@ const exportImageBtn = document.getElementById("exportImageBtn");
 const exportPdfBtn = document.getElementById("exportPdfBtn");
 const resultCategoryInput = document.getElementById("resultCategoryInput");
 const saveCategoryBtn = document.getElementById("saveCategoryBtn");
+const responseToolsEmptyState = document.getElementById("responseToolsEmptyState");
 const solveLoading = document.getElementById("solveLoading");
 const generalNotice = document.getElementById("generalNotice");
 const dashboardPeriodChips = document.querySelectorAll(".period-chip");
@@ -63,10 +64,6 @@ const chartTitle = document.getElementById("chartTitle");
 const chartInsights = document.getElementById("chartInsights");
 const chartCanvas = document.getElementById("chartCanvas");
 const historyPanel = document.querySelector(".history-panel");
-const appLoadingOverlay = document.getElementById("appLoadingOverlay");
-const loadingTitle = document.getElementById("loadingTitle");
-const loadingCopy = document.getElementById("loadingCopy");
-const loadingSteps = document.getElementById("loadingSteps");
 const ctx = chartCanvas.getContext("2d");
 
 let currentResult = null;
@@ -81,37 +78,6 @@ let lastAutoScrollAt = 0;
 let dashboardPeriod = "30d";
 let currentTheme = "dark";
 let currentUser = null;
-
-function setPageLoading(isLoading, options = {}) {
-  if (!appLoadingOverlay) {
-    return;
-  }
-
-  const {
-    title = "Preparando seu painel",
-    copy = "Organizando seu historico, dashboard e area de estudos.",
-    steps = ["Conta", "Historico", "Dashboard"],
-  } = options;
-
-  if (loadingTitle) {
-    loadingTitle.textContent = title;
-  }
-  if (loadingCopy) {
-    loadingCopy.textContent = copy;
-  }
-  if (loadingSteps) {
-    loadingSteps.innerHTML = "";
-    steps.forEach((step) => {
-      const item = document.createElement("span");
-      item.textContent = step;
-      loadingSteps.appendChild(item);
-    });
-  }
-
-  document.body.classList.toggle("is-loading", isLoading);
-  appLoadingOverlay.classList.toggle("hidden", !isLoading);
-  appLoadingOverlay.setAttribute("aria-hidden", String(!isLoading));
-}
 
 function applyTheme() {
   currentTheme = "dark";
@@ -256,11 +222,6 @@ function setLoading(isLoading) {
   solveBtn.disabled = isLoading;
   newQuestionBtn.disabled = isLoading;
   solveBtn.textContent = isLoading ? "Resolvendo..." : "Resolver com IA";
-  setPageLoading(isLoading, {
-    title: "Construindo sua resposta",
-    copy: "A IA esta lendo a pergunta, separando os passos e atualizando seu painel.",
-    steps: ["Pergunta", "Resolucao", "Historico"],
-  });
 }
 
 function keepResultInView(force = false) {
@@ -297,6 +258,37 @@ function fillQuestionTemplate(prompt) {
   questionInput.value = prompt;
   questionInput.focus();
   questionInput.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function setResponseToolsState(state = "idle") {
+  if (!responseToolsEmptyState) {
+    return;
+  }
+
+  const states = {
+    idle: {
+      kicker: "Depois da resposta",
+      title: "As ferramentas ficam prontas quando a IA responder.",
+      copy: "Voce podera favoritar, exportar, copiar ou salvar uma categoria para encontrar depois.",
+    },
+    ready: {
+      kicker: "Resposta pronta",
+      title: "Agora voce pode transformar esta resposta em material de revisao.",
+      copy: "Favorite, copie, exporte ou salve uma categoria para organizar seu historico.",
+    },
+    cleared: {
+      kicker: "Historico limpo",
+      title: "As ferramentas foram pausadas ate a proxima resposta.",
+      copy: "Envie uma nova pergunta para liberar exportacao, favoritos e categorias.",
+    },
+  };
+  const content = states[state] || states.idle;
+  responseToolsEmptyState.innerHTML = `
+    <span class="empty-state-kicker">${content.kicker}</span>
+    <strong>${content.title}</strong>
+    <p>${content.copy}</p>
+  `;
+  responseToolsEmptyState.classList.toggle("is-ready", state === "ready");
 }
 
 function captureHistoryViewportAnchor() {
@@ -660,6 +652,7 @@ function renderResult(data) {
   favoriteResultBtn.textContent = currentResult.is_favorite ? "Desfavoritar" : "Favoritar";
   resultCategoryInput.value = currentResult.category;
   stepsList.innerHTML = "";
+  setResponseToolsState("ready");
   graphState.zoom = 1;
   drawGraph(data.graph || null);
   keepResultInView(true);
@@ -1108,6 +1101,7 @@ function resetWorkspaceAfterClear() {
   generalNotice.classList.add("hidden");
   resultCategoryInput.value = "";
   currentResult = null;
+  setResponseToolsState("cleared");
   graphState.zoom = 1;
   drawEmptyChart("Nenhum grafico salvo no historico.");
 }
@@ -1132,6 +1126,7 @@ function showIdleWorkspace(message = "Digite uma pergunta ou use uma sugestao ac
   saveCategoryBtn.disabled = true;
   resultCategoryInput.disabled = true;
   resultCategoryInput.value = "";
+  setResponseToolsState("idle");
   graphState.zoom = 1;
   drawEmptyChart("Pergunte sobre uma funcao para gerar um grafico.");
 }
@@ -1281,11 +1276,6 @@ function exportCurrentResultAsImage() {
 }
 
 async function bootstrapAuth() {
-  setPageLoading(true, {
-    title: "Preparando seu painel",
-    copy: "Buscando sua sessao, historico e indicadores de estudo.",
-    steps: ["Sessao", "Historico", "Dashboard"],
-  });
   try {
     const user = await apiFetch("/api/auth/me", { method: "GET" });
     if (!user.authenticated) {
@@ -1300,10 +1290,6 @@ async function bootstrapAuth() {
       : "Use uma sugestao acima ou digite sua primeira pergunta para comecar.");
   } catch (error) {
     setLoggedOutState();
-  } finally {
-    if (isAuthenticated) {
-      setPageLoading(false);
-    }
   }
 }
 
@@ -1588,6 +1574,7 @@ chartCanvas.addEventListener("wheel", (event) => {
 
 drawEmptyChart("Faca login para usar o grafico.");
 resetDashboard();
+setResponseToolsState("idle");
 initializeTheme();
 bootstrapAuth();
 
