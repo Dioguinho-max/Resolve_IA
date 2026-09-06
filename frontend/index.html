@@ -3,163 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ResolveAI</title>
+  <title>ResolveAI — Seu espaço de estudos com IA</title>
+  <meta name="description" content="Entenda exercícios passo a passo, organize suas revisões e acompanhe sua evolução com o ResolveAI.">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./appearance.css">
+  <script src="./appearance.js"></script>
 </head>
 <body data-theme="dark">
+  <a class="skip-link" href="#access">Pular para o conteúdo</a>
   <main class="shell shell-split">
     <header class="site-frame-header">
-      <p class="eyebrow">ResolveAI</p>
+      <a class="brand" href="./" aria-label="ResolveAI, início"><span class="brand-symbol" aria-hidden="true">✳</span><span>Resolve<span>AI</span></span></a>
+      <div class="header-actions">
+        <span class="header-caption">Seu próximo passo começa com uma pergunta.</span>
+        <button id="appearanceToggle" class="secondary appearance-toggle" type="button" aria-expanded="false" aria-controls="appearancePanel"><span aria-hidden="true">◐</span> Personalizar</button>
+      </div>
+      <section id="appearancePanel" class="appearance-panel" aria-labelledby="appearanceTitle" hidden>
+        <h2 id="appearanceTitle">Do seu jeito</h2>
+        <fieldset>
+          <legend>Cor de destaque</legend>
+          <div class="accent-options">
+            <button class="accent-choice" type="button" data-accent-choice="violet" aria-pressed="true"><i style="--swatch: #b5a0ff" aria-hidden="true"></i>Órbita</button>
+            <button class="accent-choice" type="button" data-accent-choice="cyan" aria-pressed="false"><i style="--swatch: #76d9f5" aria-hidden="true"></i>Ciano</button>
+            <button class="accent-choice" type="button" data-accent-choice="mint" aria-pressed="false"><i style="--swatch: #7ee5be" aria-hidden="true"></i>Aurora</button>
+          </div>
+        </fieldset>
+        <label class="compact-option" for="compactMode"><input id="compactMode" type="checkbox">Painel mais compacto</label>
+        <p id="appearanceStatus" class="appearance-status" role="status">Preferências aplicadas neste navegador.</p>
+      </section>
     </header>
 
     <section class="public-shell">
       <div class="public-grid">
         <section class="panel marketing-panel">
           <div class="marketing-copy">
-            <p class="section-tag">Chat de estudos com IA</p>
-            <h1 class="marketing-title">Pergunte, entenda e acompanhe seus estudos em um so painel.</h1>
-            <p class="marketing-subtitle">
-              Use a IA para resolver exercicios, revisar conteudos e guardar o que importa para continuar estudando sem perder o fio.
-            </p>
+            <p class="section-tag hero-kicker"><span class="status-dot" aria-hidden="true"></span> Seu espaço de estudo com IA</p>
+            <h1 class="marketing-title">Menos dúvidas.<br>Mais <em>descobertas.</em></h1>
+            <p class="marketing-subtitle">Descomplique a matéria, entenda cada passo e veja seu conhecimento crescer. Tudo em um espaço que acompanha você.</p>
+            <div class="hero-actions">
+              <a class="primary-link" href="#access" data-auth-mode="register">Começar a estudar <span aria-hidden="true">↗</span></a>
+              <a class="text-link" href="#how-it-works">Veja como funciona <span aria-hidden="true">↓</span></a>
+            </div>
           </div>
-          <div class="prompt-samples" aria-label="Sugestoes de perguntas">
-            <span>Resolver equacao</span>
-            <span>Plano de revisao</span>
-            <span>Explicar funcao</span>
-          </div>
-          <div class="marketing-highlights" aria-label="Destaques da plataforma">
-            <article class="marketing-highlight">
-              <p class="section-tag">Respostas guiadas</p>
-              <strong>Veja a conclusao e os passos da resolucao no mesmo lugar.</strong>
-            </article>
-            <article class="marketing-highlight">
-              <p class="section-tag">Progresso salvo</p>
-              <strong>Historico, favoritos e categorias ajudam voce a retomar depois.</strong>
-            </article>
-          </div>
-          <section class="marketing-preview" aria-label="Resumo visual da experiencia">
+          <section id="how-it-works" class="marketing-preview" aria-label="Exemplo ilustrativo de resolução">
             <div class="preview-head">
-              <div>
-                <p class="section-tag">Exemplo rapido</p>
-                <h2>De uma duvida solta para uma resposta organizada</h2>
-              </div>
-              <span class="preview-badge">Pronto para revisar</span>
+              <div><p class="section-tag">Uma dúvida, um novo começo</p><h2>Do enunciado ao entendimento.</h2></div>
+              <span class="preview-window-dots" aria-hidden="true">●●●</span>
             </div>
-            <div class="answer-preview">
-              <div class="answer-preview-question">
-                <span class="tiny">Pergunta</span>
-                <strong>Resolva 2x + 3 = 11 e explique cada passo.</strong>
-              </div>
-              <ol class="answer-preview-steps">
-                <li>Isola o termo com x: 2x = 8.</li>
-                <li>Divide os dois lados por 2.</li>
-                <li>Resultado final: x = 4.</li>
-              </ol>
-            </div>
-            <div class="preview-metrics">
-              <article class="preview-metric">
-                <span class="tiny">Historico</span>
-                <strong>Revisoes guardadas</strong>
-                <p>Encontre respostas antigas por tema, categoria ou favorito.</p>
-              </article>
-              <article class="preview-metric">
-                <span class="tiny">Dashboard</span>
-                <strong>Ritmo visivel</strong>
-                <p>Acompanhe frequencia, sequencia e foco principal.</p>
-              </article>
-              <article class="preview-metric">
-                <span class="tiny">Graficos</span>
-                <strong>Funcoes no visual</strong>
-                <p>Quando houver funcao, o painel monta um grafico de apoio.</p>
-              </article>
-            </div>
+            <div class="demo-question"><span aria-hidden="true">↳</span> Resolva 2x + 3 = 11, passo a passo.</div>
+            <div class="demo-answer"><strong>x = 4</strong><p>Subtraia 3 dos dois lados: 2x = 8.<br>Agora, divida por 2. Pronto: você entendeu o caminho.</p></div>
           </section>
-          <div class="marketing-cards">
-            <article class="marketing-card">
-              <p class="section-tag">Para estudar</p>
-              <strong>Transforme duvidas em explicacoes curtas, passos e revisoes.</strong>
-            </article>
-            <article class="marketing-card">
-              <p class="section-tag">Para lembrar</p>
-              <strong>Salve categorias como prova, revisao ou materia dificil.</strong>
-            </article>
-            <article class="marketing-card">
-              <p class="section-tag">Para evoluir</p>
-              <strong>Use o calendario e o dashboard para manter constancia.</strong>
-            </article>
+          <div class="feature-strip" aria-label="Recursos da plataforma">
+            <article><span>01 / ENTENDA</span><strong>Respostas com contexto</strong><p>Acompanhe a explicação, passo a passo.</p></article>
+            <article><span>02 / ORGANIZE</span><strong>Seu estudo, salvo</strong><p>Retome pelo histórico e pelos favoritos.</p></article>
+            <article><span>03 / EVOLUA</span><strong>Progresso à vista</strong><p>Explore gráficos e seu ritmo de estudo.</p></article>
           </div>
         </section>
 
-        <section class="panel auth-panel auth-panel-landing">
+        <section id="access" class="panel auth-panel auth-panel-landing">
+          <div class="auth-emblem" aria-hidden="true">✳</div>
           <div class="auth-intro">
             <p id="authEyebrow" class="section-tag">Acesso</p>
-            <h2 id="authTitle" class="auth-title">Entrar na sua conta</h2>
-            <p id="authSubtitle" class="auth-subtitle">Use seu email e senha para abrir o painel e continuar seus estudos.</p>
-          </div>
-          <div class="auth-compact-note">
-            <span class="tiny">Continuidade</span>
-            <strong>Entre para abrir seu historico, favoritos e painel de evolucao.</strong>
+            <h2 id="authTitle" class="auth-title">Seu próximo passo começa aqui.</h2>
+            <p id="authSubtitle" class="auth-subtitle">Entre na sua conta e continue de onde parou.</p>
           </div>
           <div class="tabs">
-            <button class="tab active" data-tab="login">Entrar</button>
-            <button class="tab" data-tab="register">Criar conta</button>
-            <button class="tab" data-tab="recover">Recuperar</button>
+            <button class="tab active" type="button" data-tab="login" aria-pressed="true" aria-controls="loginForm">Entrar</button>
+            <button class="tab" type="button" data-tab="register" aria-pressed="false" aria-controls="registerForm">Criar conta</button>
+            <button class="tab" type="button" data-tab="recover" aria-pressed="false" aria-controls="recoverForm">Recuperar</button>
           </div>
 
           <form id="loginForm" class="auth-form active-form">
             <label for="loginEmail">Email</label>
-            <input id="loginEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
+            <input id="loginEmail" type="email" placeholder="você@email.com" autocomplete="email" required>
             <label for="loginPassword">Senha</label>
             <input id="loginPassword" type="password" placeholder="Sua senha" autocomplete="current-password" required>
             <button type="submit">Entrar</button>
             <p class="legal-copy">
-              Ao se registrar e fazer login, voce concorda com os
-              <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
+              Ao se registrar e fazer login, você concorda com os
+              <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
               e com a
-              <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>.
+              <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>.
             </p>
           </form>
 
           <form id="registerForm" class="auth-form hidden">
             <label for="registerEmail">Email</label>
-            <input id="registerEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
+            <input id="registerEmail" type="email" placeholder="você@email.com" autocomplete="email" required>
             <label for="registerPassword">Senha</label>
-            <input id="registerPassword" type="password" placeholder="Minimo 6 caracteres" autocomplete="new-password" required>
+            <input id="registerPassword" type="password" placeholder="Mínimo 6 caracteres" minlength="6" autocomplete="new-password" required>
             <button type="submit">Criar conta</button>
             <p class="legal-copy">
-              Ao se registrar e fazer login, voce concorda com os
-              <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
+              Ao se registrar e fazer login, você concorda com os
+              <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
               e com a
-              <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>.
+              <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>.
             </p>
           </form>
 
           <section id="recoverForm" class="auth-form hidden">
             <label for="recoverEmail">Email da conta</label>
-            <input id="recoverEmail" type="email" placeholder="voce@email.com" autocomplete="email">
-            <button id="forgotPasswordBtn" type="button">Gerar codigo de recuperacao</button>
+            <input id="recoverEmail" type="email" placeholder="você@email.com" autocomplete="email">
+            <button id="forgotPasswordBtn" type="button">Gerar código de recuperação</button>
 
-            <label for="resetToken">Codigo de recuperacao</label>
-            <input id="resetToken" type="text" placeholder="Cole o codigo recebido">
+            <label for="resetToken">Codigo de recuperação</label>
+            <input id="resetToken" type="text" placeholder="Cole o código recebido">
             <label for="resetPassword">Nova senha</label>
-            <input id="resetPassword" type="password" placeholder="Minimo 6 caracteres" autocomplete="new-password">
+            <input id="resetPassword" type="password" placeholder="Mínimo 6 caracteres" minlength="6" autocomplete="new-password">
             <button id="resetPasswordBtn" class="secondary" type="button">Redefinir senha</button>
           </section>
 
-          <p id="authMessage" class="message"></p>
+          <p id="authMessage" class="message" role="status" aria-live="polite"></p>
+          <p class="auth-footnote">Seu histórico e suas ideias, no mesmo lugar.</p>
         </section>
       </div>
     </section>
 
     <footer class="site-footer">
-      <p>Estudo com IA, organizacao pessoal e evolucao continua em um so lugar.</p>
+      <p>Estudo com IA, organização pessoal e evolução continua em um so lugar.</p>
       <nav class="footer-links" aria-label="Links legais e institucionais">
-        <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
-        <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>
+        <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
+        <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
         <a href="https://github.com/Dioguinho-max" target="_blank" rel="noopener noreferrer">Criador: Dioguinho-max</a>
         <span class="footer-version">V1.1.0</span>
       </nav>
@@ -181,7 +149,7 @@
       </div>
       <div id="loadingSteps" class="loading-steps" aria-hidden="true">
         <span>Conta</span>
-        <span>Sessao</span>
+        <span>Sessão</span>
         <span>Painel</span>
       </div>
       <div class="loading-preview" aria-hidden="true">

@@ -21,14 +21,14 @@ const loadingSteps = document.getElementById("loadingSteps");
 let csrfToken = "";
 const authModeContent = {
   login: {
-    eyebrow: "Acesso",
-    title: "Entrar na sua conta",
-    subtitle: "Use seu email e senha para abrir o painel e continuar seus estudos.",
+    eyebrow: "BOM TER VOCÊ AQUI",
+    title: "Seu próximo passo começa aqui.",
+    subtitle: "Entre na sua conta e continue de onde parou.",
   },
   register: {
     eyebrow: "Cadastro",
-    title: "Criar uma conta nova",
-    subtitle: "Abra sua conta para salvar historico, organizar perguntas e acompanhar respostas da IA.",
+    title: "Vamos começar?",
+    subtitle: "Crie sua conta para salvar descobertas e acompanhar sua evolução.",
   },
   recover: {
     eyebrow: "Recuperacao",
@@ -81,7 +81,10 @@ function setAuthControlsDisabled(isDisabled) {
 }
 
 function setAuthMode(mode) {
-  tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === mode));
+  tabs.forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === mode);
+    tab.setAttribute("aria-pressed", String(tab.dataset.tab === mode));
+  });
   loginForm.classList.toggle("hidden", mode !== "login");
   registerForm.classList.toggle("hidden", mode !== "register");
   recoverForm.classList.toggle("hidden", mode !== "recover");
@@ -97,7 +100,7 @@ function setAuthMode(mode) {
 
 function setMessage(message, isError = true) {
   authMessage.textContent = message;
-  authMessage.style.color = isError ? "#b33e2d" : "#2f6c54";
+  authMessage.style.color = isError ? "#ff9b9b" : "#8ee5b9";
 }
 
 async function apiFetch(path, options = {}) {
@@ -137,6 +140,13 @@ async function bootstrapAuth() {
 
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => setAuthMode(tab.dataset.tab));
+});
+
+document.querySelectorAll("[data-auth-mode]").forEach((link) => {
+  link.addEventListener("click", () => {
+    setAuthMode(link.dataset.authMode);
+    document.getElementById("registerEmail").focus({ preventScroll: true });
+  });
 });
 
 loginForm.addEventListener("submit", async (event) => {

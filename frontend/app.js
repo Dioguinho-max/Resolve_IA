@@ -222,7 +222,7 @@ function setLoading(isLoading) {
   solveLoading.classList.toggle("hidden", !isLoading);
   solveBtn.disabled = isLoading;
   newQuestionBtn.disabled = isLoading;
-  solveBtn.textContent = isLoading ? "Resolvendo..." : "Resolver com IA";
+  solveBtn.textContent = isLoading ? "Analisando sua pergunta..." : "Perguntar à IA ↗";
 }
 
 function keepResultInView(force = false) {
@@ -262,6 +262,7 @@ function fillQuestionTemplate(prompt) {
 }
 
 function setResponseToolsState(state = "idle") {
+  document.querySelector(".result-box").dataset.state = state;
   if (!responseToolsEmptyState) {
     return;
   }

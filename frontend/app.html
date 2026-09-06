@@ -3,17 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ResolveAI</title>
+  <title>ResolveAI — Seu espaço de estudos com IA</title>
+  <meta name="description" content="Entenda exercícios passo a passo, organize suas revisões e acompanhe sua evolução com o ResolveAI.">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./appearance.css">
+  <script src="./appearance.js"></script>
 </head>
 <body data-theme="dark">
+  <a class="skip-link" href="#workspaceSection">Pular para o conteúdo</a>
   <main class="shell shell-split">
     <header class="site-frame-header">
-      <p class="eyebrow">ResolveAI</p>
+      <a class="brand" href="./" aria-label="ResolveAI, início"><span class="brand-symbol" aria-hidden="true">✳</span><span>Resolve<span>AI</span></span></a>
+      <div class="header-actions">
+        <span class="header-caption">Seu próximo passo começa com uma pergunta.</span>
+        <button id="appearanceToggle" class="secondary appearance-toggle" type="button" aria-expanded="false" aria-controls="appearancePanel"><span aria-hidden="true">◐</span> Personalizar</button>
+      </div>
+      <section id="appearancePanel" class="appearance-panel" aria-labelledby="appearanceTitle" hidden>
+        <h2 id="appearanceTitle">Do seu jeito</h2>
+        <fieldset>
+          <legend>Cor de destaque</legend>
+          <div class="accent-options">
+            <button class="accent-choice" type="button" data-accent-choice="violet" aria-pressed="true"><i style="--swatch: #b5a0ff" aria-hidden="true"></i>Órbita</button>
+            <button class="accent-choice" type="button" data-accent-choice="cyan" aria-pressed="false"><i style="--swatch: #76d9f5" aria-hidden="true"></i>Ciano</button>
+            <button class="accent-choice" type="button" data-accent-choice="mint" aria-pressed="false"><i style="--swatch: #7ee5be" aria-hidden="true"></i>Aurora</button>
+          </div>
+        </fieldset>
+        <label class="compact-option" for="compactMode"><input id="compactMode" type="checkbox">Painel mais compacto</label>
+        <p id="appearanceStatus" class="appearance-status" role="status">Preferências aplicadas neste navegador.</p>
+      </section>
     </header>
 
     <section class="app-shell">
@@ -22,11 +43,11 @@
           <div class="app-shell-brand">
             <span id="appUserInitialsBadge" class="app-shell-initials">RA</span>
             <div class="app-shell-heading">
-              <p class="section-tag">Organizador de estudos</p>
-              <h1 class="app-shell-title">Painel de evolucao</h1>
+              <p class="section-tag">Seu espaço de conhecimento</p>
+              <h1 class="app-shell-title">Vamos descobrir algo novo?</h1>
             </div>
           </div>
-          <p class="subtitle">Acompanhe seu ritmo, organize consultas e mantenha seu espaco de estudo com uma cara mais pessoal.</p>
+          <p class="subtitle">Uma pergunta de cada vez. Cada descoberta leva você mais longe.</p>
         </div>
         <div id="userBox" class="user-box hidden">
           <div class="profile-chip">
@@ -35,7 +56,7 @@
               <span id="profileAvatarFallback" class="profile-avatar-fallback">RA</span>
             </label>
             <div class="profile-copy">
-              <p id="profileName" class="profile-name">Usuario</p>
+              <p id="profileName" class="profile-name">Usuário</p>
               <p id="userEmail" class="profile-email"></p>
               <label for="profileImageInput" class="profile-photo-link">Trocar foto</label>
               <p id="profileStatus" class="profile-status tiny"></p>
@@ -48,112 +69,56 @@
 
       <nav class="app-section-nav" aria-label="Atalhos do painel">
         <a href="#workspaceSection">
-          <span>01</span>
+          <span aria-hidden="true">✳</span>
           Perguntar
         </a>
         <a href="#dashboardSection">
-          <span>02</span>
-          Evolucao
+          <span aria-hidden="true">↗</span>
+          Evolução
         </a>
         <a href="#chartSection">
-          <span>03</span>
-          Grafico
+          <span aria-hidden="true">⌁</span>
+          Gráfico
         </a>
         <a href="#historySection">
-          <span>04</span>
-          Historico
+          <span aria-hidden="true">◷</span>
+          Histórico
         </a>
       </nav>
 
       <section class="grid app-main-grid">
-        <aside class="left-rail">
-          <section class="panel activity-panel">
-            <div class="activity-header">
-              <div>
-                <p class="section-tag">Calendario</p>
-                <h2 id="activityCalendarMonth">Abr 2026</h2>
-              </div>
-              <span id="activityCalendarSummary" class="tiny">Sem atividade recente.</span>
-            </div>
-            <div id="activityCalendarWeekdays" class="activity-weekdays" aria-hidden="true">
-              <span>Seg</span>
-              <span>Ter</span>
-              <span>Qua</span>
-              <span>Qui</span>
-              <span>Sex</span>
-              <span>Sab</span>
-              <span>Dom</span>
-            </div>
-            <div id="activityCalendarGrid" class="activity-calendar-grid">
-              <article class="empty-state">
-                <span class="empty-state-kicker">Primeiro registro</span>
-                <strong>Seu calendario comeca depois da primeira consulta.</strong>
-                <p>Resolva uma pergunta para marcar atividade e acompanhar sua constancia.</p>
-              </article>
-            </div>
-            <div class="activity-legend">
-              <span><i class="legend-dot active"></i> Atividade registrada</span>
-              <span><i class="legend-dot today"></i> Hoje</span>
-            </div>
-          </section>
-          <section class="panel study-guide-panel">
-            <div class="panel-header">
-              <div>
-                <p class="section-tag">Guia rapido</p>
-                <h2>Use melhor cada resposta</h2>
-              </div>
-            </div>
-            <div class="guide-points">
-              <article class="guide-point">
-                <span class="guide-point-index">01</span>
-                <p>Peca resolucao completa, revisao teorica ou um plano curto por topico.</p>
-              </article>
-              <article class="guide-point">
-                <span class="guide-point-index">02</span>
-                <p>Salve categorias como prova, revisao ou duvida recorrente para encontrar depois.</p>
-              </article>
-              <article class="guide-point">
-                <span class="guide-point-index">03</span>
-                <p>Use o grafico e o historico juntos quando estiver estudando funcoes e exercicios parecidos.</p>
-              </article>
-            </div>
-          </section>
-        </aside>
+
 
         <section id="workspaceSection" class="panel workspace-panel">
           <div class="panel-header">
             <div>
               <p class="section-tag">Perguntar para IA</p>
-              <h2>Transforme uma duvida em resposta organizada</h2>
+              <h2>O que vamos aprender hoje?</h2>
             </div>
             <span id="subjectBadge" class="badge">Chat de estudos</span>
           </div>
           <div class="workspace-intro">
-            <p class="tiny">Perguntas mais objetivas costumam gerar respostas mais organizadas.</p>
-            <div class="workspace-flow" aria-label="Fluxo de uso">
-              <span>1. Pergunte</span>
-              <span>2. Entenda</span>
-              <span>3. Salve</span>
-            </div>
-            <div class="workspace-tags" aria-label="Sugestoes de pedidos">
-              <button class="workspace-tag" type="button" data-question-template="Monte um plano de estudos de 7 dias para revisar funcoes do 1 e 2 grau">Plano de estudos</button>
-              <button class="workspace-tag" type="button" data-question-template="Resolva 2*x + 3 = 11 passo a passo">Resolucao passo a passo</button>
-              <button class="workspace-tag" type="button" data-question-template="Faca uma revisao rapida sobre funcao do 2 grau com exemplos">Revisao rapida</button>
+            <p class="tiny">Traga sua dúvida ou escolha um ponto de partida.</p>
+            <div class="workspace-tags" aria-label="Sugestões de pedidos">
+              <button class="workspace-tag" type="button" data-question-template="Monte um plano de estudos de 7 dias para revisar funções do 1 e 2 grau"><span aria-hidden="true">▦</span>Planejar meus estudos</button>
+              <button class="workspace-tag" type="button" data-question-template="Resolva 2*x + 3 = 11 passo a passo"><span aria-hidden="true">ƒ</span>Resolver um exercício</button>
+              <button class="workspace-tag" type="button" data-question-template="Faca uma revisão rápida sobre função do 2 grau com exemplos"><span aria-hidden="true">↻</span>Revisar uma matéria</button>
             </div>
           </div>
 
-          <label for="questionInput">Questao</label>
-          <textarea id="questionInput" placeholder="Ex.: Monte um plano de estudos para algebra, revise funcao do 2 grau ou resolva 2*x + 3 = 11"></textarea>
+          <label for="questionInput">Sua pergunta</label>
+          <textarea id="questionInput" placeholder="Digite uma dúvida, uma equação ou o assunto que quer revisar…" aria-describedby="questionHint"></textarea>
           <div class="action-row">
-            <button id="solveBtn">Resolver com IA</button>
+            <button id="solveBtn">Perguntar à IA ↗</button>
             <button id="newQuestionBtn" class="secondary" type="button">Nova pergunta</button>
+            <span id="questionHint" class="keyboard-hint">Ctrl / ⌘ + Enter para enviar</span>
           </div>
           <div id="solveLoading" class="loading-box hidden">
             <span class="loading-dot"></span>
             <span>Analisando sua pergunta e montando a resposta...</span>
           </div>
 
-          <div class="result-box">
+          <div class="result-box" data-state="idle">
             <section class="response-stage" aria-label="Area da resposta da IA">
               <div class="result-header">
                 <div class="response-stage-header">
@@ -165,12 +130,12 @@
                 Respostas gerais podem conter imprecisoes factuais. Vale conferir datas, nomes e eventos importantes.
               </p>
               <p class="notice subtle-notice">
-                Nao envie dados pessoais sensiveis nas perguntas. Emails, telefones, CPF e numeros de cartao podem ser bloqueados por privacidade.
+                Proteja sua privacidade: não inclua senhas, documentos ou dados pessoais na pergunta.
               </p>
               <div class="answer-layout">
                 <article class="answer-card answer-card-primary">
                   <p class="section-tag">Resposta final</p>
-                  <p id="resultAnswer" class="answer">Entre com sua conta para comecar.</p>
+                  <p id="resultAnswer" class="answer">Entre com sua conta para começar.</p>
                 </article>
                 <article class="answer-card">
                   <p class="section-tag">Passo a passo</p>
@@ -178,7 +143,7 @@
                 </article>
                 <article class="answer-card answer-summary-card">
                   <p class="section-tag">Resumo para revisar</p>
-                  <p id="resultSummary" class="answer-summary">Apos a resposta, voce vera um resumo curto para revisar depois.</p>
+                  <p id="resultSummary" class="answer-summary">Após a resposta, você verá um resumo curto para revisar depois.</p>
                 </article>
               </div>
             </section>
@@ -190,7 +155,7 @@
               <article id="responseToolsEmptyState" class="tool-empty-state">
                 <span class="empty-state-kicker">Depois da resposta</span>
                 <strong>As ferramentas ficam prontas quando a IA responder.</strong>
-                <p>Voce podera favoritar, exportar, copiar ou salvar uma categoria para encontrar depois.</p>
+                <p>Você podera favoritar, exportar, copiar ou salvar uma categoria para encontrar depois.</p>
               </article>
               <div class="result-actions">
                 <button id="favoriteResultBtn" class="secondary" type="button" disabled>Favoritar</button>
@@ -208,6 +173,59 @@
             </section>
           </div>
         </section>
+        <aside class="left-rail">
+          <section class="panel activity-panel">
+            <div class="activity-header">
+              <div>
+                <p class="section-tag">Calendário</p>
+                <h2 id="activityCalendarMonth">Abr 2026</h2>
+              </div>
+              <span id="activityCalendarSummary" class="tiny">Sem atividade recente.</span>
+            </div>
+            <div id="activityCalendarWeekdays" class="activity-weekdays" aria-hidden="true">
+              <span>Seg</span>
+              <span>Ter</span>
+              <span>Qua</span>
+              <span>Qui</span>
+              <span>Sex</span>
+              <span>Sab</span>
+              <span>Dom</span>
+            </div>
+            <div id="activityCalendarGrid" class="activity-calendar-grid">
+              <article class="empty-state">
+                <span class="empty-state-kicker">Primeiro registro</span>
+                <strong>Seu calendário começa depois da primeira consulta.</strong>
+                <p>Resolva uma pergunta para marcar atividade e acompanhar sua constância.</p>
+              </article>
+            </div>
+            <div class="activity-legend">
+              <span><i class="legend-dot active"></i> Atividade registrada</span>
+              <span><i class="legend-dot today"></i> Hoje</span>
+            </div>
+          </section>
+          <section class="panel study-guide-panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-tag">Guia rápido</p>
+                <h2>Use melhor cada resposta</h2>
+              </div>
+            </div>
+            <div class="guide-points">
+              <article class="guide-point">
+                <span class="guide-point-index">01</span>
+                <p>Escolha um exemplo ou escreva sua pergunta.</p>
+              </article>
+              <article class="guide-point">
+                <span class="guide-point-index">02</span>
+                <p>Leia a explicação e acompanhe cada passo.</p>
+              </article>
+              <article class="guide-point">
+                <span class="guide-point-index">03</span>
+                <p>Favorite a resposta para revisar quando precisar.</p>
+              </article>
+            </div>
+          </section>
+        </aside>
       </section>
 
       <section class="dashboard-row">
@@ -217,7 +235,7 @@
               <p class="section-tag">Dashboard</p>
               <h2>Seu ritmo de estudo</h2>
             </div>
-            <div class="dashboard-periods" aria-label="Filtro de periodo do dashboard">
+            <div class="dashboard-periods" aria-label="Filtro de período do dashboard">
               <button id="dashboardPeriod7d" class="period-chip" type="button" data-period="7d">7 dias</button>
               <button id="dashboardPeriod30d" class="period-chip active" type="button" data-period="30d">30 dias</button>
               <button id="dashboardPeriodAll" class="period-chip" type="button" data-period="all">Geral</button>
@@ -225,7 +243,7 @@
           </div>
           <div class="dashboard-cards">
             <article class="dashboard-card">
-              <p class="section-tag">Questoes no periodo</p>
+              <p class="section-tag">Questões no período</p>
               <strong id="dashboardQuestions" class="dashboard-number">0</strong>
               <p id="dashboardQuestionsMeta" class="tiny">Sem atividade ainda.</p>
             </article>
@@ -235,9 +253,9 @@
               <p class="tiny">Dias com pelo menos uma atividade.</p>
             </article>
             <article class="dashboard-card">
-              <p class="section-tag">Sequencia atual</p>
+              <p class="section-tag">Sequência atual</p>
               <strong id="dashboardCurrentStreak" class="dashboard-number">0</strong>
-              <p id="dashboardBestStreak" class="tiny">Melhor sequencia: 0 dias.</p>
+              <p id="dashboardBestStreak" class="tiny">Melhor sequência: 0 dias.</p>
             </article>
             <article class="dashboard-card">
               <p class="section-tag">Foco em destaque</p>
@@ -249,14 +267,14 @@
             <section class="dashboard-surface">
               <div class="panel-header">
                 <div>
-                  <p class="section-tag">Uso por periodo</p>
-                  <h3>Comparativo rapido</h3>
+                  <p class="section-tag">Uso por período</p>
+                  <h3>Comparativo rápido</h3>
                 </div>
               </div>
               <div id="dashboardUsagePeriods" class="usage-periods">
                 <article class="empty-state">
                   <span class="empty-state-kicker">Sem consultas ainda</span>
-                  <strong>Os comparativos aparecem quando voce comeca a estudar.</strong>
+                  <strong>Os comparativos aparecem quando você começa a estudar.</strong>
                   <p>Faca uma pergunta e volte aqui para comparar 7 dias, 30 dias e geral.</p>
                 </article>
               </div>
@@ -264,14 +282,14 @@
             <section class="dashboard-surface">
               <div class="panel-header">
                 <div>
-                  <p class="section-tag">Evolucao semanal</p>
-                  <h3>Questoes por semana</h3>
+                  <p class="section-tag">Evolução semanal</p>
+                  <h3>Questões por semana</h3>
                 </div>
               </div>
               <div id="dashboardWeeklyChart" class="weekly-chart">
                 <article class="empty-state">
-                  <span class="empty-state-kicker">Evolucao semanal</span>
-                  <strong>Seu grafico vai nascer das proximas consultas.</strong>
+                  <span class="empty-state-kicker">Evolução semanal</span>
+                  <strong>Seu gráfico vai nascer das proximas consultas.</strong>
                   <p>Cada resposta salva ajuda a mostrar seu ritmo por semana.</p>
                 </article>
               </div>
@@ -279,7 +297,7 @@
             <section class="dashboard-surface">
               <div class="panel-header">
                 <div>
-                  <p class="section-tag">Meta e constancia</p>
+                  <p class="section-tag">Meta e constância</p>
                   <h3>Seu alvo da semana</h3>
                 </div>
               </div>
@@ -293,7 +311,7 @@
                   <p id="dashboardGoalProgressLabel" class="tiny">0% da meta semanal.</p>
                 </article>
                 <article class="consistency-card">
-                  <strong id="dashboardConsistencySummary">Sem dados de constancia.</strong>
+                  <strong id="dashboardConsistencySummary">Sem dados de constância.</strong>
                   <p id="dashboardConsistencyMeta" class="tiny">Seu ritmo recente vai aparecer aqui.</p>
                 </article>
                 <div id="dashboardAlerts" class="dashboard-alerts">
@@ -309,13 +327,13 @@
               <div class="panel-header">
                 <div>
                   <p class="section-tag">Progresso por categoria</p>
-                  <h3>Onde voce mais estuda</h3>
+                  <h3>Onde você mais estuda</h3>
                 </div>
               </div>
               <div id="dashboardCategoryProgress" class="category-progress-list">
                 <article class="empty-state">
                   <span class="empty-state-kicker">Categorias</span>
-                  <strong>Organize respostas por prova, revisao ou materia.</strong>
+                  <strong>Organize respostas por prova, revisão ou materia.</strong>
                   <p>Depois de salvar uma categoria, seu progresso por tema aparece aqui.</p>
                 </article>
               </div>
@@ -328,11 +346,11 @@
           <div class="panel-header">
             <div>
               <p class="section-tag">Visual</p>
-              <h2>Grafico da funcao</h2>
+              <h2>Gráfico da função</h2>
             </div>
             <div class="chart-meta">
-              <p id="chartTitle" class="tiny">Sem funcao detectada ainda.</p>
-              <p id="chartInsights" class="tiny">Resolva uma funcao para ver destaques como raizes e vertice.</p>
+              <p id="chartTitle" class="tiny">Sem função detectada ainda.</p>
+              <p id="chartInsights" class="tiny">Resolva uma função para ver destaques como raízes e vértice.</p>
             </div>
           </div>
           <canvas id="chartCanvas" width="900" height="420"></canvas>
@@ -341,14 +359,14 @@
         <section id="historySection" class="panel history-panel">
           <div class="panel-header">
             <div>
-              <p class="section-tag">Historico</p>
-              <h2>Ultimas consultas</h2>
+              <p class="section-tag">Histórico</p>
+              <h2>Últimas consultas</h2>
             </div>
-            <button id="clearHistoryBtn" class="secondary" type="button">Apagar historico</button>
+            <button id="clearHistoryBtn" class="secondary" type="button">Apagar histórico</button>
           </div>
           <div class="history-toolbar">
-            <input id="historySearch" type="search" placeholder="Buscar no historico">
-            <input id="historyCategoryFilter" type="search" placeholder="Filtrar por categoria">
+            <input id="historySearch" type="search" aria-label="Buscar no histórico" placeholder="Buscar no histórico">
+            <input id="historyCategoryFilter" type="search" aria-label="Filtrar por categoria" placeholder="Filtrar por categoria">
             <label class="history-favorites-toggle" for="historyFavoritesOnly">
               <input id="historyFavoritesOnly" type="checkbox">
               <span>So favoritos</span>
@@ -356,7 +374,7 @@
           </div>
           <div id="historyList" class="history-list">
             <article class="empty-state empty-state-with-action">
-              <span class="empty-state-kicker">Historico vazio</span>
+              <span class="empty-state-kicker">Histórico vazio</span>
               <strong>Suas consultas salvas vao aparecer aqui.</strong>
               <p>Comece por uma pergunta simples e use categoria ou favorito para encontrar depois.</p>
               <button class="secondary empty-state-action" type="button" data-question-template="Resolva 2*x + 3 = 11 passo a passo">Usar exemplo</button>
@@ -372,10 +390,10 @@
     </section>
 
     <footer class="site-footer">
-      <p>Estudo com IA, organizacao pessoal e evolucao continua em um so lugar.</p>
+      <p>Estudo com IA, organização pessoal e evolução continua em um so lugar.</p>
       <nav class="footer-links" aria-label="Links legais e institucionais">
-        <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Servico</a>
-        <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>
+        <a href="./termos.html" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
+        <a href="./privacidade.html" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
         <a href="https://github.com/Dioguinho-max" target="_blank" rel="noopener noreferrer">Criador: Dioguinho-max</a>
         <span class="footer-version">V1.1.0</span>
       </nav>
@@ -384,9 +402,9 @@
 
   <div id="confirmModal" class="modal-backdrop hidden" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
-      <p id="confirmModalTag" class="section-tag">Confirmacao</p>
+      <p id="confirmModalTag" class="section-tag">Confirmação</p>
       <h3 id="confirmModalTitle">Deseja sair da sua conta?</h3>
-      <p id="confirmModalCopy" class="modal-copy">Voce pode entrar novamente a qualquer momento com seu email e senha.</p>
+      <p id="confirmModalCopy" class="modal-copy">Você pode entrar novamente a qualquer momento com seu email e senha.</p>
       <div class="modal-actions">
         <button id="confirmModalCancelBtn" class="secondary" type="button">Cancelar</button>
         <button id="confirmModalActionBtn" type="button">Confirmar</button>
